@@ -216,8 +216,8 @@ launch-script pattern as the other Cosmos3 finetune cookbooks while delegating
 the canonical training implementation to Cosmos Framework.
 
 The same [action-policy SFT cookbook](./finetune/README.md) also covers **LIBERO-10**
-(`launch_sft_action_policy_libero_10_nano.sh`) — fine-tuning Cosmos3-Nano on the `libero_10`
-simulation benchmark with the same launch-script pattern.
+for Cosmos3-Nano (`launch_sft_action_policy_libero_10_nano.sh`) and Cosmos3-Edge
+(`launch_sft_action_policy_libero_10_edge.sh`) with the same launch-script pattern.
 
 ## TODO
 
