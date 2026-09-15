@@ -201,8 +201,11 @@ published RoboDojo success rate, and the LIBERO-derived optimizer schedule is
 only a starting point.
 
 Run deterministic offline action evaluation against the episode-level
-validation split. The evaluator loads the latest DCP checkpoint by default and
-writes aggregate and per-sample metrics after every completed sample:
+validation split. The primary evaluator is fixed to the 60K DCP checkpoint by
+default; do not select a checkpoint using validation or test results. Pass
+`--checkpoint` only for explicitly labeled diagnostic evaluations of
+intermediate checkpoints. The evaluator writes aggregate and per-sample
+metrics after every completed sample:
 
 ```shell
 CUDA_VISIBLE_DEVICES=0 ./launch_offline_eval_robodojo.sh \

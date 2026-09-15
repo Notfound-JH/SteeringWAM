@@ -28,17 +28,17 @@ vae_path = "${oc.env:WAN_VAE_PATH}"
 lr = 5.0e-05
 
 [scheduler]
-cycle_lengths = [16000]
+cycle_lengths = [60000]
 warm_up_steps = [500]
 
 [dataloader_train]
-max_samples_per_batch = 32
+max_samples_per_batch = 64
 
 [trainer]
-max_iter        = 2000
+max_iter        = 60000
 logging_iter    = 50
-grad_accum_iter = 1
+grad_accum_iter = 1 # effective global batch = 64 samples/rank x 4 ranks = 256
 
 [checkpoint]
 load_path = "${oc.env:BASE_CHECKPOINT_PATH}"
-save_iter = 500
+save_iter = 2000

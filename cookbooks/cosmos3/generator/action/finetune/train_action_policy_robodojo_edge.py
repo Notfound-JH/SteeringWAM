@@ -4,8 +4,13 @@
 from __future__ import annotations
 
 import copy
+import os
+import re
 import runpy
+import shutil
+from pathlib import Path
 
+import torch.distributed as dist
 from hydra.core.config_store import ConfigStore
 
 from cosmos_framework.configs.base.experiment.action.posttrain_config.action_policy_droid_nano import (
@@ -16,10 +21,40 @@ from cosmos_framework.data.generator.action.datasets.action_sft_dataset import (
     get_action_robodojo_sft_dataset,
 )
 from cosmos_framework.data.generator.action.utils.domain_utils import get_domain_id
+from cosmos_framework.utils.callback import Callback
 from cosmos_framework.utils.lazy_config import LazyCall as L
 
 
 EXPERIMENT_NAME = "action_policy_robodojo_edge"
+CHECKPOINT_DIR_PATTERN = re.compile(r"iter_(\d{9})$")
+
+
+def prune_checkpoint_dirs(checkpoint_dir: Path, keep_last: int) -> None:
+    checkpoints = sorted(
+        (
+            (int(match.group(1)), path)
+            for path in checkpoint_dir.iterdir()
+            if path.is_dir() and (match := CHECKPOINT_DIR_PATTERN.fullmatch(path.name))
+        ),
+        key=lambda item: item[0],
+    )
+    for _, path in checkpoints[:-keep_last]:
+        shutil.rmtree(path)
+
+
+class SlidingCheckpointRetention(Callback):
+    def __init__(self, checkpoint_dir: str, keep_last: int = 5) -> None:
+        super().__init__()
+        if keep_last < 1:
+            raise ValueError("keep_last must be at least 1")
+        self.checkpoint_dir = Path(checkpoint_dir)
+        self.keep_last = keep_last
+
+    def on_save_checkpoint_success(self, iteration: int = 0, elapsed_time: float = 0) -> None:
+        del iteration, elapsed_time
+        if dist.is_initialized() and dist.get_rank() != 0:
+            return
+        prune_checkpoint_dirs(self.checkpoint_dir, self.keep_last)
 
 
 def build_edge_experiment():
@@ -63,6 +98,13 @@ def build_edge_experiment():
     optimizer_keys = experiment["optimizer"]["keys_to_select"]
     if "k_norm_und_for_gen" not in optimizer_keys:
         optimizer_keys.append("k_norm_und_for_gen")
+
+    output_root = Path(os.environ.get("IMAGINAIRE_OUTPUT_ROOT", "/tmp/imaginaire4-output"))
+    checkpoint_dir = output_root / "cosmos3_action_robodojo" / "action_sft" / EXPERIMENT_NAME / "checkpoints"
+    experiment["trainer"]["callbacks"]["checkpoint_retention"] = L(SlidingCheckpointRetention)(
+        checkpoint_dir=str(checkpoint_dir),
+        keep_last=5,
+    )
 
     return experiment
 

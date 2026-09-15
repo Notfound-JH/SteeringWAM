@@ -32,6 +32,7 @@ from cosmos_framework.scripts.action_policy_server_utils import (
 )
 
 ACTION_DIM = 16
+PRIMARY_CHECKPOINT = "iter_000060000"
 LEFT_POSITION = slice(0, 3)
 LEFT_QUATERNION = slice(3, 7)
 LEFT_GRIPPER = 7
@@ -72,12 +73,7 @@ def parse_args() -> argparse.Namespace:
 def resolve_checkpoint(run_dir: Path, checkpoint: Path | None) -> Path:
     if checkpoint is not None:
         return checkpoint.expanduser().resolve()
-    latest_file = run_dir / "checkpoints/latest_checkpoint.txt"
-    latest = latest_file.read_text(encoding="utf-8").strip()
-    candidate = Path(latest)
-    if not candidate.is_absolute():
-        candidate = run_dir / "checkpoints" / candidate
-    return candidate.resolve()
+    return (run_dir / "checkpoints" / PRIMARY_CHECKPOINT).resolve()
 
 
 def build_data_batch(sample: dict[str, Any]) -> dict[str, Any]:

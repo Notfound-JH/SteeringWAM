@@ -35,6 +35,7 @@ EXPECTED_VECTOR_NAMES = (
     "r_g",
 )
 EXPECTED_VECTOR_SIZE = len(EXPECTED_VECTOR_NAMES)
+EXPECTED_EPISODES = 3500
 
 
 def feature_shape(feature: dict[str, Any]) -> list[int] | None:
@@ -78,6 +79,11 @@ def validate_dataset(root: Path) -> dict[str, Any]:
     fps = info.get("fps")
     if not isinstance(fps, (int, float)) or fps <= 0:
         raise ValueError(f"invalid fps: {fps!r}")
+    if info.get("total_episodes") != EXPECTED_EPISODES:
+        raise ValueError(
+            f"official RoboDojo training data must contain exactly {EXPECTED_EPISODES} episodes, "
+            f"got {info.get('total_episodes')!r}"
+        )
 
     return {
         "root": str(root.resolve()),
@@ -88,7 +94,7 @@ def validate_dataset(root: Path) -> dict[str, Any]:
         "state_key": STATE_KEY,
         "state_shape": feature_shape(state_feature),
         "camera_keys": list(EXPECTED_CAMERAS),
-        "total_episodes": info.get("total_episodes"),
+        "total_episodes": EXPECTED_EPISODES,
         "total_frames": info.get("total_frames"),
     }
 
