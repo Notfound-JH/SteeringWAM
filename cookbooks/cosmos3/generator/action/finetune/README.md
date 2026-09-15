@@ -4,6 +4,7 @@ This example demonstrates supervised fine-tuning (SFT) of [Cosmos3-Nano](https:/
 
 - **DROID** — reproduces [Cosmos3-Nano-Policy-DROID](https://huggingface.co/nvidia/Cosmos3-Nano-Policy-DROID): trained on real-robot DROID data, evaluated on the RoboLab simulation benchmark.
 - **LIBERO-10** — the Nano recipe reproduces the Cosmos3 paper's LIBERO-10 results; the Edge port uses the same simulation benchmark and training data.
+- **RoboDojo** — an experimental Cosmos3-Edge port for the official dual-arm LeRobot v3.0 EE dataset.
 
 | Recipe | Launch shell | Base model | Dataset |
 | --- | --- | --- | --- |
@@ -11,6 +12,7 @@ This example demonstrates supervised fine-tuning (SFT) of [Cosmos3-Nano](https:/
 | Policy-LIBERO-10 SFT (Nano) | `launch_sft_action_policy_libero_10_nano.sh` | Cosmos3-Nano | [LIBERO_LeRobot_v3](https://huggingface.co/datasets/nvidia/LIBERO_LeRobot_v3) `libero_10` |
 | Policy-LIBERO-10 SFT (Edge) | `launch_sft_action_policy_libero_10_edge.sh` | Cosmos3-Edge | [LIBERO_LeRobot_v3](https://huggingface.co/datasets/nvidia/LIBERO_LeRobot_v3) `libero_10` |
 | Policy-LIBERO-all SFT (Nano) | `launch_sft_action_policy_libero_all_nano.sh` | Cosmos3-Nano | [LIBERO_LeRobot_v3](https://huggingface.co/datasets/nvidia/LIBERO_LeRobot_v3) all 4 suites |
+| Policy-RoboDojo SFT (Edge) | `launch_sft_action_policy_robodojo_edge.sh` | Cosmos3-Edge | [RoboDojo](https://huggingface.co/datasets/RoboDojo-Benchmark/RoboDojo) `lerobot_v3.0_ee` |
 
 The DROID recipe uses the registered `action_policy_droid_nano` experiment: `joint_pos` 8-D actions, proprioceptive state, `concat_view` 480p video, chunk length 32, episode-shuffle streaming, JSON-formatted action prompts (`format_prompt_as_json=True`), and the optional `keep_ranges_1_0_1.json` window filter. The reference reproduction runs lr 2e-4 (cosine, cycle 100000), generator loss_scale 10, global batch 8192 (HSDP 32x8 = 256 ranks; GB200 reference, 64 nodes x 4), for 10000 iters. The action prompt is serialized as JSON at both train and eval time, so evaluation must use the matching JSON prompt format.
 
@@ -145,6 +147,73 @@ DRYRUN=1 bash launch_sft_action_policy_libero_10_edge.sh
 ```
 
 Checkpoints are saved every 500 iters.
+
+## RoboDojo Edge quick start
+
+The RoboDojo recipe consumes the official `RoboDojo_ee_lerobot_v30_video`
+dataset at 25 FPS. Its raw state and action are 16D absolute dual-arm
+end-effector commands:
+
+```text
+[left position xyz, left quaternion wxyz, left gripper,
+ right position xyz, right quaternion wxyz, right gripper]
+```
+
+The three video keys are `cam_high`, `cam_left_wrist`, and
+`cam_right_wrist`. The reader composes the high camera above the two wrist
+cameras and preserves the raw absolute action representation. This differs
+from the 14D joint-space `robodojo` domain reserved elsewhere in the framework,
+so the recipe uses the dedicated `robodojo-ee` domain.
+
+The launcher downloads and validates the dataset when it is missing:
+
+```shell
+bash launch_sft_action_policy_robodojo_edge.sh
+```
+
+To use an existing copy or another checkout of RoboDojo:
+
+```shell
+export ROBODOJO_ROOT=/path/to/RoboDojo_ee_lerobot_v30_video
+export BASE_CHECKPOINT_PATH=/path/to/Cosmos3-Edge-DCP
+export WAN_VAE_PATH=/path/to/Wan2.2_VAE.pth
+bash launch_sft_action_policy_robodojo_edge.sh
+```
+
+Validate metadata and the merged Hydra configuration without downloading
+weights or starting training:
+
+```shell
+python validate_robodojo_dataset.py "$ROBODOJO_ROOT"
+DRYRUN=1 bash launch_sft_action_policy_robodojo_edge.sh
+```
+
+For a short single-node run, reduce the number of iterations and per-rank
+batch before selecting hyperparameters for a full run:
+
+```shell
+export EXTRA_TAIL_OVERRIDES="trainer.max_iter=5 checkpoint.save_iter=5 dataloader_train.max_samples_per_batch=4"
+bash launch_sft_action_policy_robodojo_edge.sh
+```
+
+This is an architecture and dataset integration recipe. It does not claim a
+published RoboDojo success rate, and the LIBERO-derived optimizer schedule is
+only a starting point.
+
+Run deterministic offline action evaluation against the episode-level
+validation split. The evaluator loads the latest DCP checkpoint by default and
+writes aggregate and per-sample metrics after every completed sample:
+
+```shell
+CUDA_VISIBLE_DEVICES=0 ./launch_offline_eval_robodojo.sh \
+    --num-samples 32 \
+    --num-steps 8
+```
+
+The report includes raw 16D action MAE/RMSE, per-arm position error in
+centimeters, quaternion angular error in degrees, and per-arm gripper MAE. The
+current training recipe uses the full dataset, so this deterministic split is a
+sanity-check slice rather than a strictly unseen holdout set.
 
 ## Outputs
 
