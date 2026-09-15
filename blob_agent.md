@@ -43,7 +43,7 @@ File sizes above are logical content lengths. Local disk usage can be larger
 because the source repositories contain sparse files and Git/LFS metadata that
 are not part of the restored asset directories.
 
-The completed remote audit contains 30,078 objects and 847,206,943,863 content
+The completed remote audit contains 30,078 objects and 847,205,942,863 content
 bytes across these six groups. Every remote group exactly matched its local
 file count and logical byte total.
 
