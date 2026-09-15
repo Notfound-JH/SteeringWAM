@@ -151,6 +151,7 @@ tmp/
 # Log files
 *.log
 logs/
+/sas-upload-logs/
 
 # Data files (adjust as needed)
 *.csv
