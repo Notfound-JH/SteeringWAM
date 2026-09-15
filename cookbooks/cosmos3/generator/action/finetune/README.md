@@ -215,6 +215,38 @@ centimeters, quaternion angular error in degrees, and per-arm gripper MAE. The
 current training recipe uses the full dataset, so this deterministic split is a
 sanity-check slice rather than a strictly unseen holdout set.
 
+### RoboDojo closed-loop evaluation
+
+Install the versioned XPolicyLab adapter into a RoboDojo checkout, then launch
+the simulator evaluation through RoboDojo's standard CLI:
+
+```shell
+bash install_robodojo_xpolicylab_adapter.sh /path/to/RoboDojo
+
+cd /path/to/RoboDojo
+COSMOS3_ROBODOJO_EXECUTE_STEPS=16 \
+COSMOS3_ROBODOJO_NUM_STEPS=8 \
+bash scripts/robodojo.sh eval \
+    --policy-dir XPolicyLab/policy/Cosmos3_RoboDojo \
+    --task deposit_coin \
+    --ckpt iter_000002000 \
+    --policy-env /path/to/SteeringWAM/packages/cosmos3/.venv \
+    --eval-env RoboDojo \
+    --env-cfg arx_x5 \
+    --action-type ee \
+    --seed 0 \
+    --policy-gpu 4 \
+    --env-gpu 5 \
+    --eval-num 1
+```
+
+The adapter executes 16D absolute dual-arm EE action chunks through the
+XPolicyLab WebSocket protocol. It refreshes observations after every executed
+action, so the three evaluation videos are recorded at the simulator's 25 FPS
+rather than once per predicted chunk. See
+[`robodojo_xpolicylab/Cosmos3_RoboDojo/README.md`](./robodojo_xpolicylab/Cosmos3_RoboDojo/README.md)
+for simulator prerequisites and checkpoint path overrides.
+
 ## Outputs
 
 Training writes to `outputs/train/<project>/<group>/<name>/`:

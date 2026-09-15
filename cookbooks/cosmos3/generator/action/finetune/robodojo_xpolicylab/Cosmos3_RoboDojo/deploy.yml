@@ -1,0 +1,19 @@
+policy_name: Cosmos3_RoboDojo
+protocol: ws
+eval_batch: false
+
+host: localhost
+port: null
+checkpoint_path: null
+config_file: null
+output_dir: /tmp/cosmos3_robodojo_policy
+
+action_type: ee
+domain_name: robodojo-ee
+action_chunk_size: 16
+execute_steps: 4
+fps: 25
+resolution: "480"
+num_steps: 8
+guidance: 1.0
+seed: 42
