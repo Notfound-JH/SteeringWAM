@@ -78,14 +78,34 @@ timeout --signal=TERM --kill-after=5s 595s \
 printf 'Rollout directory: %s\n' "$RUN"
 ```
 
+入口默认使用 640 x 480 app renderer 和 Balanced DLSS（`--rendering-mode balanced`）。
+此前的 320 x 240 + Performance 组合在 A100 上实际只有 160 x 120 的 DLSS 输入；提高后日志记录为
+371 x 278，内部像素约为此前的 5.4 倍。真实 `FruitsOnPlate3Task` 相机检查保存在
+[camera_fruits_hires_SksPeW](diagnostics/camera_fruits_hires_SksPeW/result.json)，状态为
+`frame_captured`，手腕图像的颗粒明显减少。可显式覆盖参数：
+
+```bash
+./RoboLab/.venv/bin/python probe_isaac_camera.py \
+  --task FruitsOnPlate3Task --render-width 1280 --render-height 720 \
+  --rendering-mode quality --output-dir "$CAPTURE_DIR"
+```
+
+建议先使用默认的 640 x 480 + Balanced；1280 x 720 + Quality 会显著增加 GPU 时间、显存和
+RTX 管线编译压力。A100 仍不支持当前构建的 DLSS-RR，因此提高分辨率只能减轻噪点，不能补回
+RTX GPU 上可用的完整实时光追降噪能力。
+
 每次命令创建独立仿真和独立初始状态；新目录不是从上一次 `final/` 物理状态续跑。
 当前入口也没有 `--sim-gpu`，不能仅修改 `CUDA_VISIBLE_DEVICES` 就把并行仿真分配到 GPU 5-7；
 需要先参数化并验证 renderer 的物理 GPU 绑定。模型服务可用不同的 `MODEL_GPU`、`PORT` 和
 `MASTER_PORT` 分别启动，但这不等于仿真侧已经支持安全并行。
 
 仓库根目录的 [rollout_dashboard](rollout_dashboard/server.py) 会扫描 `diagnostics/rollout_*`，
-每 2 秒刷新运行状态，并展示五路相机、每 4 步采样时间线、模型 chunk、推理耗时和最近日志。
-它只读取结果，不控制仿真或重发动作。使用 RoboLab 环境启动：
+按 chunk 展示该次模型指令和对应动作实际执行后的 viewport 视频；页面只在打开、切换 run 或点击刷新时
+读取结果，不持续轮询，也不控制仿真或重发动作。新 rollout 在 15 Hz 的每个控制步保存全部五路相机，
+每段视频使用 chunk 起点和每个动作后的 `egocentric_mirrored_camera` 实际帧，不做插帧，
+也不是模型预测的未来视频。旧的稀疏运行仍按原始 3.75 Hz 采样间隔播放。
+视频第一次访问时由本机 FFmpeg 编码为 H.264 并缓存到对应 `chunks/NNN/viewport.mp4`。
+使用 RoboLab 环境启动：
 
 ```bash
 cd /home/aiscuser/SteeringWAM
@@ -104,7 +124,7 @@ curl -fsS http://127.0.0.1:8765/api/runs >/dev/null
 ```
 
 两项通过表示服务正常，故障在端口转发或 Dev Tunnel；重新转发/刷新即可，不要因此重启 rollout。
-页面对慢速隧道只在帧实际变化时更新主图 URL，避免 2 秒轮询反复中止同一张 PNG 下载。
+页面不做实时轮询；新 chunk 落盘后手动点击刷新即可，避免慢速 Dev Tunnel 持续请求导致 504。
 
 `--rollout-chunks 0`（默认）仅导出相机；大于 0 才调用模型并执行动作。
 每个模型请求限时 240 秒且不自动重发，输出目录必须没有旧的 `result.json`，失败或超时后不自动续跑未知动作。

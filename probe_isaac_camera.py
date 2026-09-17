@@ -14,9 +14,14 @@ parser.add_argument("--task", help="Capture a registered RoboLab task instead of
 parser.add_argument("--rollout-chunks", type=int, default=0, help="Run this many sequential policy chunks; zero only captures cameras.")
 parser.add_argument("--execute-steps", type=int, default=16)
 parser.add_argument("--policy-port", type=int, default=18745)
+parser.add_argument("--render-width", type=int, default=640)
+parser.add_argument("--render-height", type=int, default=480)
+parser.add_argument("--rendering-mode", choices=("performance", "balanced", "quality"), default="balanced")
 args = parser.parse_args()
 if args.rollout_chunks < 0 or not 1 <= args.execute_steps <= 32:
     parser.error("rollout-chunks must be nonnegative and execute-steps must be in 1..32")
+if args.render_width < 320 or args.render_height < 240:
+    parser.error("render-width and render-height must be at least 320x240")
 if args.rollout_chunks and not args.task:
     parser.error("--rollout-chunks requires --task")
 if args.rollout_chunks:
@@ -43,6 +48,9 @@ result = {
     "model_loaded": False,
     "task": args.task,
     "rollout_chunks_requested": args.rollout_chunks,
+    "camera_capture_fps": 15 if args.rollout_chunks else None,
+    "renderer_resolution": [args.render_width, args.render_height],
+    "rendering_quality": args.rendering_mode,
 }
 
 
@@ -66,13 +74,14 @@ exit_code = 1
 try:
     from isaacsim import SimulationApp
 
+    dlss_mode = {"performance": 0, "balanced": 1, "quality": 2}[args.rendering_mode]
     simulation_app = SimulationApp({
         "headless": True,
         "active_gpu": 4,
         "physics_gpu": 0,
         "multi_gpu": False,
-        "width": 320,
-        "height": 240,
+        "width": args.render_width,
+        "height": args.render_height,
         "renderer": "RaytracedLighting",
         "anti_aliasing": 0,
         "denoiser": False,
@@ -88,7 +97,7 @@ try:
             "--/rtx/reflections/enabled=false",
             "--/rtx/indirectDiffuse/enabled=false",
             "--/rtx/translucency/enabled=false",
-            "--/rtx/post/dlss/execMode=0",
+            f"--/rtx/post/dlss/execMode={dlss_mode}",
             "--/rtx/post/aa/op=0",
             "--/rtx-transient/dldenoiser/enabled=false",
             "--/rtx-transient/dlssg/enabled=false",
@@ -144,7 +153,7 @@ try:
             raise RuntimeError(f"Expected one registered task, got {task_envs}")
         env, env_cfg = create_env(
             task_envs[0], device="cpu", use_fabric=True, num_envs=1,
-            seed=3407, rendering_mode="performance",
+            seed=3407, rendering_mode=args.rendering_mode,
         )
         if env.device != "cpu":
             raise RuntimeError(f"Unexpected physics device: {env.device}")
@@ -227,8 +236,7 @@ try:
                 result["native_success"] = bool(env.termination_manager.get_term("success")[0].item())
                 np.save(args.output_dir / "executed_actions.npy", np.stack(executed))
                 np.save(args.output_dir / "observed_joints.npy", np.stack(proprioception))
-                if (step + 1) % 4 == 0 or terminated[0] or truncated[0]:
-                    capture_observation(observation, f"frames/step_{step + 1:04d}/")
+                capture_observation(observation, f"frames/step_{step + 1:04d}/")
                 save_result()
                 if terminated[0] or truncated[0]:
                     break
