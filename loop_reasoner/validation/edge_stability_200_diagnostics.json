@@ -1,0 +1,4268 @@
+{
+  "checkpoint": "/home/aiscuser/SteeringWAM/outputs/edge_droid_feedback_stability_200_seed42/cosmos3_action/edge_droid_planning/action_policy_droid_edge_feedback_stability_200_seed42/checkpoints/iter_000000200",
+  "status": "completed",
+  "selection_seed": 42,
+  "validation_noise_seed": 1729,
+  "manifest": [
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37178,
+      "global_frame_index": 1524
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37769,
+      "global_frame_index": 2115
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 32851,
+      "global_frame_index": 7431
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 33274,
+      "global_frame_index": 7854
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 35889,
+      "global_frame_index": 19381
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 36306,
+      "global_frame_index": 19798
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24629,
+      "global_frame_index": 38635
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24874,
+      "global_frame_index": 38880
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46240,
+      "global_frame_index": 43347
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46520,
+      "global_frame_index": 43627
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844
+    }
+  ],
+  "weight_loading": {
+    "raw": {
+      "prefix": "net.",
+      "tensor_count": 1244,
+      "compute_dtype": "torch.bfloat16"
+    },
+    "ema": {
+      "prefix": "net_ema.",
+      "tensor_count": 1244,
+      "compute_dtype": "torch.bfloat16"
+    }
+  },
+  "rows": [
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37178,
+      "global_frame_index": 1524,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 0.8346795439720154,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.6784965991973877,
+      "loss_bridge": 0.9908624887466431,
+      "anchor_flow_matching_loss_action": 0.0022304393351078033,
+      "anchor_flow_matching_loss_vision": 0.06561921536922455,
+      "bridge_flow_matching_loss_action": 0.002311757765710354,
+      "bridge_flow_matching_loss_vision": 0.09677448868751526
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37178,
+      "global_frame_index": 1524,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 0.834746778011322,
+      "paired_objective_delta": 6.723403930664062e-05,
+      "bridge_action_delta_rms": 0.003121888730674982,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.6784965991973877,
+      "loss_bridge": 0.9909969568252563,
+      "anchor_flow_matching_loss_action": 0.0022304393351078033,
+      "anchor_flow_matching_loss_vision": 0.06561921536922455,
+      "bridge_flow_matching_loss_action": 0.0023087142035365105,
+      "bridge_flow_matching_loss_vision": 0.09679098427295685
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37178,
+      "global_frame_index": 1524,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 0.8342634439468384,
+      "paired_objective_delta": -0.00041610002517700195,
+      "bridge_action_delta_rms": 0.003881092183291912,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.6784965991973877,
+      "loss_bridge": 0.9900302886962891,
+      "anchor_flow_matching_loss_action": 0.0022304393351078033,
+      "anchor_flow_matching_loss_vision": 0.06561921536922455,
+      "bridge_flow_matching_loss_action": 0.0022441791370511055,
+      "bridge_flow_matching_loss_vision": 0.09675884991884232
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37178,
+      "global_frame_index": 1524,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 0.840391993522644,
+      "paired_objective_delta": 0.005712449550628662,
+      "bridge_action_delta_rms": 0.019222034141421318,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.6846219897270203,
+      "loss_bridge": 0.996161937713623,
+      "anchor_flow_matching_loss_action": 0.002737076487392187,
+      "anchor_flow_matching_loss_vision": 0.06572512537240982,
+      "bridge_flow_matching_loss_action": 0.0028266541194170713,
+      "bridge_flow_matching_loss_vision": 0.09678953886032104
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37769,
+      "global_frame_index": 2115,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.283409595489502,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1264091730117798,
+      "loss_bridge": 1.4404101371765137,
+      "anchor_flow_matching_loss_action": 0.002080437960103154,
+      "anchor_flow_matching_loss_vision": 0.11056047677993774,
+      "bridge_flow_matching_loss_action": 0.0023251359816640615,
+      "bridge_flow_matching_loss_vision": 0.141715869307518
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37769,
+      "global_frame_index": 2115,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.2832481861114502,
+      "paired_objective_delta": -0.0001614093780517578,
+      "bridge_action_delta_rms": 0.00354800489731133,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1264091730117798,
+      "loss_bridge": 1.440087080001831,
+      "anchor_flow_matching_loss_action": 0.002080437960103154,
+      "anchor_flow_matching_loss_vision": 0.11056047677993774,
+      "bridge_flow_matching_loss_action": 0.002342124469578266,
+      "bridge_flow_matching_loss_vision": 0.14166657626628876
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37769,
+      "global_frame_index": 2115,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.2833235263824463,
+      "paired_objective_delta": -8.606910705566406e-05,
+      "bridge_action_delta_rms": 0.00357256131246686,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1264091730117798,
+      "loss_bridge": 1.4402378797531128,
+      "anchor_flow_matching_loss_action": 0.002080437960103154,
+      "anchor_flow_matching_loss_vision": 0.11056047677993774,
+      "bridge_flow_matching_loss_action": 0.002324423985555768,
+      "bridge_flow_matching_loss_vision": 0.14169935882091522
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37769,
+      "global_frame_index": 2115,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.287279725074768,
+      "paired_objective_delta": 0.0038701295852661133,
+      "bridge_action_delta_rms": 0.018270885571837425,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1303023099899292,
+      "loss_bridge": 1.444257140159607,
+      "anchor_flow_matching_loss_action": 0.0024610059335827827,
+      "anchor_flow_matching_loss_vision": 0.11056923121213913,
+      "bridge_flow_matching_loss_action": 0.002741054864600301,
+      "bridge_flow_matching_loss_vision": 0.1416846662759781
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 32851,
+      "global_frame_index": 7431,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 0.9119524955749512,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7588002681732178,
+      "loss_bridge": 1.0651047229766846,
+      "anchor_flow_matching_loss_action": 0.0020156174432486296,
+      "anchor_flow_matching_loss_vision": 0.0738644152879715,
+      "bridge_flow_matching_loss_action": 0.002170643536373973,
+      "bridge_flow_matching_loss_vision": 0.1043398305773735
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 32851,
+      "global_frame_index": 7431,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 0.9121540784835815,
+      "paired_objective_delta": 0.0002015829086303711,
+      "bridge_action_delta_rms": 0.00335565023124218,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7588002681732178,
+      "loss_bridge": 1.0655078887939453,
+      "anchor_flow_matching_loss_action": 0.0020156174432486296,
+      "anchor_flow_matching_loss_vision": 0.0738644152879715,
+      "bridge_flow_matching_loss_action": 0.002181779593229294,
+      "bridge_flow_matching_loss_vision": 0.10436900705099106
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 32851,
+      "global_frame_index": 7431,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 0.9119006395339966,
+      "paired_objective_delta": -5.1856040954589844e-05,
+      "bridge_action_delta_rms": 0.0037186944391578436,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7588002681732178,
+      "loss_bridge": 1.0650010108947754,
+      "anchor_flow_matching_loss_action": 0.0020156174432486296,
+      "anchor_flow_matching_loss_vision": 0.0738644152879715,
+      "bridge_flow_matching_loss_action": 0.002162175253033638,
+      "bridge_flow_matching_loss_vision": 0.10433793067932129
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 32851,
+      "global_frame_index": 7431,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 0.9146270751953125,
+      "paired_objective_delta": 0.002674579620361328,
+      "bridge_action_delta_rms": 0.016181623563170433,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7615648508071899,
+      "loss_bridge": 1.067689299583435,
+      "anchor_flow_matching_loss_action": 0.00233210576698184,
+      "anchor_flow_matching_loss_vision": 0.07382438331842422,
+      "bridge_flow_matching_loss_action": 0.002392004942521453,
+      "bridge_flow_matching_loss_vision": 0.10437691956758499
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 33274,
+      "global_frame_index": 7854,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.1411492824554443,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9555542469024658,
+      "loss_bridge": 1.3267443180084229,
+      "anchor_flow_matching_loss_action": 0.002097673714160919,
+      "anchor_flow_matching_loss_vision": 0.09345775097608566,
+      "bridge_flow_matching_loss_action": 0.002164804143831134,
+      "bridge_flow_matching_loss_vision": 0.1305096298456192
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 33274,
+      "global_frame_index": 7854,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.1409621238708496,
+      "paired_objective_delta": -0.00018715858459472656,
+      "bridge_action_delta_rms": 0.002928339410573244,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9555542469024658,
+      "loss_bridge": 1.326370120048523,
+      "anchor_flow_matching_loss_action": 0.002097673714160919,
+      "anchor_flow_matching_loss_vision": 0.09345775097608566,
+      "bridge_flow_matching_loss_action": 0.0021507341880351305,
+      "bridge_flow_matching_loss_vision": 0.13048627972602844
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 33274,
+      "global_frame_index": 7854,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.1406974792480469,
+      "paired_objective_delta": -0.00045180320739746094,
+      "bridge_action_delta_rms": 0.0035735000856220722,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9555542469024658,
+      "loss_bridge": 1.3258405923843384,
+      "anchor_flow_matching_loss_action": 0.002097673714160919,
+      "anchor_flow_matching_loss_vision": 0.09345775097608566,
+      "bridge_flow_matching_loss_action": 0.0021296523045748472,
+      "bridge_flow_matching_loss_vision": 0.1304544061422348
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 33274,
+      "global_frame_index": 7854,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.144179105758667,
+      "paired_objective_delta": 0.0030298233032226562,
+      "bridge_action_delta_rms": 0.017204521223902702,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9586064219474792,
+      "loss_bridge": 1.32975172996521,
+      "anchor_flow_matching_loss_action": 0.0023622121661901474,
+      "anchor_flow_matching_loss_vision": 0.09349843114614487,
+      "bridge_flow_matching_loss_action": 0.002490111393854022,
+      "bridge_flow_matching_loss_vision": 0.13048505783081055
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 35889,
+      "global_frame_index": 19381,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.2144737243652344,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0694020986557007,
+      "loss_bridge": 1.3595454692840576,
+      "anchor_flow_matching_loss_action": 0.0021058234851807356,
+      "anchor_flow_matching_loss_vision": 0.10483438521623611,
+      "bridge_flow_matching_loss_action": 0.0019772432278841734,
+      "bridge_flow_matching_loss_vision": 0.13397730886936188
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 35889,
+      "global_frame_index": 19381,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.2146100997924805,
+      "paired_objective_delta": 0.00013637542724609375,
+      "bridge_action_delta_rms": 0.0033065483439713717,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0694020986557007,
+      "loss_bridge": 1.3598182201385498,
+      "anchor_flow_matching_loss_action": 0.0021058234851807356,
+      "anchor_flow_matching_loss_vision": 0.10483438521623611,
+      "bridge_flow_matching_loss_action": 0.0019581567030400038,
+      "bridge_flow_matching_loss_vision": 0.13402366638183594
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 35889,
+      "global_frame_index": 19381,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.2146073579788208,
+      "paired_objective_delta": 0.00013363361358642578,
+      "bridge_action_delta_rms": 0.0039068907499313354,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0694020986557007,
+      "loss_bridge": 1.359812617301941,
+      "anchor_flow_matching_loss_action": 0.0021058234851807356,
+      "anchor_flow_matching_loss_vision": 0.10483438521623611,
+      "bridge_flow_matching_loss_action": 0.0019835622515529394,
+      "bridge_flow_matching_loss_vision": 0.13399770855903625
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 35889,
+      "global_frame_index": 19381,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.2177923917770386,
+      "paired_objective_delta": 0.0033186674118041992,
+      "bridge_action_delta_rms": 0.017429007217288017,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0721052885055542,
+      "loss_bridge": 1.363479495048523,
+      "anchor_flow_matching_loss_action": 0.0024302345700562,
+      "anchor_flow_matching_loss_vision": 0.10478029400110245,
+      "bridge_flow_matching_loss_action": 0.002329462207853794,
+      "bridge_flow_matching_loss_vision": 0.13401849567890167
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 36306,
+      "global_frame_index": 19798,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.8357880115509033,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.691980242729187,
+      "loss_bridge": 1.9795957803726196,
+      "anchor_flow_matching_loss_action": 0.0032764466013759375,
+      "anchor_flow_matching_loss_vision": 0.16592158377170563,
+      "bridge_flow_matching_loss_action": 0.0028807856142520905,
+      "bridge_flow_matching_loss_vision": 0.1950787901878357
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 36306,
+      "global_frame_index": 19798,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.835693359375,
+      "paired_objective_delta": -9.465217590332031e-05,
+      "bridge_action_delta_rms": 0.003847613465040922,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.691980242729187,
+      "loss_bridge": 1.9794063568115234,
+      "anchor_flow_matching_loss_action": 0.0032764466013759375,
+      "anchor_flow_matching_loss_vision": 0.16592158377170563,
+      "bridge_flow_matching_loss_action": 0.0028610501904040575,
+      "bridge_flow_matching_loss_vision": 0.19507959485054016
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 36306,
+      "global_frame_index": 19798,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.835646152496338,
+      "paired_objective_delta": -0.0001418590545654297,
+      "bridge_action_delta_rms": 0.0037588223349303007,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.691980242729187,
+      "loss_bridge": 1.9793119430541992,
+      "anchor_flow_matching_loss_action": 0.0032764466013759375,
+      "anchor_flow_matching_loss_vision": 0.16592158377170563,
+      "bridge_flow_matching_loss_action": 0.0028569207061082125,
+      "bridge_flow_matching_loss_vision": 0.19507427513599396
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 36306,
+      "global_frame_index": 19798,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.8377854824066162,
+      "paired_objective_delta": 0.0019974708557128906,
+      "bridge_action_delta_rms": 0.015212914906442165,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.6932315826416016,
+      "loss_bridge": 1.9823392629623413,
+      "anchor_flow_matching_loss_action": 0.0033645874354988337,
+      "anchor_flow_matching_loss_vision": 0.16595856845378876,
+      "bridge_flow_matching_loss_action": 0.0031178141944110394,
+      "bridge_flow_matching_loss_vision": 0.19511611759662628
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24629,
+      "global_frame_index": 38635,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 0.8958314657211304,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7243285179138184,
+      "loss_bridge": 1.0673344135284424,
+      "anchor_flow_matching_loss_action": 0.002152881119400263,
+      "anchor_flow_matching_loss_vision": 0.07027997076511383,
+      "bridge_flow_matching_loss_action": 0.0020231478847563267,
+      "bridge_flow_matching_loss_vision": 0.10471029579639435
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24629,
+      "global_frame_index": 38635,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 0.8954859972000122,
+      "paired_objective_delta": -0.00034546852111816406,
+      "bridge_action_delta_rms": 0.004010156262665987,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7243285179138184,
+      "loss_bridge": 1.066643476486206,
+      "anchor_flow_matching_loss_action": 0.002152881119400263,
+      "anchor_flow_matching_loss_vision": 0.07027997076511383,
+      "bridge_flow_matching_loss_action": 0.002029462717473507,
+      "bridge_flow_matching_loss_vision": 0.10463488101959229
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24629,
+      "global_frame_index": 38635,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 0.8957878351211548,
+      "paired_objective_delta": -4.363059997558594e-05,
+      "bridge_action_delta_rms": 0.00350815337151289,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7243285179138184,
+      "loss_bridge": 1.0672471523284912,
+      "anchor_flow_matching_loss_action": 0.002152881119400263,
+      "anchor_flow_matching_loss_vision": 0.07027997076511383,
+      "bridge_flow_matching_loss_action": 0.0020409845747053623,
+      "bridge_flow_matching_loss_vision": 0.10468372702598572
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24629,
+      "global_frame_index": 38635,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 0.8985681533813477,
+      "paired_objective_delta": 0.002736687660217285,
+      "bridge_action_delta_rms": 0.01757240667939186,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.727520227432251,
+      "loss_bridge": 1.0696160793304443,
+      "anchor_flow_matching_loss_action": 0.002447334351018071,
+      "anchor_flow_matching_loss_vision": 0.07030468434095383,
+      "bridge_flow_matching_loss_action": 0.0022923192009329796,
+      "bridge_flow_matching_loss_vision": 0.10466928780078888
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24874,
+      "global_frame_index": 38880,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.3724077939987183,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1967748403549194,
+      "loss_bridge": 1.548040747642517,
+      "anchor_flow_matching_loss_action": 0.0024578142911195755,
+      "anchor_flow_matching_loss_vision": 0.11721967905759811,
+      "bridge_flow_matching_loss_action": 0.0028335258830338717,
+      "bridge_flow_matching_loss_vision": 0.15197055041790009
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24874,
+      "global_frame_index": 38880,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.372192144393921,
+      "paired_objective_delta": -0.00021564960479736328,
+      "bridge_action_delta_rms": 0.0034676247742027044,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1967748403549194,
+      "loss_bridge": 1.5476094484329224,
+      "anchor_flow_matching_loss_action": 0.0024578142911195755,
+      "anchor_flow_matching_loss_vision": 0.11721967905759811,
+      "bridge_flow_matching_loss_action": 0.002790935803204775,
+      "bridge_flow_matching_loss_vision": 0.1519699990749359
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24874,
+      "global_frame_index": 38880,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.3726704120635986,
+      "paired_objective_delta": 0.0002626180648803711,
+      "bridge_action_delta_rms": 0.004106528125703335,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1967748403549194,
+      "loss_bridge": 1.5485659837722778,
+      "anchor_flow_matching_loss_action": 0.0024578142911195755,
+      "anchor_flow_matching_loss_vision": 0.11721967905759811,
+      "bridge_flow_matching_loss_action": 0.002840427914634347,
+      "bridge_flow_matching_loss_vision": 0.15201617777347565
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24874,
+      "global_frame_index": 38880,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.3735889196395874,
+      "paired_objective_delta": 0.0011811256408691406,
+      "bridge_action_delta_rms": 0.016459757462143898,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.198201298713684,
+      "loss_bridge": 1.5489765405654907,
+      "anchor_flow_matching_loss_action": 0.0025473374407738447,
+      "anchor_flow_matching_loss_vision": 0.11727279424667358,
+      "bridge_flow_matching_loss_action": 0.0028887921944260597,
+      "bridge_flow_matching_loss_vision": 0.15200886130332947
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46240,
+      "global_frame_index": 43347,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 0.8251456618309021,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.675125002861023,
+      "loss_bridge": 0.9751663208007812,
+      "anchor_flow_matching_loss_action": 0.002487089717760682,
+      "anchor_flow_matching_loss_vision": 0.06502541154623032,
+      "bridge_flow_matching_loss_action": 0.0027455163653939962,
+      "bridge_flow_matching_loss_vision": 0.0947711169719696
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46240,
+      "global_frame_index": 43347,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 0.8250142335891724,
+      "paired_objective_delta": -0.00013142824172973633,
+      "bridge_action_delta_rms": 0.0031281656119972467,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.675125002861023,
+      "loss_bridge": 0.974903404712677,
+      "anchor_flow_matching_loss_action": 0.002487089717760682,
+      "anchor_flow_matching_loss_vision": 0.06502541154623032,
+      "bridge_flow_matching_loss_action": 0.002705866005271673,
+      "bridge_flow_matching_loss_vision": 0.09478447586297989
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46240,
+      "global_frame_index": 43347,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 0.8250758647918701,
+      "paired_objective_delta": -6.979703903198242e-05,
+      "bridge_action_delta_rms": 0.003247123211622238,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.675125002861023,
+      "loss_bridge": 0.9750266671180725,
+      "anchor_flow_matching_loss_action": 0.002487089717760682,
+      "anchor_flow_matching_loss_vision": 0.06502541154623032,
+      "bridge_flow_matching_loss_action": 0.0027173268608748913,
+      "bridge_flow_matching_loss_vision": 0.09478534013032913
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46240,
+      "global_frame_index": 43347,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 0.8303791284561157,
+      "paired_objective_delta": 0.005233466625213623,
+      "bridge_action_delta_rms": 0.019207727164030075,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.6807950735092163,
+      "loss_bridge": 0.9799631237983704,
+      "anchor_flow_matching_loss_action": 0.0030314773321151733,
+      "anchor_flow_matching_loss_vision": 0.06504802405834198,
+      "bridge_flow_matching_loss_action": 0.0031937791500240564,
+      "bridge_flow_matching_loss_vision": 0.09480253607034683
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46520,
+      "global_frame_index": 43627,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.297684669494629,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.130943775177002,
+      "loss_bridge": 1.4644256830215454,
+      "anchor_flow_matching_loss_action": 0.002650264650583267,
+      "anchor_flow_matching_loss_vision": 0.11044412106275558,
+      "bridge_flow_matching_loss_action": 0.002797225257381797,
+      "bridge_flow_matching_loss_vision": 0.14364534616470337
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46520,
+      "global_frame_index": 43627,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.2979334592819214,
+      "paired_objective_delta": 0.00024878978729248047,
+      "bridge_action_delta_rms": 0.003792185103520751,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.130943775177002,
+      "loss_bridge": 1.4649231433868408,
+      "anchor_flow_matching_loss_action": 0.002650264650583267,
+      "anchor_flow_matching_loss_vision": 0.11044412106275558,
+      "bridge_flow_matching_loss_action": 0.002778816968202591,
+      "bridge_flow_matching_loss_vision": 0.14371350407600403
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46520,
+      "global_frame_index": 43627,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.2978572845458984,
+      "paired_objective_delta": 0.00017261505126953125,
+      "bridge_action_delta_rms": 0.0039748926647007465,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.130943775177002,
+      "loss_bridge": 1.4647709131240845,
+      "anchor_flow_matching_loss_action": 0.002650264650583267,
+      "anchor_flow_matching_loss_vision": 0.11044412106275558,
+      "bridge_flow_matching_loss_action": 0.002754009561613202,
+      "bridge_flow_matching_loss_vision": 0.14372308552265167
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46520,
+      "global_frame_index": 43627,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.2987971305847168,
+      "paired_objective_delta": 0.0011124610900878906,
+      "bridge_action_delta_rms": 0.016978682950139046,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1327548027038574,
+      "loss_bridge": 1.4648395776748657,
+      "anchor_flow_matching_loss_action": 0.002844591159373522,
+      "anchor_flow_matching_loss_vision": 0.11043088883161545,
+      "bridge_flow_matching_loss_action": 0.0028661510441452265,
+      "bridge_flow_matching_loss_vision": 0.14361780881881714
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 0.9164910316467285,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7649635076522827,
+      "loss_bridge": 1.0680185556411743,
+      "anchor_flow_matching_loss_action": 0.0022686561569571495,
+      "anchor_flow_matching_loss_vision": 0.0742276981472969,
+      "bridge_flow_matching_loss_action": 0.0019965372048318386,
+      "bridge_flow_matching_loss_vision": 0.10480531305074692
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 0.9163426160812378,
+      "paired_objective_delta": -0.00014841556549072266,
+      "bridge_action_delta_rms": 0.0036346709821373224,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7649635076522827,
+      "loss_bridge": 1.0677217245101929,
+      "anchor_flow_matching_loss_action": 0.0022686561569571495,
+      "anchor_flow_matching_loss_vision": 0.0742276981472969,
+      "bridge_flow_matching_loss_action": 0.0019698035903275013,
+      "bridge_flow_matching_loss_vision": 0.10480237007141113
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 0.9164928197860718,
+      "paired_objective_delta": 1.7881393432617188e-06,
+      "bridge_action_delta_rms": 0.0031689051538705826,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7649635076522827,
+      "loss_bridge": 1.0680221319198608,
+      "anchor_flow_matching_loss_action": 0.0022686561569571495,
+      "anchor_flow_matching_loss_vision": 0.0742276981472969,
+      "bridge_flow_matching_loss_action": 0.0020094458013772964,
+      "bridge_flow_matching_loss_vision": 0.1047927588224411
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 0.92049241065979,
+      "paired_objective_delta": 0.0040013790130615234,
+      "bridge_action_delta_rms": 0.01800377666950226,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7702715396881104,
+      "loss_bridge": 1.0707132816314697,
+      "anchor_flow_matching_loss_action": 0.0027861238922923803,
+      "anchor_flow_matching_loss_vision": 0.0742410272359848,
+      "bridge_flow_matching_loss_action": 0.0023215729743242264,
+      "bridge_flow_matching_loss_vision": 0.10474975407123566
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.2282065153121948,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.073438048362732,
+      "loss_bridge": 1.3829749822616577,
+      "anchor_flow_matching_loss_action": 0.005320312920957804,
+      "anchor_flow_matching_loss_vision": 0.10202348977327347,
+      "bridge_flow_matching_loss_action": 0.010243140161037445,
+      "bridge_flow_matching_loss_vision": 0.12805435061454773
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.2287886142730713,
+      "paired_objective_delta": 0.0005820989608764648,
+      "bridge_action_delta_rms": 0.006967621855437756,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.073438048362732,
+      "loss_bridge": 1.384139060974121,
+      "anchor_flow_matching_loss_action": 0.005320312920957804,
+      "anchor_flow_matching_loss_vision": 0.10202348977327347,
+      "bridge_flow_matching_loss_action": 0.010342814028263092,
+      "bridge_flow_matching_loss_vision": 0.12807109951972961
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.2282028198242188,
+      "paired_objective_delta": -3.6954879760742188e-06,
+      "bridge_action_delta_rms": 0.006610117387026548,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.073438048362732,
+      "loss_bridge": 1.3829675912857056,
+      "anchor_flow_matching_loss_action": 0.005320312920957804,
+      "anchor_flow_matching_loss_vision": 0.10202348977327347,
+      "bridge_flow_matching_loss_action": 0.010242946445941925,
+      "bridge_flow_matching_loss_vision": 0.12805381417274475
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.2315261363983154,
+      "paired_objective_delta": 0.0033196210861206055,
+      "bridge_action_delta_rms": 0.01842772588133812,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0770999193191528,
+      "loss_bridge": 1.3859524726867676,
+      "anchor_flow_matching_loss_action": 0.005762038286775351,
+      "anchor_flow_matching_loss_vision": 0.10194794833660126,
+      "bridge_flow_matching_loss_action": 0.010526222176849842,
+      "bridge_flow_matching_loss_vision": 0.12806902825832367
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.3835749626159668,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.249832034111023,
+      "loss_bridge": 1.517317771911621,
+      "anchor_flow_matching_loss_action": 0.002392214024439454,
+      "anchor_flow_matching_loss_vision": 0.12259099632501602,
+      "bridge_flow_matching_loss_action": 0.002273308578878641,
+      "bridge_flow_matching_loss_vision": 0.14945846796035767
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.383571743965149,
+      "paired_objective_delta": -3.2186508178710938e-06,
+      "bridge_action_delta_rms": 0.003430795855820179,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.249832034111023,
+      "loss_bridge": 1.517311453819275,
+      "anchor_flow_matching_loss_action": 0.002392214024439454,
+      "anchor_flow_matching_loss_vision": 0.12259099632501602,
+      "bridge_flow_matching_loss_action": 0.002279298845678568,
+      "bridge_flow_matching_loss_vision": 0.1494518518447876
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.3835318088531494,
+      "paired_objective_delta": -4.315376281738281e-05,
+      "bridge_action_delta_rms": 0.003176735946908593,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.249832034111023,
+      "loss_bridge": 1.5172317028045654,
+      "anchor_flow_matching_loss_action": 0.002392214024439454,
+      "anchor_flow_matching_loss_vision": 0.12259099632501602,
+      "bridge_flow_matching_loss_action": 0.002280302345752716,
+      "bridge_flow_matching_loss_vision": 0.1494428664445877
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.3848981857299805,
+      "paired_objective_delta": 0.0013232231140136719,
+      "bridge_action_delta_rms": 0.016464510932564735,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.250828504562378,
+      "loss_bridge": 1.5189679861068726,
+      "anchor_flow_matching_loss_action": 0.002511431463062763,
+      "anchor_flow_matching_loss_vision": 0.1225714161992073,
+      "bridge_flow_matching_loss_action": 0.0024306990671902895,
+      "bridge_flow_matching_loss_vision": 0.14946609735488892
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.6146131753921509,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.4945039749145508,
+      "loss_bridge": 1.734722375869751,
+      "anchor_flow_matching_loss_action": 0.002217398025095463,
+      "anchor_flow_matching_loss_vision": 0.1472329944372177,
+      "bridge_flow_matching_loss_action": 0.002134280977770686,
+      "bridge_flow_matching_loss_vision": 0.17133796215057373
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.6145986318588257,
+      "paired_objective_delta": -1.4543533325195312e-05,
+      "bridge_action_delta_rms": 0.0027969505172222853,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.4945039749145508,
+      "loss_bridge": 1.7346932888031006,
+      "anchor_flow_matching_loss_action": 0.002217398025095463,
+      "anchor_flow_matching_loss_vision": 0.1472329944372177,
+      "bridge_flow_matching_loss_action": 0.0021540438756346703,
+      "bridge_flow_matching_loss_vision": 0.1713152825832367
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.6145271062850952,
+      "paired_objective_delta": -8.606910705566406e-05,
+      "bridge_action_delta_rms": 0.0033364661503583193,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.4945039749145508,
+      "loss_bridge": 1.7345502376556396,
+      "anchor_flow_matching_loss_action": 0.002217398025095463,
+      "anchor_flow_matching_loss_vision": 0.1472329944372177,
+      "bridge_flow_matching_loss_action": 0.002125779865309596,
+      "bridge_flow_matching_loss_vision": 0.17132924497127533
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.6153440475463867,
+      "paired_objective_delta": 0.0007308721542358398,
+      "bridge_action_delta_rms": 0.01553619746118784,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.4944369792938232,
+      "loss_bridge": 1.7362509965896606,
+      "anchor_flow_matching_loss_action": 0.0022942721843719482,
+      "anchor_flow_matching_loss_vision": 0.14714941382408142,
+      "bridge_flow_matching_loss_action": 0.002330552786588669,
+      "bridge_flow_matching_loss_vision": 0.17129454016685486
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.010340690612793,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.8640897274017334,
+      "loss_bridge": 1.156591534614563,
+      "anchor_flow_matching_loss_action": 0.0022132624872028828,
+      "anchor_flow_matching_loss_vision": 0.08419571071863174,
+      "bridge_flow_matching_loss_action": 0.002107276814058423,
+      "bridge_flow_matching_loss_vision": 0.11355188488960266
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.01044499874115,
+      "paired_objective_delta": 0.0001043081283569336,
+      "bridge_action_delta_rms": 0.0033210308756679296,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.8640897274017334,
+      "loss_bridge": 1.1568002700805664,
+      "anchor_flow_matching_loss_action": 0.0022132624872028828,
+      "anchor_flow_matching_loss_vision": 0.08419571071863174,
+      "bridge_flow_matching_loss_action": 0.002116868272423744,
+      "bridge_flow_matching_loss_vision": 0.1135631576180458
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.0100271701812744,
+      "paired_objective_delta": -0.0003135204315185547,
+      "bridge_action_delta_rms": 0.0032428517006337643,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.8640897274017334,
+      "loss_bridge": 1.1559644937515259,
+      "anchor_flow_matching_loss_action": 0.0022132624872028828,
+      "anchor_flow_matching_loss_vision": 0.08419571071863174,
+      "bridge_flow_matching_loss_action": 0.0020595481619238853,
+      "bridge_flow_matching_loss_vision": 0.11353690177202225
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.0120187997817993,
+      "paired_objective_delta": 0.0016781091690063477,
+      "bridge_action_delta_rms": 0.016799498349428177,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.8658271431922913,
+      "loss_bridge": 1.1582105159759521,
+      "anchor_flow_matching_loss_action": 0.0024783655535429716,
+      "anchor_flow_matching_loss_vision": 0.08410434424877167,
+      "bridge_flow_matching_loss_action": 0.0023025241680443287,
+      "bridge_flow_matching_loss_vision": 0.11351852864027023
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.4340709447860718,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.2600196599960327,
+      "loss_bridge": 1.6081222295761108,
+      "anchor_flow_matching_loss_action": 0.0025670777540653944,
+      "anchor_flow_matching_loss_vision": 0.1234348937869072,
+      "bridge_flow_matching_loss_action": 0.0026311015244573355,
+      "bridge_flow_matching_loss_vision": 0.1581811159849167
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.433670997619629,
+      "paired_objective_delta": -0.0003999471664428711,
+      "bridge_action_delta_rms": 0.0034436385612934828,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.2600196599960327,
+      "loss_bridge": 1.6073224544525146,
+      "anchor_flow_matching_loss_action": 0.0025670777540653944,
+      "anchor_flow_matching_loss_vision": 0.1234348937869072,
+      "bridge_flow_matching_loss_action": 0.0025681168772280216,
+      "bridge_flow_matching_loss_vision": 0.1581641286611557
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.4334503412246704,
+      "paired_objective_delta": -0.0006206035614013672,
+      "bridge_action_delta_rms": 0.0036703969817608595,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.2600196599960327,
+      "loss_bridge": 1.606881022453308,
+      "anchor_flow_matching_loss_action": 0.0025670777540653944,
+      "anchor_flow_matching_loss_vision": 0.1234348937869072,
+      "bridge_flow_matching_loss_action": 0.002571655670180917,
+      "bridge_flow_matching_loss_vision": 0.1581164449453354
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.4354993104934692,
+      "paired_objective_delta": 0.001428365707397461,
+      "bridge_action_delta_rms": 0.016204873099923134,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.2624883651733398,
+      "loss_bridge": 1.6085102558135986,
+      "anchor_flow_matching_loss_action": 0.0027867627795785666,
+      "anchor_flow_matching_loss_vision": 0.12346206605434418,
+      "bridge_flow_matching_loss_action": 0.002700243843719363,
+      "bridge_flow_matching_loss_vision": 0.158150777220726
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.0206241607666016,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.8852642774581909,
+      "loss_bridge": 1.1559840440750122,
+      "anchor_flow_matching_loss_action": 0.00215745996683836,
+      "anchor_flow_matching_loss_vision": 0.08636896312236786,
+      "bridge_flow_matching_loss_action": 0.0020250719971954823,
+      "bridge_flow_matching_loss_vision": 0.1135733425617218
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.0206615924835205,
+      "paired_objective_delta": 3.743171691894531e-05,
+      "bridge_action_delta_rms": 0.003471971023827791,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.8852642774581909,
+      "loss_bridge": 1.1560587882995605,
+      "anchor_flow_matching_loss_action": 0.00215745996683836,
+      "anchor_flow_matching_loss_vision": 0.08636896312236786,
+      "bridge_flow_matching_loss_action": 0.0020532659254968166,
+      "bridge_flow_matching_loss_vision": 0.11355261504650116
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.0204777717590332,
+      "paired_objective_delta": -0.00014638900756835938,
+      "bridge_action_delta_rms": 0.0038556267973035574,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.8852642774581909,
+      "loss_bridge": 1.155691385269165,
+      "anchor_flow_matching_loss_action": 0.00215745996683836,
+      "anchor_flow_matching_loss_vision": 0.08636896312236786,
+      "bridge_flow_matching_loss_action": 0.002043972024694085,
+      "bridge_flow_matching_loss_vision": 0.11352516710758209
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.0238791704177856,
+      "paired_objective_delta": 0.003255009651184082,
+      "bridge_action_delta_rms": 0.01570817455649376,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.8891975283622742,
+      "loss_bridge": 1.158560872077942,
+      "anchor_flow_matching_loss_action": 0.002547444310039282,
+      "anchor_flow_matching_loss_vision": 0.08637230843305588,
+      "bridge_flow_matching_loss_action": 0.0023122515995055437,
+      "bridge_flow_matching_loss_vision": 0.11354383081197739
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.1820483207702637,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.035903811454773,
+      "loss_bridge": 1.3281928300857544,
+      "anchor_flow_matching_loss_action": 0.002516570733860135,
+      "anchor_flow_matching_loss_vision": 0.10107381641864777,
+      "bridge_flow_matching_loss_action": 0.002706973347812891,
+      "bridge_flow_matching_loss_vision": 0.13011232018470764
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.1819697618484497,
+      "paired_objective_delta": -7.855892181396484e-05,
+      "bridge_action_delta_rms": 0.0038950659800320864,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.035903811454773,
+      "loss_bridge": 1.3280357122421265,
+      "anchor_flow_matching_loss_action": 0.002516570733860135,
+      "anchor_flow_matching_loss_vision": 0.10107381641864777,
+      "bridge_flow_matching_loss_action": 0.0027182791382074356,
+      "bridge_flow_matching_loss_vision": 0.130085289478302
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.1819267272949219,
+      "paired_objective_delta": -0.00012159347534179688,
+      "bridge_action_delta_rms": 0.0036885649897158146,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.035903811454773,
+      "loss_bridge": 1.3279496431350708,
+      "anchor_flow_matching_loss_action": 0.002516570733860135,
+      "anchor_flow_matching_loss_vision": 0.10107381641864777,
+      "bridge_flow_matching_loss_action": 0.0026963609270751476,
+      "bridge_flow_matching_loss_vision": 0.1300986111164093
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.1822391748428345,
+      "paired_objective_delta": 0.00019085407257080078,
+      "bridge_action_delta_rms": 0.015984533354640007,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0362164974212646,
+      "loss_bridge": 1.3282618522644043,
+      "anchor_flow_matching_loss_action": 0.0025720775593072176,
+      "anchor_flow_matching_loss_vision": 0.10104957222938538,
+      "bridge_flow_matching_loss_action": 0.0027663379441946745,
+      "bridge_flow_matching_loss_vision": 0.1300598531961441
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.1233465671539307,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9848589301109314,
+      "loss_bridge": 1.2618342638015747,
+      "anchor_flow_matching_loss_action": 0.00217982055619359,
+      "anchor_flow_matching_loss_vision": 0.09630607068538666,
+      "bridge_flow_matching_loss_action": 0.0024046816397458315,
+      "bridge_flow_matching_loss_vision": 0.12377874553203583
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.1230441331863403,
+      "paired_objective_delta": -0.00030243396759033203,
+      "bridge_action_delta_rms": 0.0026392412837594748,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9848589301109314,
+      "loss_bridge": 1.2612292766571045,
+      "anchor_flow_matching_loss_action": 0.00217982055619359,
+      "anchor_flow_matching_loss_vision": 0.09630607068538666,
+      "bridge_flow_matching_loss_action": 0.002371063455939293,
+      "bridge_flow_matching_loss_vision": 0.12375186383724213
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.1233117580413818,
+      "paired_objective_delta": -3.4809112548828125e-05,
+      "bridge_action_delta_rms": 0.003325409721583128,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9848589301109314,
+      "loss_bridge": 1.2617645263671875,
+      "anchor_flow_matching_loss_action": 0.00217982055619359,
+      "anchor_flow_matching_loss_vision": 0.09630607068538666,
+      "bridge_flow_matching_loss_action": 0.002404142403975129,
+      "bridge_flow_matching_loss_vision": 0.12377230823040009
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.1240772008895874,
+      "paired_objective_delta": 0.0007306337356567383,
+      "bridge_action_delta_rms": 0.017161032184958458,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9859773516654968,
+      "loss_bridge": 1.2621771097183228,
+      "anchor_flow_matching_loss_action": 0.0024033004883676767,
+      "anchor_flow_matching_loss_vision": 0.09619443118572235,
+      "bridge_flow_matching_loss_action": 0.0024600657634437084,
+      "bridge_flow_matching_loss_vision": 0.12375764548778534
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "weights": "raw",
+      "intervention": "correct",
+      "objective": 1.2185215950012207,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0288739204406738,
+      "loss_bridge": 1.408169150352478,
+      "anchor_flow_matching_loss_action": 0.0023639099672436714,
+      "anchor_flow_matching_loss_vision": 0.10052348673343658,
+      "bridge_flow_matching_loss_action": 0.002589236479252577,
+      "bridge_flow_matching_loss_vision": 0.1382276713848114
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "weights": "raw",
+      "intervention": "reverse_time",
+      "objective": 1.2184882164001465,
+      "paired_objective_delta": -3.337860107421875e-05,
+      "bridge_action_delta_rms": 0.0038259467110037804,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0288739204406738,
+      "loss_bridge": 1.4081023931503296,
+      "anchor_flow_matching_loss_action": 0.0023639099672436714,
+      "anchor_flow_matching_loss_vision": 0.10052348673343658,
+      "bridge_flow_matching_loss_action": 0.0025897067971527576,
+      "bridge_flow_matching_loss_vision": 0.13822053372859955
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "weights": "raw",
+      "intervention": "zero_candidate",
+      "objective": 1.2183796167373657,
+      "paired_objective_delta": -0.00014197826385498047,
+      "bridge_action_delta_rms": 0.0034854491241276264,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0288739204406738,
+      "loss_bridge": 1.4078853130340576,
+      "anchor_flow_matching_loss_action": 0.0023639099672436714,
+      "anchor_flow_matching_loss_vision": 0.10052348673343658,
+      "bridge_flow_matching_loss_action": 0.002587483264505863,
+      "bridge_flow_matching_loss_vision": 0.138201043009758
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "weights": "raw",
+      "intervention": "disabled",
+      "objective": 1.2192716598510742,
+      "paired_objective_delta": 0.0007500648498535156,
+      "bridge_action_delta_rms": 0.015622438862919807,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0294159650802612,
+      "loss_bridge": 1.4091273546218872,
+      "anchor_flow_matching_loss_action": 0.0024986707139760256,
+      "anchor_flow_matching_loss_vision": 0.10044292360544205,
+      "bridge_flow_matching_loss_action": 0.0027253814041614532,
+      "bridge_flow_matching_loss_vision": 0.13818734884262085
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37178,
+      "global_frame_index": 1524,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 0.8349285125732422,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.6786428689956665,
+      "loss_bridge": 0.9912140965461731,
+      "anchor_flow_matching_loss_action": 0.0022015459835529327,
+      "anchor_flow_matching_loss_vision": 0.06566274166107178,
+      "bridge_flow_matching_loss_action": 0.00232829712331295,
+      "bridge_flow_matching_loss_vision": 0.09679311513900757
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37178,
+      "global_frame_index": 1524,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 0.8345316052436829,
+      "paired_objective_delta": -0.00039690732955932617,
+      "bridge_action_delta_rms": 0.004122648388147354,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.6786428689956665,
+      "loss_bridge": 0.9904203414916992,
+      "anchor_flow_matching_loss_action": 0.0022015459835529327,
+      "anchor_flow_matching_loss_vision": 0.06566274166107178,
+      "bridge_flow_matching_loss_action": 0.0022960216738283634,
+      "bridge_flow_matching_loss_vision": 0.09674601256847382
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37178,
+      "global_frame_index": 1524,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 0.8348538875579834,
+      "paired_objective_delta": -7.462501525878906e-05,
+      "bridge_action_delta_rms": 0.004299866501241922,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.6786428689956665,
+      "loss_bridge": 0.9910648465156555,
+      "anchor_flow_matching_loss_action": 0.0022015459835529327,
+      "anchor_flow_matching_loss_vision": 0.06566274166107178,
+      "bridge_flow_matching_loss_action": 0.0023325858637690544,
+      "bridge_flow_matching_loss_vision": 0.0967739000916481
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37178,
+      "global_frame_index": 1524,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 0.8401461839675903,
+      "paired_objective_delta": 0.0052176713943481445,
+      "bridge_action_delta_rms": 0.018766440451145172,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.684964120388031,
+      "loss_bridge": 0.9953282475471497,
+      "anchor_flow_matching_loss_action": 0.002754718530923128,
+      "anchor_flow_matching_loss_vision": 0.06574169546365738,
+      "bridge_flow_matching_loss_action": 0.0027426029555499554,
+      "bridge_flow_matching_loss_vision": 0.09679022431373596
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37769,
+      "global_frame_index": 2115,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.2834479808807373,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1265500783920288,
+      "loss_bridge": 1.4403460025787354,
+      "anchor_flow_matching_loss_action": 0.0020851052831858397,
+      "anchor_flow_matching_loss_vision": 0.11056990921497345,
+      "bridge_flow_matching_loss_action": 0.0023572188802063465,
+      "bridge_flow_matching_loss_vision": 0.1416773796081543
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37769,
+      "global_frame_index": 2115,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.2833552360534668,
+      "paired_objective_delta": -9.274482727050781e-05,
+      "bridge_action_delta_rms": 0.0030716722831130028,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1265500783920288,
+      "loss_bridge": 1.4401602745056152,
+      "anchor_flow_matching_loss_action": 0.0020851052831858397,
+      "anchor_flow_matching_loss_vision": 0.11056990921497345,
+      "bridge_flow_matching_loss_action": 0.0023388827685266733,
+      "bridge_flow_matching_loss_vision": 0.1416771411895752
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37769,
+      "global_frame_index": 2115,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.2835206985473633,
+      "paired_objective_delta": 7.271766662597656e-05,
+      "bridge_action_delta_rms": 0.003196443198248744,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1265500783920288,
+      "loss_bridge": 1.4404913187026978,
+      "anchor_flow_matching_loss_action": 0.0020851052831858397,
+      "anchor_flow_matching_loss_vision": 0.11056990921497345,
+      "bridge_flow_matching_loss_action": 0.002379606245085597,
+      "bridge_flow_matching_loss_vision": 0.14166952669620514
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 3,
+      "dataset_index": 37769,
+      "global_frame_index": 2115,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.2872675657272339,
+      "paired_objective_delta": 0.003819584846496582,
+      "bridge_action_delta_rms": 0.01772693358361721,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.129960536956787,
+      "loss_bridge": 1.4445745944976807,
+      "anchor_flow_matching_loss_action": 0.0024661223869770765,
+      "anchor_flow_matching_loss_vision": 0.11052993685007095,
+      "bridge_flow_matching_loss_action": 0.002745801815763116,
+      "bridge_flow_matching_loss_vision": 0.14171165227890015
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 32851,
+      "global_frame_index": 7431,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 0.9121133089065552,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.758451521396637,
+      "loss_bridge": 1.0657751560211182,
+      "anchor_flow_matching_loss_action": 0.0020202749874442816,
+      "anchor_flow_matching_loss_vision": 0.07382487505674362,
+      "bridge_flow_matching_loss_action": 0.0022012703120708466,
+      "bridge_flow_matching_loss_vision": 0.10437624901533127
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 32851,
+      "global_frame_index": 7431,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 0.9122209548950195,
+      "paired_objective_delta": 0.00010764598846435547,
+      "bridge_action_delta_rms": 0.003469886491075158,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.758451521396637,
+      "loss_bridge": 1.0659903287887573,
+      "anchor_flow_matching_loss_action": 0.0020202749874442816,
+      "anchor_flow_matching_loss_vision": 0.07382487505674362,
+      "bridge_flow_matching_loss_action": 0.0022106950636953115,
+      "bridge_flow_matching_loss_vision": 0.10438833385705948
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 32851,
+      "global_frame_index": 7431,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 0.9117745161056519,
+      "paired_objective_delta": -0.0003387928009033203,
+      "bridge_action_delta_rms": 0.0036944083403795958,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.758451521396637,
+      "loss_bridge": 1.0650975704193115,
+      "anchor_flow_matching_loss_action": 0.0020202749874442816,
+      "anchor_flow_matching_loss_vision": 0.07382487505674362,
+      "bridge_flow_matching_loss_action": 0.00216501671820879,
+      "bridge_flow_matching_loss_vision": 0.10434474050998688
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 32851,
+      "global_frame_index": 7431,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 0.9149219989776611,
+      "paired_objective_delta": 0.002808690071105957,
+      "bridge_action_delta_rms": 0.017723241820931435,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7623885869979858,
+      "loss_bridge": 1.0674554109573364,
+      "anchor_flow_matching_loss_action": 0.0023377076722681522,
+      "anchor_flow_matching_loss_vision": 0.07390115410089493,
+      "bridge_flow_matching_loss_action": 0.0023901360109448433,
+      "bridge_flow_matching_loss_vision": 0.10435540229082108
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 33274,
+      "global_frame_index": 7854,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.141383409500122,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9566451907157898,
+      "loss_bridge": 1.3261215686798096,
+      "anchor_flow_matching_loss_action": 0.002136901253834367,
+      "anchor_flow_matching_loss_vision": 0.09352761507034302,
+      "bridge_flow_matching_loss_action": 0.0021216229069978,
+      "bridge_flow_matching_loss_vision": 0.1304905265569687
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 33274,
+      "global_frame_index": 7854,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.141740083694458,
+      "paired_objective_delta": 0.0003566741943359375,
+      "bridge_action_delta_rms": 0.003952523693442345,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9566451907157898,
+      "loss_bridge": 1.3268349170684814,
+      "anchor_flow_matching_loss_action": 0.002136901253834367,
+      "anchor_flow_matching_loss_vision": 0.09352761507034302,
+      "bridge_flow_matching_loss_action": 0.0021601568441838026,
+      "bridge_flow_matching_loss_vision": 0.13052333891391754
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 33274,
+      "global_frame_index": 7854,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.1413835287094116,
+      "paired_objective_delta": 1.1920928955078125e-07,
+      "bridge_action_delta_rms": 0.004010654985904694,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9566451907157898,
+      "loss_bridge": 1.3261218070983887,
+      "anchor_flow_matching_loss_action": 0.002136901253834367,
+      "anchor_flow_matching_loss_vision": 0.09352761507034302,
+      "bridge_flow_matching_loss_action": 0.0021266418043524027,
+      "bridge_flow_matching_loss_vision": 0.13048553466796875
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 14,
+      "dataset_index": 33274,
+      "global_frame_index": 7854,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.1440932750701904,
+      "paired_objective_delta": 0.0027098655700683594,
+      "bridge_action_delta_rms": 0.01671646535396576,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9590708017349243,
+      "loss_bridge": 1.329115867614746,
+      "anchor_flow_matching_loss_action": 0.0023914710618555546,
+      "anchor_flow_matching_loss_vision": 0.09351561218500137,
+      "bridge_flow_matching_loss_action": 0.002445066114887595,
+      "bridge_flow_matching_loss_vision": 0.1304665207862854
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 35889,
+      "global_frame_index": 19381,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.2144677639007568,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0692585706710815,
+      "loss_bridge": 1.3596769571304321,
+      "anchor_flow_matching_loss_action": 0.002112767891958356,
+      "anchor_flow_matching_loss_vision": 0.10481308400630951,
+      "bridge_flow_matching_loss_action": 0.002005363581702113,
+      "bridge_flow_matching_loss_vision": 0.13396233320236206
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 35889,
+      "global_frame_index": 19381,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.2142267227172852,
+      "paired_objective_delta": -0.0002410411834716797,
+      "bridge_action_delta_rms": 0.003345748409628868,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0692585706710815,
+      "loss_bridge": 1.3591949939727783,
+      "anchor_flow_matching_loss_action": 0.002112767891958356,
+      "anchor_flow_matching_loss_vision": 0.10481308400630951,
+      "bridge_flow_matching_loss_action": 0.001973191974684596,
+      "bridge_flow_matching_loss_vision": 0.13394631445407867
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 35889,
+      "global_frame_index": 19381,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.2145953178405762,
+      "paired_objective_delta": 0.00012755393981933594,
+      "bridge_action_delta_rms": 0.0034182581584900618,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0692585706710815,
+      "loss_bridge": 1.3599320650100708,
+      "anchor_flow_matching_loss_action": 0.002112767891958356,
+      "anchor_flow_matching_loss_vision": 0.10481308400630951,
+      "bridge_flow_matching_loss_action": 0.0020040448289364576,
+      "bridge_flow_matching_loss_vision": 0.13398917019367218
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 35889,
+      "global_frame_index": 19381,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.21759033203125,
+      "paired_objective_delta": 0.003122568130493164,
+      "bridge_action_delta_rms": 0.01698574796319008,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0719664096832275,
+      "loss_bridge": 1.363214373588562,
+      "anchor_flow_matching_loss_action": 0.0024289083667099476,
+      "anchor_flow_matching_loss_vision": 0.10476772487163544,
+      "bridge_flow_matching_loss_action": 0.0023068967275321484,
+      "bridge_flow_matching_loss_vision": 0.1340145319700241
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 36306,
+      "global_frame_index": 19798,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.8357493877410889,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.6914069652557373,
+      "loss_bridge": 1.98009192943573,
+      "anchor_flow_matching_loss_action": 0.003236147342249751,
+      "anchor_flow_matching_loss_vision": 0.16590455174446106,
+      "bridge_flow_matching_loss_action": 0.0029336786828935146,
+      "bridge_flow_matching_loss_vision": 0.19507551193237305
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 36306,
+      "global_frame_index": 19798,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.8355164527893066,
+      "paired_objective_delta": -0.00023293495178222656,
+      "bridge_action_delta_rms": 0.003493438009172678,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.6914069652557373,
+      "loss_bridge": 1.9796258211135864,
+      "anchor_flow_matching_loss_action": 0.003236147342249751,
+      "anchor_flow_matching_loss_vision": 0.16590455174446106,
+      "bridge_flow_matching_loss_action": 0.002893327735364437,
+      "bridge_flow_matching_loss_vision": 0.19506925344467163
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 36306,
+      "global_frame_index": 19798,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.8358049392700195,
+      "paired_objective_delta": 5.555152893066406e-05,
+      "bridge_action_delta_rms": 0.003516389522701502,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.6914069652557373,
+      "loss_bridge": 1.9802027940750122,
+      "anchor_flow_matching_loss_action": 0.003236147342249751,
+      "anchor_flow_matching_loss_vision": 0.16590455174446106,
+      "bridge_flow_matching_loss_action": 0.0028992833103984594,
+      "bridge_flow_matching_loss_vision": 0.19512099027633667
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 38,
+      "dataset_index": 36306,
+      "global_frame_index": 19798,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.8383430242538452,
+      "paired_objective_delta": 0.0025936365127563477,
+      "bridge_action_delta_rms": 0.01538089383393526,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.6938066482543945,
+      "loss_bridge": 1.982879400253296,
+      "anchor_flow_matching_loss_action": 0.0033866025041788816,
+      "anchor_flow_matching_loss_vision": 0.1659940630197525,
+      "bridge_flow_matching_loss_action": 0.0032013491727411747,
+      "bridge_flow_matching_loss_vision": 0.19508658349514008
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24629,
+      "global_frame_index": 38635,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 0.8951207399368286,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7239284515380859,
+      "loss_bridge": 1.0663130283355713,
+      "anchor_flow_matching_loss_action": 0.002081893617287278,
+      "anchor_flow_matching_loss_vision": 0.07031095027923584,
+      "bridge_flow_matching_loss_action": 0.0019856858998537064,
+      "bridge_flow_matching_loss_vision": 0.10464561730623245
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24629,
+      "global_frame_index": 38635,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 0.8954572081565857,
+      "paired_objective_delta": 0.0003364682197570801,
+      "bridge_action_delta_rms": 0.0037279529497027397,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7239284515380859,
+      "loss_bridge": 1.0669859647750854,
+      "anchor_flow_matching_loss_action": 0.002081893617287278,
+      "anchor_flow_matching_loss_vision": 0.07031095027923584,
+      "bridge_flow_matching_loss_action": 0.0020338655449450016,
+      "bridge_flow_matching_loss_vision": 0.10466473549604416
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24629,
+      "global_frame_index": 38635,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 0.8955386281013489,
+      "paired_objective_delta": 0.00041788816452026367,
+      "bridge_action_delta_rms": 0.00392792746424675,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7239284515380859,
+      "loss_bridge": 1.0671488046646118,
+      "anchor_flow_matching_loss_action": 0.002081893617287278,
+      "anchor_flow_matching_loss_vision": 0.07031095027923584,
+      "bridge_flow_matching_loss_action": 0.00204830477014184,
+      "bridge_flow_matching_loss_vision": 0.1046665757894516
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24629,
+      "global_frame_index": 38635,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 0.8985412120819092,
+      "paired_objective_delta": 0.0034204721450805664,
+      "bridge_action_delta_rms": 0.01757347211241722,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7275881171226501,
+      "loss_bridge": 1.0694942474365234,
+      "anchor_flow_matching_loss_action": 0.002471539191901684,
+      "anchor_flow_matching_loss_vision": 0.07028727233409882,
+      "bridge_flow_matching_loss_action": 0.0022730128839612007,
+      "bridge_flow_matching_loss_vision": 0.10467641800642014
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24874,
+      "global_frame_index": 38880,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.3722330331802368,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1962984800338745,
+      "loss_bridge": 1.5481675863265991,
+      "anchor_flow_matching_loss_action": 0.0024285686668008566,
+      "anchor_flow_matching_loss_vision": 0.11720128357410431,
+      "bridge_flow_matching_loss_action": 0.0027975684497505426,
+      "bridge_flow_matching_loss_vision": 0.1520191878080368
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24874,
+      "global_frame_index": 38880,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.372290015220642,
+      "paired_objective_delta": 5.698204040527344e-05,
+      "bridge_action_delta_rms": 0.0035717792343348265,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1962984800338745,
+      "loss_bridge": 1.5482815504074097,
+      "anchor_flow_matching_loss_action": 0.0024285686668008566,
+      "anchor_flow_matching_loss_vision": 0.11720128357410431,
+      "bridge_flow_matching_loss_action": 0.0028119490016251802,
+      "bridge_flow_matching_loss_vision": 0.15201620757579803
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24874,
+      "global_frame_index": 38880,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.3724644184112549,
+      "paired_objective_delta": 0.0002313852310180664,
+      "bridge_action_delta_rms": 0.003962190821766853,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1962984800338745,
+      "loss_bridge": 1.5486304759979248,
+      "anchor_flow_matching_loss_action": 0.0024285686668008566,
+      "anchor_flow_matching_loss_vision": 0.11720128357410431,
+      "bridge_flow_matching_loss_action": 0.002833863254636526,
+      "bridge_flow_matching_loss_vision": 0.15202918648719788
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 86,
+      "dataset_index": 24874,
+      "global_frame_index": 38880,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.3733439445495605,
+      "paired_objective_delta": 0.0011109113693237305,
+      "bridge_action_delta_rms": 0.016119448468089104,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1975743770599365,
+      "loss_bridge": 1.5491136312484741,
+      "anchor_flow_matching_loss_action": 0.0025222348049283028,
+      "anchor_flow_matching_loss_vision": 0.1172352060675621,
+      "bridge_flow_matching_loss_action": 0.002917948877438903,
+      "bridge_flow_matching_loss_vision": 0.15199342370033264
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46240,
+      "global_frame_index": 43347,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 0.8255332708358765,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.6753016114234924,
+      "loss_bridge": 0.9757649302482605,
+      "anchor_flow_matching_loss_action": 0.002510087564587593,
+      "anchor_flow_matching_loss_vision": 0.06502006947994232,
+      "bridge_flow_matching_loss_action": 0.002776426961645484,
+      "bridge_flow_matching_loss_vision": 0.09480006992816925
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46240,
+      "global_frame_index": 43347,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 0.8253152370452881,
+      "paired_objective_delta": -0.0002180337905883789,
+      "bridge_action_delta_rms": 0.003262592013925314,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.6753016114234924,
+      "loss_bridge": 0.975328803062439,
+      "anchor_flow_matching_loss_action": 0.002510087564587593,
+      "anchor_flow_matching_loss_vision": 0.06502006947994232,
+      "bridge_flow_matching_loss_action": 0.002732752589508891,
+      "bridge_flow_matching_loss_vision": 0.09480012953281403
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46240,
+      "global_frame_index": 43347,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 0.8254404067993164,
+      "paired_objective_delta": -9.28640365600586e-05,
+      "bridge_action_delta_rms": 0.003545980202034116,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.6753016114234924,
+      "loss_bridge": 0.9755791425704956,
+      "anchor_flow_matching_loss_action": 0.002510087564587593,
+      "anchor_flow_matching_loss_vision": 0.06502006947994232,
+      "bridge_flow_matching_loss_action": 0.00276057212613523,
+      "bridge_flow_matching_loss_vision": 0.09479734301567078
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46240,
+      "global_frame_index": 43347,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 0.8299579620361328,
+      "paired_objective_delta": 0.004424691200256348,
+      "bridge_action_delta_rms": 0.018533015623688698,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.6805967092514038,
+      "loss_bridge": 0.9793192744255066,
+      "anchor_flow_matching_loss_action": 0.0030185214709490538,
+      "anchor_flow_matching_loss_vision": 0.06504114717245102,
+      "bridge_flow_matching_loss_action": 0.0031524314545094967,
+      "bridge_flow_matching_loss_vision": 0.09477949887514114
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46520,
+      "global_frame_index": 43627,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.2978274822235107,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1314926147460938,
+      "loss_bridge": 1.4641624689102173,
+      "anchor_flow_matching_loss_action": 0.002692379057407379,
+      "anchor_flow_matching_loss_vision": 0.11045688390731812,
+      "bridge_flow_matching_loss_action": 0.0027529713697731495,
+      "bridge_flow_matching_loss_vision": 0.14366327226161957
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46520,
+      "global_frame_index": 43627,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.2977287769317627,
+      "paired_objective_delta": -9.870529174804688e-05,
+      "bridge_action_delta_rms": 0.003986291121691465,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1314926147460938,
+      "loss_bridge": 1.4639649391174316,
+      "anchor_flow_matching_loss_action": 0.002692379057407379,
+      "anchor_flow_matching_loss_vision": 0.11045688390731812,
+      "bridge_flow_matching_loss_action": 0.0027626636438071728,
+      "bridge_flow_matching_loss_vision": 0.14363382756710052
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46520,
+      "global_frame_index": 43627,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.2976059913635254,
+      "paired_objective_delta": -0.00022149085998535156,
+      "bridge_action_delta_rms": 0.0035402528010308743,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1314926147460938,
+      "loss_bridge": 1.463719367980957,
+      "anchor_flow_matching_loss_action": 0.002692379057407379,
+      "anchor_flow_matching_loss_vision": 0.11045688390731812,
+      "bridge_flow_matching_loss_action": 0.0027489205822348595,
+      "bridge_flow_matching_loss_vision": 0.14362302422523499
+    },
+    {
+      "split": "train",
+      "source_index": 0,
+      "episode_id": 99,
+      "dataset_index": 46520,
+      "global_frame_index": 43627,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.299370527267456,
+      "paired_objective_delta": 0.0015430450439453125,
+      "bridge_action_delta_rms": 0.01641678623855114,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.1335554122924805,
+      "loss_bridge": 1.465185523033142,
+      "anchor_flow_matching_loss_action": 0.0028834184631705284,
+      "anchor_flow_matching_loss_vision": 0.11047212034463882,
+      "bridge_flow_matching_loss_action": 0.002880594925954938,
+      "bridge_flow_matching_loss_vision": 0.14363795518875122
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 0.9156849980354309,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7636016607284546,
+      "loss_bridge": 1.0677683353424072,
+      "anchor_flow_matching_loss_action": 0.0023342410568147898,
+      "anchor_flow_matching_loss_vision": 0.07402592152357101,
+      "bridge_flow_matching_loss_action": 0.001964850351214409,
+      "bridge_flow_matching_loss_vision": 0.10481198132038116
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 0.9158861637115479,
+      "paired_objective_delta": 0.00020116567611694336,
+      "bridge_action_delta_rms": 0.003236230229958892,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7636016607284546,
+      "loss_bridge": 1.0681706666946411,
+      "anchor_flow_matching_loss_action": 0.0023342410568147898,
+      "anchor_flow_matching_loss_vision": 0.07402592152357101,
+      "bridge_flow_matching_loss_action": 0.0019857999868690968,
+      "bridge_flow_matching_loss_vision": 0.104831263422966
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 0.9156573414802551,
+      "paired_objective_delta": -2.765655517578125e-05,
+      "bridge_action_delta_rms": 0.002928630681708455,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7636016607284546,
+      "loss_bridge": 1.0677130222320557,
+      "anchor_flow_matching_loss_action": 0.0023342410568147898,
+      "anchor_flow_matching_loss_vision": 0.07402592152357101,
+      "bridge_flow_matching_loss_action": 0.001960915978997946,
+      "bridge_flow_matching_loss_vision": 0.10481037944555283
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 0.9211832880973816,
+      "paired_objective_delta": 0.005498290061950684,
+      "bridge_action_delta_rms": 0.01794072799384594,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.7712640762329102,
+      "loss_bridge": 1.071102499961853,
+      "anchor_flow_matching_loss_action": 0.0028088672552257776,
+      "anchor_flow_matching_loss_vision": 0.07431753724813461,
+      "bridge_flow_matching_loss_action": 0.002333897864446044,
+      "bridge_flow_matching_loss_vision": 0.10477634519338608
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.228717565536499,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0729247331619263,
+      "loss_bridge": 1.3845103979110718,
+      "anchor_flow_matching_loss_action": 0.0053147245198488235,
+      "anchor_flow_matching_loss_vision": 0.10197775810956955,
+      "bridge_flow_matching_loss_action": 0.01038226019591093,
+      "bridge_flow_matching_loss_vision": 0.12806877493858337
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.2278501987457275,
+      "paired_objective_delta": -0.0008673667907714844,
+      "bridge_action_delta_rms": 0.004804533440619707,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0729247331619263,
+      "loss_bridge": 1.3827756643295288,
+      "anchor_flow_matching_loss_action": 0.0053147245198488235,
+      "anchor_flow_matching_loss_vision": 0.10197775810956955,
+      "bridge_flow_matching_loss_action": 0.0102021349593997,
+      "bridge_flow_matching_loss_vision": 0.12807543575763702
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.2283166646957397,
+      "paired_objective_delta": -0.00040090084075927734,
+      "bridge_action_delta_rms": 0.005400695372372866,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0729247331619263,
+      "loss_bridge": 1.3837085962295532,
+      "anchor_flow_matching_loss_action": 0.0053147245198488235,
+      "anchor_flow_matching_loss_vision": 0.10197775810956955,
+      "bridge_flow_matching_loss_action": 0.010317536070942879,
+      "bridge_flow_matching_loss_vision": 0.12805332243442535
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.2328145503997803,
+      "paired_objective_delta": 0.00409698486328125,
+      "bridge_action_delta_rms": 0.018596995621919632,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.078429937362671,
+      "loss_bridge": 1.3871991634368896,
+      "anchor_flow_matching_loss_action": 0.005807564128190279,
+      "anchor_flow_matching_loss_vision": 0.10203543305397034,
+      "bridge_flow_matching_loss_action": 0.010655589401721954,
+      "bridge_flow_matching_loss_vision": 0.1280643194913864
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.3834985494613647,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.2498090267181396,
+      "loss_bridge": 1.5171880722045898,
+      "anchor_flow_matching_loss_action": 0.0023511885665357113,
+      "anchor_flow_matching_loss_vision": 0.12262970954179764,
+      "bridge_flow_matching_loss_action": 0.0022788308560848236,
+      "bridge_flow_matching_loss_vision": 0.1494399756193161
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.3835351467132568,
+      "paired_objective_delta": 3.6597251892089844e-05,
+      "bridge_action_delta_rms": 0.0033978568390011787,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.2498090267181396,
+      "loss_bridge": 1.5172611474990845,
+      "anchor_flow_matching_loss_action": 0.0023511885665357113,
+      "anchor_flow_matching_loss_vision": 0.12262970954179764,
+      "bridge_flow_matching_loss_action": 0.0023051465395838022,
+      "bridge_flow_matching_loss_vision": 0.14942096173763275
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.3834905624389648,
+      "paired_objective_delta": -7.987022399902344e-06,
+      "bridge_action_delta_rms": 0.004024669993668795,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.2498090267181396,
+      "loss_bridge": 1.5171719789505005,
+      "anchor_flow_matching_loss_action": 0.0023511885665357113,
+      "anchor_flow_matching_loss_vision": 0.12262970954179764,
+      "bridge_flow_matching_loss_action": 0.0022568334825336933,
+      "bridge_flow_matching_loss_vision": 0.14946036040782928
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.3850599527359009,
+      "paired_objective_delta": 0.0015614032745361328,
+      "bridge_action_delta_rms": 0.017663277685642242,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.2506636381149292,
+      "loss_bridge": 1.5194562673568726,
+      "anchor_flow_matching_loss_action": 0.002491051098331809,
+      "anchor_flow_matching_loss_vision": 0.1225753054022789,
+      "bridge_flow_matching_loss_action": 0.002475004643201828,
+      "bridge_flow_matching_loss_vision": 0.14947062730789185
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.613668441772461,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.4928311109542847,
+      "loss_bridge": 1.7345057725906372,
+      "anchor_flow_matching_loss_action": 0.0021520741283893585,
+      "anchor_flow_matching_loss_vision": 0.1471310406923294,
+      "bridge_flow_matching_loss_action": 0.002153033157810569,
+      "bridge_flow_matching_loss_vision": 0.17129753530025482
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.6140382289886475,
+      "paired_objective_delta": 0.00036978721618652344,
+      "bridge_action_delta_rms": 0.0035343070048838854,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.4928311109542847,
+      "loss_bridge": 1.7352453470230103,
+      "anchor_flow_matching_loss_action": 0.0021520741283893585,
+      "anchor_flow_matching_loss_vision": 0.1471310406923294,
+      "bridge_flow_matching_loss_action": 0.0021737150382250547,
+      "bridge_flow_matching_loss_vision": 0.17135082185268402
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.6135163307189941,
+      "paired_objective_delta": -0.00015211105346679688,
+      "bridge_action_delta_rms": 0.003800663398578763,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.4928311109542847,
+      "loss_bridge": 1.734201431274414,
+      "anchor_flow_matching_loss_action": 0.0021520741283893585,
+      "anchor_flow_matching_loss_vision": 0.1471310406923294,
+      "bridge_flow_matching_loss_action": 0.0021250532008707523,
+      "bridge_flow_matching_loss_vision": 0.17129509150981903
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.6158301830291748,
+      "paired_objective_delta": 0.002161741256713867,
+      "bridge_action_delta_rms": 0.016044981777668,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.4954636096954346,
+      "loss_bridge": 1.736196756362915,
+      "anchor_flow_matching_loss_action": 0.0023275609128177166,
+      "anchor_flow_matching_loss_vision": 0.14721879363059998,
+      "bridge_flow_matching_loss_action": 0.0023451538290828466,
+      "bridge_flow_matching_loss_vision": 0.17127451300621033
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.010184645652771,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.863681972026825,
+      "loss_bridge": 1.1566872596740723,
+      "anchor_flow_matching_loss_action": 0.0022056575398892164,
+      "anchor_flow_matching_loss_vision": 0.08416254073381424,
+      "bridge_flow_matching_loss_action": 0.0020996793173253536,
+      "bridge_flow_matching_loss_vision": 0.11356905102729797
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.0100135803222656,
+      "paired_objective_delta": -0.0001710653305053711,
+      "bridge_action_delta_rms": 0.0031642033718526363,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.863681972026825,
+      "loss_bridge": 1.156345248222351,
+      "anchor_flow_matching_loss_action": 0.0022056575398892164,
+      "anchor_flow_matching_loss_vision": 0.08416254073381424,
+      "bridge_flow_matching_loss_action": 0.0021097403950989246,
+      "bridge_flow_matching_loss_vision": 0.11352478712797165
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.0099987983703613,
+      "paired_objective_delta": -0.00018584728240966797,
+      "bridge_action_delta_rms": 0.0032023924868553877,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.863681972026825,
+      "loss_bridge": 1.156315565109253,
+      "anchor_flow_matching_loss_action": 0.0022056575398892164,
+      "anchor_flow_matching_loss_vision": 0.08416254073381424,
+      "bridge_flow_matching_loss_action": 0.002116435905918479,
+      "bridge_flow_matching_loss_vision": 0.11351511627435684
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.0119667053222656,
+      "paired_objective_delta": 0.001782059669494629,
+      "bridge_action_delta_rms": 0.01712234877049923,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.8656302690505981,
+      "loss_bridge": 1.1583030223846436,
+      "anchor_flow_matching_loss_action": 0.002444586483761668,
+      "anchor_flow_matching_loss_vision": 0.08411844074726105,
+      "bridge_flow_matching_loss_action": 0.002303499262779951,
+      "bridge_flow_matching_loss_vision": 0.11352679133415222
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.4335472583770752,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.2599555253982544,
+      "loss_bridge": 1.607138991355896,
+      "anchor_flow_matching_loss_action": 0.002546383999288082,
+      "anchor_flow_matching_loss_vision": 0.1234491690993309,
+      "bridge_flow_matching_loss_action": 0.0025691362097859383,
+      "bridge_flow_matching_loss_vision": 0.1581447571516037
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.433525800704956,
+      "paired_objective_delta": -2.1457672119140625e-05,
+      "bridge_action_delta_rms": 0.003447574796155095,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.2599555253982544,
+      "loss_bridge": 1.6070959568023682,
+      "anchor_flow_matching_loss_action": 0.002546383999288082,
+      "anchor_flow_matching_loss_vision": 0.1234491690993309,
+      "bridge_flow_matching_loss_action": 0.0025492641143500805,
+      "bridge_flow_matching_loss_vision": 0.15816032886505127
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.4332482814788818,
+      "paired_objective_delta": -0.0002989768981933594,
+      "bridge_action_delta_rms": 0.004142508376389742,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.2599555253982544,
+      "loss_bridge": 1.6065409183502197,
+      "anchor_flow_matching_loss_action": 0.002546383999288082,
+      "anchor_flow_matching_loss_vision": 0.1234491690993309,
+      "bridge_flow_matching_loss_action": 0.0025478811003267765,
+      "bridge_flow_matching_loss_vision": 0.15810620784759521
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.4353210926055908,
+      "paired_objective_delta": 0.001773834228515625,
+      "bridge_action_delta_rms": 0.01627620868384838,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.2619905471801758,
+      "loss_bridge": 1.6086516380310059,
+      "anchor_flow_matching_loss_action": 0.002783538307994604,
+      "anchor_flow_matching_loss_vision": 0.1234155222773552,
+      "bridge_flow_matching_loss_action": 0.0027050042990595102,
+      "bridge_flow_matching_loss_vision": 0.15816016495227814
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.0206396579742432,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.8850402235984802,
+      "loss_bridge": 1.1562390327453613,
+      "anchor_flow_matching_loss_action": 0.0021932402160018682,
+      "anchor_flow_matching_loss_vision": 0.08631078153848648,
+      "bridge_flow_matching_loss_action": 0.0020613279193639755,
+      "bridge_flow_matching_loss_vision": 0.11356256902217865
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.0204821825027466,
+      "paired_objective_delta": -0.00015747547149658203,
+      "bridge_action_delta_rms": 0.004014135804027319,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.8850402235984802,
+      "loss_bridge": 1.1559242010116577,
+      "anchor_flow_matching_loss_action": 0.0021932402160018682,
+      "anchor_flow_matching_loss_vision": 0.08631078153848648,
+      "bridge_flow_matching_loss_action": 0.002022199332714081,
+      "bridge_flow_matching_loss_vision": 0.11357022821903229
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.020340085029602,
+      "paired_objective_delta": -0.0002995729446411133,
+      "bridge_action_delta_rms": 0.0038609278853982687,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.8850402235984802,
+      "loss_bridge": 1.1556400060653687,
+      "anchor_flow_matching_loss_action": 0.0021932402160018682,
+      "anchor_flow_matching_loss_vision": 0.08631078153848648,
+      "bridge_flow_matching_loss_action": 0.0020362334325909615,
+      "bridge_flow_matching_loss_vision": 0.11352776736021042
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.0240330696105957,
+      "paired_objective_delta": 0.003393411636352539,
+      "bridge_action_delta_rms": 0.016475209966301918,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.8893974423408508,
+      "loss_bridge": 1.1586686372756958,
+      "anchor_flow_matching_loss_action": 0.0025599042419344187,
+      "anchor_flow_matching_loss_vision": 0.08637984097003937,
+      "bridge_flow_matching_loss_action": 0.0023073062766343355,
+      "bridge_flow_matching_loss_vision": 0.11355955898761749
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.1818313598632812,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0357494354248047,
+      "loss_bridge": 1.3279132843017578,
+      "anchor_flow_matching_loss_action": 0.002500769915059209,
+      "anchor_flow_matching_loss_vision": 0.10107416659593582,
+      "bridge_flow_matching_loss_action": 0.0027331369929015636,
+      "bridge_flow_matching_loss_vision": 0.1300581991672516
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.1817184686660767,
+      "paired_objective_delta": -0.00011289119720458984,
+      "bridge_action_delta_rms": 0.0027675621677190065,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0357494354248047,
+      "loss_bridge": 1.3276875019073486,
+      "anchor_flow_matching_loss_action": 0.002500769915059209,
+      "anchor_flow_matching_loss_vision": 0.10107416659593582,
+      "bridge_flow_matching_loss_action": 0.0027161729522049427,
+      "bridge_flow_matching_loss_vision": 0.1300525814294815
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.1817331314086914,
+      "paired_objective_delta": -9.822845458984375e-05,
+      "bridge_action_delta_rms": 0.003307036589831114,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0357494354248047,
+      "loss_bridge": 1.3277167081832886,
+      "anchor_flow_matching_loss_action": 0.002500769915059209,
+      "anchor_flow_matching_loss_vision": 0.10107416659593582,
+      "bridge_flow_matching_loss_action": 0.0026788825634866953,
+      "bridge_flow_matching_loss_vision": 0.1300927847623825
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.1824254989624023,
+      "paired_objective_delta": 0.0005941390991210938,
+      "bridge_action_delta_rms": 0.0163403507322073,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0367017984390259,
+      "loss_bridge": 1.3281490802764893,
+      "anchor_flow_matching_loss_action": 0.0025728540495038033,
+      "anchor_flow_matching_loss_vision": 0.10109732300043106,
+      "bridge_flow_matching_loss_action": 0.002725512720644474,
+      "bridge_flow_matching_loss_vision": 0.1300893872976303
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.123197317123413,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9844081997871399,
+      "loss_bridge": 1.261986494064331,
+      "anchor_flow_matching_loss_action": 0.0021660199854522943,
+      "anchor_flow_matching_loss_vision": 0.09627480059862137,
+      "bridge_flow_matching_loss_action": 0.0023759829346090555,
+      "bridge_flow_matching_loss_vision": 0.1238226667046547
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.123186707496643,
+      "paired_objective_delta": -1.0609626770019531e-05,
+      "bridge_action_delta_rms": 0.0032637850381433964,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9844081997871399,
+      "loss_bridge": 1.261965274810791,
+      "anchor_flow_matching_loss_action": 0.0021660199854522943,
+      "anchor_flow_matching_loss_vision": 0.09627480059862137,
+      "bridge_flow_matching_loss_action": 0.0024137210566550493,
+      "bridge_flow_matching_loss_vision": 0.12378279864788055
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.1231735944747925,
+      "paired_objective_delta": -2.372264862060547e-05,
+      "bridge_action_delta_rms": 0.003430785145610571,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9844081997871399,
+      "loss_bridge": 1.2619390487670898,
+      "anchor_flow_matching_loss_action": 0.0021660199854522943,
+      "anchor_flow_matching_loss_vision": 0.09627480059862137,
+      "bridge_flow_matching_loss_action": 0.002388290362432599,
+      "bridge_flow_matching_loss_vision": 0.12380561232566833
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.1236824989318848,
+      "paired_objective_delta": 0.0004851818084716797,
+      "bridge_action_delta_rms": 0.016721395775675774,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 0.9853453636169434,
+      "loss_bridge": 1.2620197534561157,
+      "anchor_flow_matching_loss_action": 0.0023764213547110558,
+      "anchor_flow_matching_loss_vision": 0.09615811705589294,
+      "bridge_flow_matching_loss_action": 0.0024436062667518854,
+      "bridge_flow_matching_loss_vision": 0.12375836074352264
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.217836618423462,
+      "paired_objective_delta": 0.0,
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0280179977416992,
+      "loss_bridge": 1.4076553583145142,
+      "anchor_flow_matching_loss_action": 0.0023403677623718977,
+      "anchor_flow_matching_loss_vision": 0.1004614382982254,
+      "bridge_flow_matching_loss_action": 0.002551095327362418,
+      "bridge_flow_matching_loss_vision": 0.13821443915367126
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.217848777770996,
+      "paired_objective_delta": 1.2159347534179688e-05,
+      "bridge_action_delta_rms": 0.003222588449716568,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0280179977416992,
+      "loss_bridge": 1.4076796770095825,
+      "anchor_flow_matching_loss_action": 0.0023403677623718977,
+      "anchor_flow_matching_loss_vision": 0.1004614382982254,
+      "bridge_flow_matching_loss_action": 0.002576455008238554,
+      "bridge_flow_matching_loss_vision": 0.13819150626659393
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.2179803848266602,
+      "paired_objective_delta": 0.0001437664031982422,
+      "bridge_action_delta_rms": 0.003135145641863346,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0280179977416992,
+      "loss_bridge": 1.407942771911621,
+      "anchor_flow_matching_loss_action": 0.0023403677623718977,
+      "anchor_flow_matching_loss_vision": 0.1004614382982254,
+      "bridge_flow_matching_loss_action": 0.0025738682597875595,
+      "bridge_flow_matching_loss_vision": 0.1382203996181488
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.2194039821624756,
+      "paired_objective_delta": 0.0015673637390136719,
+      "bridge_action_delta_rms": 0.015520628541707993,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "loss_anchor": 1.0296553373336792,
+      "loss_bridge": 1.409152626991272,
+      "anchor_flow_matching_loss_action": 0.002528725890442729,
+      "anchor_flow_matching_loss_vision": 0.10043680667877197,
+      "bridge_flow_matching_loss_action": 0.0027327416464686394,
+      "bridge_flow_matching_loss_vision": 0.13818252086639404
+    }
+  ],
+  "summary": [
+    {
+      "weights": "ema",
+      "split": "train",
+      "intervention": "correct",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.1612804889678956,
+      "loss_anchor": 1.0007976353168488,
+      "loss_bridge": 1.3217633724212647,
+      "anchor_flow_matching_loss_action": 0.0023505671648308634,
+      "anchor_flow_matching_loss_vision": 0.0977291963994503,
+      "bridge_flow_matching_loss_action": 0.0024260104168206454,
+      "bridge_flow_matching_loss_vision": 0.1297503262758255,
+      "bridge_action_delta_rms": 0.0,
+      "paired_objective_delta": 0.0
+    },
+    {
+      "weights": "ema",
+      "split": "train",
+      "intervention": "disabled",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.164357602596283,
+      "loss_anchor": 1.0041471719741821,
+      "loss_bridge": 1.3245680570602416,
+      "anchor_flow_matching_loss_action": 0.002666124445386231,
+      "anchor_flow_matching_loss_vision": 0.09774859324097633,
+      "bridge_flow_matching_loss_action": 0.002705584093928337,
+      "bridge_flow_matching_loss_vision": 0.1297512210905552,
+      "bridge_action_delta_rms": 0.017194244544953108,
+      "paired_objective_delta": 0.0030771136283874513
+    },
+    {
+      "weights": "ema",
+      "split": "train",
+      "intervention": "reverse_time",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.1612382292747498,
+      "loss_anchor": 1.0007976353168488,
+      "loss_bridge": 1.3216787934303285,
+      "anchor_flow_matching_loss_action": 0.0023505671648308634,
+      "anchor_flow_matching_loss_vision": 0.0977291963994503,
+      "bridge_flow_matching_loss_action": 0.002421350684016943,
+      "bridge_flow_matching_loss_vision": 0.1297465294599533,
+      "bridge_action_delta_rms": 0.003600453259423375,
+      "paired_objective_delta": -4.225969314575195e-05
+    },
+    {
+      "weights": "ema",
+      "split": "train",
+      "intervention": "zero_candidate",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.1612982332706452,
+      "loss_anchor": 1.0007976353168488,
+      "loss_bridge": 1.3217988193035126,
+      "anchor_flow_matching_loss_action": 0.0023505671648308634,
+      "anchor_flow_matching_loss_vision": 0.0977291963994503,
+      "bridge_flow_matching_loss_action": 0.0024298839503899216,
+      "bridge_flow_matching_loss_vision": 0.1297499991953373,
+      "bridge_action_delta_rms": 0.0037112371996045113,
+      "paired_objective_delta": 1.774430274963379e-05
+    },
+    {
+      "weights": "ema",
+      "split": "val",
+      "intervention": "correct",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.2128806412220001,
+      "loss_anchor": 1.063601988554001,
+      "loss_bridge": 1.362159299850464,
+      "anchor_flow_matching_loss_action": 0.002610466768965125,
+      "anchor_flow_matching_loss_vision": 0.10374973267316819,
+      "bridge_flow_matching_loss_action": 0.0031169333262369035,
+      "bridge_flow_matching_loss_vision": 0.13309899494051933,
+      "bridge_action_delta_rms": 0.0,
+      "paired_objective_delta": 0.0
+    },
+    {
+      "weights": "ema",
+      "split": "val",
+      "intervention": "disabled",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.2151720821857452,
+      "loss_anchor": 1.0664542019367218,
+      "loss_bridge": 1.3638899445533752,
+      "anchor_flow_matching_loss_action": 0.0028701073722913863,
+      "anchor_flow_matching_loss_vision": 0.10377531200647354,
+      "bridge_flow_matching_loss_action": 0.003302731621079147,
+      "bridge_flow_matching_loss_vision": 0.13308625891804696,
+      "bridge_action_delta_rms": 0.01687021255493164,
+      "paired_objective_delta": 0.002291440963745117
+    },
+    {
+      "weights": "ema",
+      "split": "val",
+      "intervention": "reverse_time",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.2128085255622865,
+      "loss_anchor": 1.063601988554001,
+      "loss_bridge": 1.3620150685310364,
+      "anchor_flow_matching_loss_action": 0.002610466768965125,
+      "anchor_flow_matching_loss_vision": 0.10374973267316819,
+      "bridge_flow_matching_loss_action": 0.0031054349383339286,
+      "bridge_flow_matching_loss_vision": 0.1330960713326931,
+      "bridge_action_delta_rms": 0.0034852777142077686,
+      "paired_objective_delta": -7.211565971374512e-05
+    },
+    {
+      "weights": "ema",
+      "split": "val",
+      "intervention": "zero_candidate",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.2127455174922943,
+      "loss_anchor": 1.063601988554001,
+      "loss_bridge": 1.3618890047073364,
+      "anchor_flow_matching_loss_action": 0.002610466768965125,
+      "anchor_flow_matching_loss_vision": 0.10374973267316819,
+      "bridge_flow_matching_loss_action": 0.003100193035788834,
+      "bridge_flow_matching_loss_vision": 0.13308870419859886,
+      "bridge_action_delta_rms": 0.003723345557227731,
+      "paired_objective_delta": -0.00013512372970581055
+    },
+    {
+      "weights": "raw",
+      "split": "train",
+      "intervention": "correct",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.161252224445343,
+      "loss_anchor": 1.0007814764976501,
+      "loss_bridge": 1.3217230081558227,
+      "anchor_flow_matching_loss_action": 0.0023554488318040965,
+      "anchor_flow_matching_loss_vision": 0.0977227009832859,
+      "bridge_flow_matching_loss_action": 0.0024229785660281776,
+      "bridge_flow_matching_loss_vision": 0.1297493226826191,
+      "bridge_action_delta_rms": 0.0,
+      "paired_objective_delta": 0.0
+    },
+    {
+      "weights": "raw",
+      "split": "train",
+      "intervention": "disabled",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.1643389105796813,
+      "loss_anchor": 1.0039703845977783,
+      "loss_bridge": 1.324707418680191,
+      "anchor_flow_matching_loss_action": 0.00265579626429826,
+      "anchor_flow_matching_loss_vision": 0.09774124249815941,
+      "bridge_flow_matching_loss_action": 0.0027138143312186004,
+      "bridge_flow_matching_loss_vision": 0.1297569289803505,
+      "bridge_action_delta_rms": 0.017373956087976695,
+      "paired_objective_delta": 0.003086686134338379
+    },
+    {
+      "weights": "raw",
+      "split": "train",
+      "intervention": "reverse_time",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.1612040460109712,
+      "loss_anchor": 1.0007814764976501,
+      "loss_bridge": 1.3216266095638276,
+      "anchor_flow_matching_loss_action": 0.0023554488318040965,
+      "anchor_flow_matching_loss_vision": 0.0977227009832859,
+      "bridge_flow_matching_loss_action": 0.002410764084197581,
+      "bridge_flow_matching_loss_vision": 0.12975189685821534,
+      "bridge_action_delta_rms": 0.003450617683120072,
+      "paired_objective_delta": -4.817843437194824e-05
+    },
+    {
+      "weights": "raw",
+      "split": "train",
+      "intervention": "zero_candidate",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.1611829996109009,
+      "loss_anchor": 1.0007814764976501,
+      "loss_bridge": 1.3215845048427581,
+      "anchor_flow_matching_loss_action": 0.0023554488318040965,
+      "anchor_flow_matching_loss_vision": 0.0977227009832859,
+      "bridge_flow_matching_loss_action": 0.0024053662549704314,
+      "bridge_flow_matching_loss_vision": 0.1297530859708786,
+      "bridge_action_delta_rms": 0.003724825847893953,
+      "paired_objective_delta": -6.922483444213868e-05
+    },
+    {
+      "weights": "raw",
+      "split": "val",
+      "intervention": "correct",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.2131837964057923,
+      "loss_anchor": 1.0641747891902924,
+      "loss_bridge": 1.3621927738189696,
+      "anchor_flow_matching_loss_action": 0.0026196682592853904,
+      "anchor_flow_matching_loss_vision": 0.10379781201481819,
+      "bridge_flow_matching_loss_action": 0.003111160872504115,
+      "bridge_flow_matching_loss_vision": 0.13310811743140222,
+      "bridge_action_delta_rms": 0.0,
+      "paired_objective_delta": 0.0
+    },
+    {
+      "weights": "raw",
+      "split": "val",
+      "intervention": "disabled",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.2149246096611024,
+      "loss_anchor": 1.0661759793758392,
+      "loss_bridge": 1.3636732697486877,
+      "anchor_flow_matching_loss_action": 0.002864048723131418,
+      "anchor_flow_matching_loss_vision": 0.10375354513525963,
+      "bridge_flow_matching_loss_action": 0.00328758517280221,
+      "bridge_flow_matching_loss_vision": 0.1330797404050827,
+      "bridge_action_delta_rms": 0.01659127613529563,
+      "paired_objective_delta": 0.0017408132553100586
+    },
+    {
+      "weights": "raw",
+      "split": "val",
+      "intervention": "reverse_time",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.213158130645752,
+      "loss_anchor": 1.0641747891902924,
+      "loss_bridge": 1.3621414422988891,
+      "anchor_flow_matching_loss_action": 0.0026196682592853904,
+      "anchor_flow_matching_loss_vision": 0.10379781201481819,
+      "bridge_flow_matching_loss_action": 0.00311632608063519,
+      "bridge_flow_matching_loss_vision": 0.13309781923890113,
+      "bridge_action_delta_rms": 0.0037426933646202087,
+      "paired_objective_delta": -2.5665760040283204e-05
+    },
+    {
+      "weights": "raw",
+      "split": "val",
+      "intervention": "zero_candidate",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.2130327939987182,
+      "loss_anchor": 1.0641747891902924,
+      "loss_bridge": 1.3618908047676086,
+      "anchor_flow_matching_loss_action": 0.0026196682592853904,
+      "anchor_flow_matching_loss_vision": 0.10379781201481819,
+      "bridge_flow_matching_loss_action": 0.003102163691073656,
+      "bridge_flow_matching_loss_vision": 0.1330869160592556,
+      "bridge_action_delta_rms": 0.003756052395328879,
+      "paired_objective_delta": -0.00015100240707397461
+    }
+  ],
+  "scope": "same-checkpoint input sensitivity on legal paired-FM states; not trained B4/control or rollout",
+  "limitations": [
+    "Zero candidate and reversed time are distribution-shift interventions.",
+    "Disabled planning uses the frozen common SFT base, not an equal-exposure trained control.",
+    "Only the 128-episode prefix is available; windows within episodes are correlated.",
+    "Synthetic paired-FM gains need separate actual-sampler and environment verification."
+  ],
+  "elapsed_seconds": 365.28545150900027
+}

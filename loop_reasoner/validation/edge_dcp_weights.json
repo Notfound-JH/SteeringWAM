@@ -1,0 +1,9 @@
+{
+  "source": "/home/aiscuser/SteeringWAM/models/Cosmos3-Edge-Policy-DROID",
+  "checkpoint": "/home/aiscuser/SteeringWAM/models/Cosmos3-Edge-Policy-DROID-DCP",
+  "native_tensors": 549,
+  "checked_bytes": 6739314048,
+  "mismatches": [],
+  "bitwise_equal": true,
+  "scope": "native policy parameters/buffers only; not decoded actions or lazy vision tower"
+}

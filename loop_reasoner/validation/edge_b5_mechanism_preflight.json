@@ -1,0 +1,3328 @@
+{
+  "checkpoint": "/home/aiscuser/SteeringWAM/outputs/edge_droid_feedback_stability_200_seed42/cosmos3_action/edge_droid_planning/action_policy_droid_edge_feedback_stability_200_seed42/checkpoints/iter_000000200",
+  "status": "completed",
+  "selection_seed": 42,
+  "validation_noise_seed": 1729,
+  "method": "B5",
+  "checkpoint_selection": "fixed iteration 200; EMA primary, raw sensitivity; no best-checkpoint selection",
+  "episode_limit": 128,
+  "loss_weights": {
+    "action": 10.0,
+    "vision": 10.0
+  },
+  "gradient_probes": [
+    {
+      "weights": "ema",
+      "episode_id": 27,
+      "dataset_index": 368,
+      "scope": "selected planning parameter groups; actual weighted objectives; no optimizer step",
+      "groups": {
+        "slots": {
+          "action_norm": 0.005662350915372372,
+          "video_norm": 0.0005475618527270854,
+          "cosine": -0.515686918589943
+        },
+        "encoder": {
+          "action_norm": 0.00021693005692213774,
+          "video_norm": 1.3189543096814305e-05,
+          "cosine": -0.735722695122909
+        },
+        "output_up": {
+          "action_norm": 0.010693944990634918,
+          "video_norm": 0.0034327255561947823,
+          "cosine": -0.005741799343719288
+        }
+      },
+      "parameters": [
+        "language_model.model.layers.0.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.1.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.2.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.3.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.4.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.5.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.6.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.7.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.8.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.9.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.10.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.11.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.12.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.13.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.14.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.15.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.16.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.17.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.18.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.19.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.20.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.21.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.22.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.23.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.24.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.25.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.26.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.27.self_attn.planning_residual.output_up.weight",
+        "action_planner.core.slots",
+        "action_planner.feedback_encoder.projection.0.weight",
+        "action_planner.feedback_encoder.projection.0.bias",
+        "action_planner.feedback_encoder.projection.2.weight",
+        "action_planner.feedback_encoder.projection.2.bias"
+      ]
+    },
+    {
+      "weights": "ema",
+      "episode_id": 27,
+      "dataset_index": 842,
+      "scope": "selected planning parameter groups; actual weighted objectives; no optimizer step",
+      "groups": {
+        "slots": {
+          "action_norm": 0.01539555098861456,
+          "video_norm": 0.0002464264689479023,
+          "cosine": -0.6169597884773782
+        },
+        "encoder": {
+          "action_norm": 0.0009367946186102927,
+          "video_norm": 7.589828328491421e-06,
+          "cosine": -0.3831016652900362
+        },
+        "output_up": {
+          "action_norm": 0.08817358314990997,
+          "video_norm": 0.0020622278098016977,
+          "cosine": -0.022127537970473753
+        }
+      },
+      "parameters": [
+        "language_model.model.layers.0.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.1.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.2.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.3.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.4.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.5.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.6.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.7.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.8.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.9.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.10.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.11.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.12.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.13.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.14.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.15.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.16.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.17.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.18.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.19.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.20.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.21.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.22.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.23.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.24.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.25.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.26.self_attn.planning_residual.output_up.weight",
+        "language_model.model.layers.27.self_attn.planning_residual.output_up.weight",
+        "action_planner.core.slots",
+        "action_planner.feedback_encoder.projection.0.weight",
+        "action_planner.feedback_encoder.projection.0.bias",
+        "action_planner.feedback_encoder.projection.2.weight",
+        "action_planner.feedback_encoder.projection.2.bias"
+      ]
+    }
+  ],
+  "manifest": [
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "task": "Pour the contents in the orange cup into the black bowl."
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "task": "Pour the contents in the orange cup into the black bowl."
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "task": "Pour the contents of the orange cup into the black bowl."
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "task": "Pick up the orange cup and pour its contents in the black bowl."
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "task": "Put the blue cup in the orange cup, then the yellow cup in the blue cup."
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "task": "Stack the three cups together."
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup."
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup."
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "task": "Pick the cubes and put them in the cup."
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "task": "Pick the cubes and put them in the cup."
+    }
+  ],
+  "weight_loading": {
+    "ema": {
+      "prefix": "net_ema.",
+      "tensor_count": 1244,
+      "compute_dtype": "torch.bfloat16"
+    }
+  },
+  "rows": [
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "task": "Pour the contents in the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 0.9145865440368652,
+      "loss_anchor": 0.761993944644928,
+      "loss_bridge": 1.0671792030334473,
+      "anchor_flow_matching_loss_action": 0.002348582958802581,
+      "anchor_flow_matching_loss_vision": 0.07385081052780151,
+      "bridge_flow_matching_loss_action": 0.001966104842722416,
+      "bridge_flow_matching_loss_vision": 0.10475181043148041,
+      "weighted_action": 0.021573439240455627,
+      "weighted_vision": 0.8930131196975708,
+      "joints": 0.002172455657273531,
+      "gripper": 0.0020515626529231668,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 152.5275421142578,
+          "relative_l2": 0.0
+        },
+        "planning_slots": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 20.02726173400879,
+          "relative_l2": 0.0
+        },
+        "action_velocity": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 22.166732788085938,
+          "relative_l2": 0.0
+        }
+      },
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "task": "Pour the contents in the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.2292144298553467,
+      "loss_anchor": 1.0732479095458984,
+      "loss_bridge": 1.3851810693740845,
+      "anchor_flow_matching_loss_action": 0.005258385557681322,
+      "anchor_flow_matching_loss_vision": 0.10206641256809235,
+      "bridge_flow_matching_loss_action": 0.010501041077077389,
+      "bridge_flow_matching_loss_vision": 0.12801706790924072,
+      "weighted_action": 0.07879713363945484,
+      "weighted_vision": 1.1504173874855042,
+      "joints": 0.008522957796230912,
+      "gripper": 0.003376998007297516,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 243.7515869140625,
+          "relative_l2": 0.0
+        },
+        "planning_slots": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 19.559200286865234,
+          "relative_l2": 0.0
+        },
+        "action_velocity": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 36.7535285949707,
+          "relative_l2": 0.0
+        }
+      },
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "task": "Pour the contents of the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.3828039169311523,
+      "loss_anchor": 1.2488114833831787,
+      "loss_bridge": 1.5167964696884155,
+      "anchor_flow_matching_loss_action": 0.0023431633599102497,
+      "anchor_flow_matching_loss_vision": 0.12253798544406891,
+      "bridge_flow_matching_loss_action": 0.0022798916324973106,
+      "bridge_flow_matching_loss_vision": 0.1493997573852539,
+      "weighted_action": 0.023115274496376514,
+      "weighted_vision": 1.3596886992454529,
+      "joints": 0.0022723558358848095,
+      "gripper": 0.002585729002021253,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 151.26461791992188,
+          "relative_l2": 0.0
+        },
+        "planning_slots": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 20.088754653930664,
+          "relative_l2": 0.0
+        },
+        "action_velocity": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 22.443025588989258,
+          "relative_l2": 0.0
+        }
+      },
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "task": "Pick up the orange cup and pour its contents in the black bowl.",
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.6142499446868896,
+      "loss_anchor": 1.4945101737976074,
+      "loss_bridge": 1.7339897155761719,
+      "anchor_flow_matching_loss_action": 0.0021837318781763315,
+      "anchor_flow_matching_loss_vision": 0.14726728200912476,
+      "bridge_flow_matching_loss_action": 0.0021204371005296707,
+      "bridge_flow_matching_loss_vision": 0.17127853631973267,
+      "weighted_action": 0.021520844660699368,
+      "weighted_vision": 1.592729091644287,
+      "joints": 0.002146709826774895,
+      "gripper": 0.002189708990044892,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 150.50563049316406,
+          "relative_l2": 0.0
+        },
+        "planning_slots": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 19.953264236450195,
+          "relative_l2": 0.0
+        },
+        "action_velocity": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 22.363595962524414,
+          "relative_l2": 0.0
+        }
+      },
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "task": "Put the blue cup in the orange cup, then the yellow cup in the blue cup.",
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.0089304447174072,
+      "loss_anchor": 0.8614606857299805,
+      "loss_bridge": 1.156400203704834,
+      "anchor_flow_matching_loss_action": 0.0022068603429943323,
+      "anchor_flow_matching_loss_vision": 0.08393920958042145,
+      "bridge_flow_matching_loss_action": 0.0021165276411920786,
+      "bridge_flow_matching_loss_vision": 0.11352349072694778,
+      "weighted_action": 0.021616939455270767,
+      "weighted_vision": 0.9873135089874268,
+      "joints": 0.0021685633109882474,
+      "gripper": 0.0021136088762432337,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 158.2804412841797,
+          "relative_l2": 0.0
+        },
+        "planning_slots": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 19.633060455322266,
+          "relative_l2": 0.0
+        },
+        "action_velocity": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 22.65305519104004,
+          "relative_l2": 0.0
+        }
+      },
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "task": "Stack the three cups together.",
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.4326670169830322,
+      "loss_anchor": 1.259154200553894,
+      "loss_bridge": 1.60617995262146,
+      "anchor_flow_matching_loss_action": 0.002558175940066576,
+      "anchor_flow_matching_loss_vision": 0.12335724383592606,
+      "bridge_flow_matching_loss_action": 0.002578614978119731,
+      "bridge_flow_matching_loss_vision": 0.1580393761396408,
+      "weighted_action": 0.02568395435810089,
+      "weighted_vision": 1.4069831371307373,
+      "joints": 0.0021717840572819114,
+      "gripper": 0.005344676319509745,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 156.57687377929688,
+          "relative_l2": 0.0
+        },
+        "planning_slots": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 19.46125602722168,
+          "relative_l2": 0.0
+        },
+        "action_velocity": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 23.51791000366211,
+          "relative_l2": 0.0
+        }
+      },
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup.",
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.0203220844268799,
+      "loss_anchor": 0.8849297761917114,
+      "loss_bridge": 1.155714511871338,
+      "anchor_flow_matching_loss_action": 0.0022494648583233356,
+      "anchor_flow_matching_loss_vision": 0.08624351024627686,
+      "bridge_flow_matching_loss_action": 0.002065056236460805,
+      "bridge_flow_matching_loss_vision": 0.11350639909505844,
+      "weighted_action": 0.021572604775428772,
+      "weighted_vision": 0.9987495541572571,
+      "joints": 0.002148725208826363,
+      "gripper": 0.002217008383013308,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 180.9311065673828,
+          "relative_l2": 0.0
+        },
+        "planning_slots": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 20.095598220825195,
+          "relative_l2": 0.0
+        },
+        "action_velocity": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 25.09034538269043,
+          "relative_l2": 0.0
+        }
+      },
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup.",
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.1808011531829834,
+      "loss_anchor": 1.034099817276001,
+      "loss_bridge": 1.3275024890899658,
+      "anchor_flow_matching_loss_action": 0.002438429044559598,
+      "anchor_flow_matching_loss_vision": 0.10097154974937439,
+      "bridge_flow_matching_loss_action": 0.002688649110496044,
+      "bridge_flow_matching_loss_vision": 0.13006159663200378,
+      "weighted_action": 0.025635390542447567,
+      "weighted_vision": 1.1551657915115356,
+      "joints": 0.002184905926696956,
+      "gripper": 0.005213970551267266,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 181.6549530029297,
+          "relative_l2": 0.0
+        },
+        "planning_slots": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 19.934133529663086,
+          "relative_l2": 0.0
+        },
+        "action_velocity": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 25.0610294342041,
+          "relative_l2": 0.0
+        }
+      },
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "task": "Pick the cubes and put them in the cup.",
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.123197317123413,
+      "loss_anchor": 0.9844081997871399,
+      "loss_bridge": 1.261986494064331,
+      "anchor_flow_matching_loss_action": 0.0021660199854522943,
+      "anchor_flow_matching_loss_vision": 0.09627480059862137,
+      "bridge_flow_matching_loss_action": 0.0023759829346090555,
+      "bridge_flow_matching_loss_vision": 0.1238226667046547,
+      "weighted_action": 0.022710014134645462,
+      "weighted_vision": 1.1004873216152191,
+      "joints": 0.0023163051810115576,
+      "gripper": 0.0019538747146725655,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 158.88290405273438,
+          "relative_l2": 0.0
+        },
+        "planning_slots": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 19.866785049438477,
+          "relative_l2": 0.0
+        },
+        "action_velocity": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 22.887231826782227,
+          "relative_l2": 0.0
+        }
+      },
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "task": "Pick the cubes and put them in the cup.",
+      "weights": "ema",
+      "intervention": "correct",
+      "objective": 1.2173664569854736,
+      "loss_anchor": 1.0271943807601929,
+      "loss_bridge": 1.407538652420044,
+      "anchor_flow_matching_loss_action": 0.002295131329447031,
+      "anchor_flow_matching_loss_vision": 0.10042429715394974,
+      "bridge_flow_matching_loss_action": 0.0025418538134545088,
+      "bridge_flow_matching_loss_vision": 0.13821201026439667,
+      "weighted_action": 0.024184925481677055,
+      "weighted_vision": 1.193181574344635,
+      "joints": 0.002052171155810356,
+      "gripper": 0.004982741549611092,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 142.81234741210938,
+          "relative_l2": 0.0
+        },
+        "planning_slots": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 19.768003463745117,
+          "relative_l2": 0.0
+        },
+        "action_velocity": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "reference_l2": 21.6857852935791,
+          "relative_l2": 0.0
+        }
+      },
+      "bridge_action_delta_rms": 0.0,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "task": "Pour the contents in the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 0.9146307706832886,
+      "loss_anchor": 0.761993944644928,
+      "loss_bridge": 1.067267656326294,
+      "anchor_flow_matching_loss_action": 0.002348582958802581,
+      "anchor_flow_matching_loss_vision": 0.07385081052780151,
+      "bridge_flow_matching_loss_action": 0.0019631674513220787,
+      "bridge_flow_matching_loss_vision": 0.10476359724998474,
+      "weighted_action": 0.02155875228345394,
+      "weighted_vision": 0.8930720686912537,
+      "joints": 0.002174407709389925,
+      "gripper": 0.002026149188168347,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 4.759856224060059,
+          "rms": 0.018593205139040947,
+          "reference_l2": 152.5275421142578,
+          "relative_l2": 0.031206535934962278
+        },
+        "planning_slots": {
+          "l2": 0.017285877838730812,
+          "rms": 9.549188689561561e-05,
+          "reference_l2": 20.02726173400879,
+          "relative_l2": 0.0008631173881038981
+        },
+        "action_velocity": {
+          "l2": 0.04955466836690903,
+          "rms": 0.003097166772931814,
+          "reference_l2": 22.166732788085938,
+          "relative_l2": 0.002235542280436719
+        }
+      },
+      "bridge_action_delta_rms": 0.003097166772931814,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 4.4226646423339844e-05
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "task": "Pour the contents in the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 0.9146740436553955,
+      "loss_anchor": 0.761993944644928,
+      "loss_bridge": 1.0673540830612183,
+      "anchor_flow_matching_loss_action": 0.002348582958802581,
+      "anchor_flow_matching_loss_vision": 0.07385081052780151,
+      "bridge_flow_matching_loss_action": 0.0019561932422220707,
+      "bridge_flow_matching_loss_vision": 0.10477922111749649,
+      "weighted_action": 0.021523880772292614,
+      "weighted_vision": 0.8931501507759094,
+      "joints": 0.0021735448390245438,
+      "gripper": 0.00200429285177961,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 69.95518493652344,
+          "rms": 0.27326345443725586,
+          "reference_l2": 152.5275421142578,
+          "relative_l2": 0.4586396919981853
+        },
+        "planning_slots": {
+          "l2": 1.542038083076477,
+          "rms": 0.008518669754266739,
+          "reference_l2": 20.02726173400879,
+          "relative_l2": 0.07699695063443965
+        },
+        "action_velocity": {
+          "l2": 0.0719095841050148,
+          "rms": 0.004494349006563425,
+          "reference_l2": 22.166732788085938,
+          "relative_l2": 0.0032440317115052875
+        }
+      },
+      "bridge_action_delta_rms": 0.004494349006563425,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 8.749961853027344e-05
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "task": "Pour the contents in the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 0.9183121919631958,
+      "loss_anchor": 0.765576183795929,
+      "loss_bridge": 1.0710482597351074,
+      "anchor_flow_matching_loss_action": 0.002760149771347642,
+      "anchor_flow_matching_loss_vision": 0.07379747182130814,
+      "bridge_flow_matching_loss_action": 0.00235803727991879,
+      "bridge_flow_matching_loss_vision": 0.10474678128957748,
+      "weighted_action": 0.02559093479067087,
+      "weighted_vision": 0.8927212655544281,
+      "joints": 0.0026056263595819473,
+      "gripper": 0.0022333625238388777,
+      "changes": {
+        "action_velocity": {
+          "l2": 0.2857070863246918,
+          "rms": 0.017856692895293236,
+          "reference_l2": 22.166732788085938,
+          "relative_l2": 0.012889003041451927
+        }
+      },
+      "bridge_action_delta_rms": 0.017856692895293236,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0037256479263305664
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "task": "Pour the contents in the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "same_task",
+      "objective": 0.9147117137908936,
+      "loss_anchor": 0.761993944644928,
+      "loss_bridge": 1.067429542541504,
+      "anchor_flow_matching_loss_action": 0.002348582958802581,
+      "anchor_flow_matching_loss_vision": 0.07385081052780151,
+      "bridge_flow_matching_loss_action": 0.001949537661857903,
+      "bridge_flow_matching_loss_vision": 0.10479341447353363,
+      "weighted_action": 0.02149060368537903,
+      "weighted_vision": 0.8932211399078369,
+      "joints": 0.0021650874405167997,
+      "gripper": 0.002036871504969895,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 68.34859466552734,
+          "rms": 0.26698845624923706,
+          "reference_l2": 152.5275421142578,
+          "relative_l2": 0.4481065761508677
+        },
+        "planning_slots": {
+          "l2": 1.095525860786438,
+          "rms": 0.006052006036043167,
+          "reference_l2": 20.02726173400879,
+          "relative_l2": 0.05470172983888748
+        },
+        "action_velocity": {
+          "l2": 0.05326129123568535,
+          "rms": 0.0033288307022303343,
+          "reference_l2": 22.166732788085938,
+          "relative_l2": 0.0024027578509139584
+        }
+      },
+      "bridge_action_delta_rms": 0.0033288307022303343,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 27,
+        "dataset_index": 842,
+        "global_frame_index": 14243,
+        "task": "Pour the contents in the orange cup into the black bowl."
+      },
+      "donor_state_rms": 1.6725709438323975,
+      "paired_objective_delta": 0.0001251697540283203
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 368,
+      "global_frame_index": 13769,
+      "task": "Pour the contents in the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "mismatched",
+      "objective": 0.9147540330886841,
+      "loss_anchor": 0.761993944644928,
+      "loss_bridge": 1.067514181137085,
+      "anchor_flow_matching_loss_action": 0.002348582958802581,
+      "anchor_flow_matching_loss_vision": 0.07385081052780151,
+      "bridge_flow_matching_loss_action": 0.001943169510923326,
+      "bridge_flow_matching_loss_vision": 0.1048082485795021,
+      "weighted_action": 0.0214587626978755,
+      "weighted_vision": 0.8932952880859375,
+      "joints": 0.0021586090442724526,
+      "gripper": 0.002056746743619442,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 4.881916046142578,
+          "rms": 0.019070003181695938,
+          "reference_l2": 152.5275421142578,
+          "relative_l2": 0.032006783682946606
+        },
+        "planning_slots": {
+          "l2": 0.16180837154388428,
+          "rms": 0.0008938745595514774,
+          "reference_l2": 20.02726173400879,
+          "relative_l2": 0.008079405646809592
+        },
+        "action_velocity": {
+          "l2": 0.05246106535196304,
+          "rms": 0.00327881658449769,
+          "reference_l2": 22.166732788085938,
+          "relative_l2": 0.0023666575427913105
+        }
+      },
+      "bridge_action_delta_rms": 0.00327881658449769,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 51,
+        "dataset_index": 1314,
+        "global_frame_index": 25237,
+        "task": "Put the blue cup in the orange cup, then the yellow cup in the blue cup."
+      },
+      "donor_state_rms": 0.09637915343046188,
+      "paired_objective_delta": 0.00016748905181884766
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "task": "Pour the contents in the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.2282251119613647,
+      "loss_anchor": 1.0732479095458984,
+      "loss_bridge": 1.383202314376831,
+      "anchor_flow_matching_loss_action": 0.005258385557681322,
+      "anchor_flow_matching_loss_vision": 0.10206641256809235,
+      "bridge_flow_matching_loss_action": 0.010265672579407692,
+      "bridge_flow_matching_loss_vision": 0.12805455923080444,
+      "weighted_action": 0.07762028835713863,
+      "weighted_vision": 1.1506048440933228,
+      "joints": 0.008384029613807797,
+      "gripper": 0.0034080243203788996,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 5.7854132652282715,
+          "rms": 0.02259928360581398,
+          "reference_l2": 243.7515869140625,
+          "relative_l2": 0.02373487425650274
+        },
+        "planning_slots": {
+          "l2": 0.01617930643260479,
+          "rms": 8.93788892426528e-05,
+          "reference_l2": 19.559200286865234,
+          "relative_l2": 0.000827196725597714
+        },
+        "action_velocity": {
+          "l2": 0.09359967708587646,
+          "rms": 0.005849979817867279,
+          "reference_l2": 36.7535285949707,
+          "relative_l2": 0.0025466854656966053
+        }
+      },
+      "bridge_action_delta_rms": 0.005849979817867279,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": -0.0009893178939819336
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "task": "Pour the contents in the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.2276833057403564,
+      "loss_anchor": 1.0732479095458984,
+      "loss_bridge": 1.3821187019348145,
+      "anchor_flow_matching_loss_action": 0.005258385557681322,
+      "anchor_flow_matching_loss_vision": 0.10206641256809235,
+      "bridge_flow_matching_loss_action": 0.010187606327235699,
+      "bridge_flow_matching_loss_vision": 0.12802426517009735,
+      "weighted_action": 0.07722995989024639,
+      "weighted_vision": 1.1504533886909485,
+      "joints": 0.00833411025814712,
+      "gripper": 0.003445192822255194,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 125.92951202392578,
+          "rms": 0.49191373586654663,
+          "reference_l2": 243.7515869140625,
+          "relative_l2": 0.5166305320027463
+        },
+        "planning_slots": {
+          "l2": 0.2658958435058594,
+          "rms": 0.0014688820810988545,
+          "reference_l2": 19.559200286865234,
+          "relative_l2": 0.013594412839282534
+        },
+        "action_velocity": {
+          "l2": 0.09341330826282501,
+          "rms": 0.005838331766426563,
+          "reference_l2": 36.7535285949707,
+          "relative_l2": 0.0025416146920817706
+        }
+      },
+      "bridge_action_delta_rms": 0.005838331766426563,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": -0.0015311241149902344
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "task": "Pour the contents in the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.2330951690673828,
+      "loss_anchor": 1.0784010887145996,
+      "loss_bridge": 1.3877891302108765,
+      "anchor_flow_matching_loss_action": 0.005832168273627758,
+      "anchor_flow_matching_loss_vision": 0.10200794041156769,
+      "bridge_flow_matching_loss_action": 0.010745461098849773,
+      "bridge_flow_matching_loss_vision": 0.12803344428539276,
+      "weighted_action": 0.0828881487250328,
+      "weighted_vision": 1.1502069234848022,
+      "joints": 0.009072504471987486,
+      "gripper": 0.002802980598062277,
+      "changes": {
+        "action_velocity": {
+          "l2": 0.30588388442993164,
+          "rms": 0.019117742776870728,
+          "reference_l2": 36.7535285949707,
+          "relative_l2": 0.008322571903253619
+        }
+      },
+      "bridge_action_delta_rms": 0.019117742776870728,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.003880739212036133
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "task": "Pour the contents in the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "same_task",
+      "objective": 1.2283902168273926,
+      "loss_anchor": 1.0732479095458984,
+      "loss_bridge": 1.3835325241088867,
+      "anchor_flow_matching_loss_action": 0.005258385557681322,
+      "anchor_flow_matching_loss_vision": 0.10206641256809235,
+      "bridge_flow_matching_loss_action": 0.010332874022424221,
+      "bridge_flow_matching_loss_vision": 0.12802037596702576,
+      "weighted_action": 0.077956298366189,
+      "weighted_vision": 1.1504339575767517,
+      "joints": 0.008418651996180415,
+      "gripper": 0.003434471902437508,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 70.6539077758789,
+          "rms": 0.27599358558654785,
+          "reference_l2": 243.7515869140625,
+          "relative_l2": 0.28986029863587626
+        },
+        "planning_slots": {
+          "l2": 0.45356228947639465,
+          "rms": 0.0025056074373424053,
+          "reference_l2": 19.559200286865234,
+          "relative_l2": 0.023189204201818997
+        },
+        "action_velocity": {
+          "l2": 0.08541601151227951,
+          "rms": 0.005338500719517469,
+          "reference_l2": 36.7535285949707,
+          "relative_l2": 0.002324022067474841
+        }
+      },
+      "bridge_action_delta_rms": 0.005338500719517469,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 27,
+        "dataset_index": 368,
+        "global_frame_index": 13769,
+        "task": "Pour the contents in the orange cup into the black bowl."
+      },
+      "donor_state_rms": 1.6725709438323975,
+      "paired_objective_delta": -0.0008242130279541016
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 27,
+      "dataset_index": 842,
+      "global_frame_index": 14243,
+      "task": "Pour the contents in the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "mismatched",
+      "objective": 1.2297484874725342,
+      "loss_anchor": 1.0732479095458984,
+      "loss_bridge": 1.38624906539917,
+      "anchor_flow_matching_loss_action": 0.005258385557681322,
+      "anchor_flow_matching_loss_vision": 0.10206641256809235,
+      "bridge_flow_matching_loss_action": 0.010587763041257858,
+      "bridge_flow_matching_loss_vision": 0.12803713977336884,
+      "weighted_action": 0.07923074252903461,
+      "weighted_vision": 1.150517761707306,
+      "joints": 0.008570812409743667,
+      "gripper": 0.003388904849998653,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 52.385921478271484,
+          "rms": 0.20463377237319946,
+          "reference_l2": 243.7515869140625,
+          "relative_l2": 0.214915201748987
+        },
+        "planning_slots": {
+          "l2": 0.3700364828109741,
+          "rms": 0.0020441897213459015,
+          "reference_l2": 19.559200286865234,
+          "relative_l2": 0.018918794090956165
+        },
+        "action_velocity": {
+          "l2": 0.08446215838193893,
+          "rms": 0.005278884898871183,
+          "reference_l2": 36.7535285949707,
+          "relative_l2": 0.002298069372133608
+        }
+      },
+      "bridge_action_delta_rms": 0.005278884898871183,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 55,
+        "dataset_index": 2459,
+        "global_frame_index": 28085,
+        "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup."
+      },
+      "donor_state_rms": 1.389386773109436,
+      "paired_objective_delta": 0.0005340576171875
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "task": "Pour the contents of the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.3829296827316284,
+      "loss_anchor": 1.2488114833831787,
+      "loss_bridge": 1.5170478820800781,
+      "anchor_flow_matching_loss_action": 0.0023431633599102497,
+      "anchor_flow_matching_loss_vision": 0.12253798544406891,
+      "bridge_flow_matching_loss_action": 0.002280412008985877,
+      "bridge_flow_matching_loss_vision": 0.14942437410354614,
+      "weighted_action": 0.02311787661164999,
+      "weighted_vision": 1.359811782836914,
+      "joints": 0.0022798116551712155,
+      "gripper": 0.002535619423724711,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 7.763774394989014,
+          "rms": 0.030327297747135162,
+          "reference_l2": 151.26461791992188,
+          "relative_l2": 0.05132577929823011
+        },
+        "planning_slots": {
+          "l2": 0.018929431214928627,
+          "rms": 0.00010457132884766906,
+          "reference_l2": 20.088754653930664,
+          "relative_l2": 0.0009422899299148343
+        },
+        "action_velocity": {
+          "l2": 0.06142696365714073,
+          "rms": 0.0038391854614019394,
+          "reference_l2": 22.443025588989258,
+          "relative_l2": 0.002737017939652367
+        }
+      },
+      "bridge_action_delta_rms": 0.0038391854614019394,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.00012576580047607422
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "task": "Pour the contents of the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.3827760219573975,
+      "loss_anchor": 1.2488114833831787,
+      "loss_bridge": 1.5167406797409058,
+      "anchor_flow_matching_loss_action": 0.0023431633599102497,
+      "anchor_flow_matching_loss_vision": 0.12253798544406891,
+      "bridge_flow_matching_loss_action": 0.0022638426162302494,
+      "bridge_flow_matching_loss_vision": 0.149410218000412,
+      "weighted_action": 0.02303502894937992,
+      "weighted_vision": 1.3597410321235657,
+      "joints": 0.002258442691527307,
+      "gripper": 0.0026189242489635944,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 69.24148559570312,
+          "rms": 0.27047568559646606,
+          "reference_l2": 151.26461791992188,
+          "relative_l2": 0.4577507056697088
+        },
+        "planning_slots": {
+          "l2": 1.884520173072815,
+          "rms": 0.010410629212856293,
+          "reference_l2": 20.088754653930664,
+          "relative_l2": 0.09380970625294986
+        },
+        "action_velocity": {
+          "l2": 0.05705295130610466,
+          "rms": 0.0035658094566315413,
+          "reference_l2": 22.443025588989258,
+          "relative_l2": 0.002542123880752305
+        }
+      },
+      "bridge_action_delta_rms": 0.0035658094566315413,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": -2.7894973754882812e-05
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "task": "Pour the contents of the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.385251522064209,
+      "loss_anchor": 1.2520447969436646,
+      "loss_bridge": 1.518458366394043,
+      "anchor_flow_matching_loss_action": 0.0025285377632826567,
+      "anchor_flow_matching_loss_vision": 0.12267594784498215,
+      "bridge_flow_matching_loss_action": 0.002421580022200942,
+      "bridge_flow_matching_loss_vision": 0.1494242548942566,
+      "weighted_action": 0.02475058939307928,
+      "weighted_vision": 1.360500991344452,
+      "joints": 0.002471596235409379,
+      "gripper": 0.0024992978433147073,
+      "changes": {
+        "action_velocity": {
+          "l2": 0.2752154469490051,
+          "rms": 0.01720096543431282,
+          "reference_l2": 22.443025588989258,
+          "relative_l2": 0.012262849581387467
+        }
+      },
+      "bridge_action_delta_rms": 0.01720096543431282,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0024476051330566406
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "task": "Pour the contents of the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "same_task",
+      "objective": 1.3831865787506104,
+      "loss_anchor": 1.2488114833831787,
+      "loss_bridge": 1.5175617933273315,
+      "anchor_flow_matching_loss_action": 0.0023431633599102497,
+      "anchor_flow_matching_loss_vision": 0.12253798544406891,
+      "bridge_flow_matching_loss_action": 0.0023336713202297688,
+      "bridge_flow_matching_loss_vision": 0.14942249655723572,
+      "weighted_action": 0.023384172469377518,
+      "weighted_vision": 1.3598024249076843,
+      "joints": 0.0022947408724576235,
+      "gripper": 0.0026441524969413877,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 14.104286193847656,
+          "rms": 0.05509519204497337,
+          "reference_l2": 151.26461791992188,
+          "relative_l2": 0.09324246732513705
+        },
+        "planning_slots": {
+          "l2": 0.3032866418361664,
+          "rms": 0.0016754405805841088,
+          "reference_l2": 20.088754653930664,
+          "relative_l2": 0.015097334158383175
+        },
+        "action_velocity": {
+          "l2": 0.06778651475906372,
+          "rms": 0.0042366571724414825,
+          "reference_l2": 22.443025588989258,
+          "relative_l2": 0.0030203821891251763
+        }
+      },
+      "bridge_action_delta_rms": 0.0042366571724414825,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 36,
+        "dataset_index": 1313,
+        "global_frame_index": 18971,
+        "task": "Pick up the orange cup and pour its contents in the black bowl."
+      },
+      "donor_state_rms": 0.6933066844940186,
+      "paired_objective_delta": 0.0003826618194580078
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 843,
+      "global_frame_index": 18501,
+      "task": "Pour the contents of the orange cup into the black bowl.",
+      "weights": "ema",
+      "intervention": "mismatched",
+      "objective": 1.383072853088379,
+      "loss_anchor": 1.2488114833831787,
+      "loss_bridge": 1.5173343420028687,
+      "anchor_flow_matching_loss_action": 0.0023431633599102497,
+      "anchor_flow_matching_loss_vision": 0.12253798544406891,
+      "bridge_flow_matching_loss_action": 0.002320044208317995,
+      "bridge_flow_matching_loss_vision": 0.14941339194774628,
+      "weighted_action": 0.02331603690981865,
+      "weighted_vision": 1.359756886959076,
+      "joints": 0.0022914279252290726,
+      "gripper": 0.002612834330648184,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 10.955451965332031,
+          "rms": 0.04279477894306183,
+          "reference_l2": 151.26461791992188,
+          "relative_l2": 0.07242574050682327
+        },
+        "planning_slots": {
+          "l2": 0.20263756811618805,
+          "rms": 0.001119426917284727,
+          "reference_l2": 20.088754653930664,
+          "relative_l2": 0.010087114488032189
+        },
+        "action_velocity": {
+          "l2": 0.060912106186151505,
+          "rms": 0.003807006636634469,
+          "reference_l2": 22.443025588989258,
+          "relative_l2": 0.0027140772951769706
+        }
+      },
+      "bridge_action_delta_rms": 0.003807006636634469,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 117,
+        "dataset_index": 0,
+        "global_frame_index": 51477,
+        "task": "Pick the cubes and put them in the cup."
+      },
+      "donor_state_rms": 0.22961324453353882,
+      "paired_objective_delta": 0.0002689361572265625
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "task": "Pick up the orange cup and pour its contents in the black bowl.",
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.6141489744186401,
+      "loss_anchor": 1.4945101737976074,
+      "loss_bridge": 1.7337877750396729,
+      "anchor_flow_matching_loss_action": 0.0021837318781763315,
+      "anchor_flow_matching_loss_vision": 0.14726728200912476,
+      "bridge_flow_matching_loss_action": 0.0021185141522437334,
+      "bridge_flow_matching_loss_vision": 0.171260267496109,
+      "weighted_action": 0.021511229686439037,
+      "weighted_vision": 1.5926377177238464,
+      "joints": 0.002143052755855024,
+      "gripper": 0.0022076161112636328,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 5.500528812408447,
+          "rms": 0.02148645929992199,
+          "reference_l2": 150.50563049316406,
+          "relative_l2": 0.03654699690891817
+        },
+        "planning_slots": {
+          "l2": 0.01604723371565342,
+          "rms": 8.864927804097533e-05,
+          "reference_l2": 19.953264236450195,
+          "relative_l2": 0.0008042410267057296
+        },
+        "action_velocity": {
+          "l2": 0.05082879960536957,
+          "rms": 0.0031768002081662416,
+          "reference_l2": 22.363595962524414,
+          "relative_l2": 0.002272836608680708
+        }
+      },
+      "bridge_action_delta_rms": 0.0031768002081662416,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": -0.00010097026824951172
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "task": "Pick up the orange cup and pour its contents in the black bowl.",
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.6143746376037598,
+      "loss_anchor": 1.4945101737976074,
+      "loss_bridge": 1.7342389822006226,
+      "anchor_flow_matching_loss_action": 0.0021837318781763315,
+      "anchor_flow_matching_loss_vision": 0.14726728200912476,
+      "bridge_flow_matching_loss_action": 0.002116389339789748,
+      "bridge_flow_matching_loss_vision": 0.1713075041770935,
+      "weighted_action": 0.0215006060898304,
+      "weighted_vision": 1.5928739309310913,
+      "joints": 0.0021467480110004544,
+      "gripper": 0.002173249959014356,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 70.81652069091797,
+          "rms": 0.27662789821624756,
+          "reference_l2": 150.50563049316406,
+          "relative_l2": 0.47052406251428874
+        },
+        "planning_slots": {
+          "l2": 0.9419978260993958,
+          "rms": 0.005203868728131056,
+          "reference_l2": 19.953264236450195,
+          "relative_l2": 0.047210211569221554
+        },
+        "action_velocity": {
+          "l2": 0.0482078492641449,
+          "rms": 0.003012990579009056,
+          "reference_l2": 22.363595962524414,
+          "relative_l2": 0.0021556394304801762
+        }
+      },
+      "bridge_action_delta_rms": 0.003012990579009056,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0001246929168701172
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "task": "Pick up the orange cup and pour its contents in the black bowl.",
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.6156834363937378,
+      "loss_anchor": 1.49489426612854,
+      "loss_bridge": 1.7364726066589355,
+      "anchor_flow_matching_loss_action": 0.002281903987750411,
+      "anchor_flow_matching_loss_vision": 0.14720752835273743,
+      "bridge_flow_matching_loss_action": 0.002335784723982215,
+      "bridge_flow_matching_loss_vision": 0.17131146788597107,
+      "weighted_action": 0.023088444024324417,
+      "weighted_vision": 1.5925949811935425,
+      "joints": 0.002333204378373921,
+      "gripper": 0.0021383239654824138,
+      "changes": {
+        "action_velocity": {
+          "l2": 0.24524392187595367,
+          "rms": 0.015327745117247105,
+          "reference_l2": 22.363595962524414,
+          "relative_l2": 0.010966211439650353
+        }
+      },
+      "bridge_action_delta_rms": 0.015327745117247105,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0014334917068481445
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "task": "Pick up the orange cup and pour its contents in the black bowl.",
+      "weights": "ema",
+      "intervention": "same_task",
+      "objective": 1.6142446994781494,
+      "loss_anchor": 1.4945101737976074,
+      "loss_bridge": 1.733979344367981,
+      "anchor_flow_matching_loss_action": 0.0021837318781763315,
+      "anchor_flow_matching_loss_vision": 0.14726728200912476,
+      "bridge_flow_matching_loss_action": 0.0021106896456331015,
+      "bridge_flow_matching_loss_vision": 0.17128725349903107,
+      "weighted_action": 0.021472107619047165,
+      "weighted_vision": 1.592772662639618,
+      "joints": 0.002139200922101736,
+      "gripper": 0.002203280688263476,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 14.168853759765625,
+          "rms": 0.05534739047288895,
+          "reference_l2": 150.50563049316406,
+          "relative_l2": 0.09414168568536824
+        },
+        "planning_slots": {
+          "l2": 0.3270348012447357,
+          "rms": 0.0018066342454403639,
+          "reference_l2": 19.953264236450195,
+          "relative_l2": 0.01639004011420425
+        },
+        "action_velocity": {
+          "l2": 0.05220001935958862,
+          "rms": 0.003262501209974289,
+          "reference_l2": 22.363595962524414,
+          "relative_l2": 0.0023341514239061693
+        }
+      },
+      "bridge_action_delta_rms": 0.003262501209974289,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 36,
+        "dataset_index": 843,
+        "global_frame_index": 18501,
+        "task": "Pour the contents of the orange cup into the black bowl."
+      },
+      "donor_state_rms": 0.6933066844940186,
+      "paired_objective_delta": -5.245208740234375e-06
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 36,
+      "dataset_index": 1313,
+      "global_frame_index": 18971,
+      "task": "Pick up the orange cup and pour its contents in the black bowl.",
+      "weights": "ema",
+      "intervention": "mismatched",
+      "objective": 1.6144729852676392,
+      "loss_anchor": 1.4945101737976074,
+      "loss_bridge": 1.734435796737671,
+      "anchor_flow_matching_loss_action": 0.0021837318781763315,
+      "anchor_flow_matching_loss_vision": 0.14726728200912476,
+      "bridge_flow_matching_loss_action": 0.0021253509912639856,
+      "bridge_flow_matching_loss_vision": 0.17131823301315308,
+      "weighted_action": 0.0215454138815403,
+      "weighted_vision": 1.5929275751113892,
+      "joints": 0.0021492433734238148,
+      "gripper": 0.002191627980209887,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 11.118204116821289,
+          "rms": 0.04343053698539734,
+          "reference_l2": 150.50563049316406,
+          "relative_l2": 0.07387234670483823
+        },
+        "planning_slots": {
+          "l2": 0.22949455678462982,
+          "rms": 0.0012677909107878804,
+          "reference_l2": 19.953264236450195,
+          "relative_l2": 0.011501604653006803
+        },
+        "action_velocity": {
+          "l2": 0.04477927088737488,
+          "rms": 0.00279870443046093,
+          "reference_l2": 22.363595962524414,
+          "relative_l2": 0.002002328738294741
+        }
+      },
+      "bridge_action_delta_rms": 0.00279870443046093,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 51,
+        "dataset_index": 1644,
+        "global_frame_index": 25567,
+        "task": "Stack the three cups together."
+      },
+      "donor_state_rms": 0.27760395407676697,
+      "paired_objective_delta": 0.00022304058074951172
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "task": "Put the blue cup in the orange cup, then the yellow cup in the blue cup.",
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.0091208219528198,
+      "loss_anchor": 0.8614606857299805,
+      "loss_bridge": 1.1567809581756592,
+      "anchor_flow_matching_loss_action": 0.0022068603429943323,
+      "anchor_flow_matching_loss_vision": 0.08393920958042145,
+      "bridge_flow_matching_loss_action": 0.0021301242522895336,
+      "bridge_flow_matching_loss_vision": 0.11354796588420868,
+      "weighted_action": 0.021684923209249973,
+      "weighted_vision": 0.9874358773231506,
+      "joints": 0.002177343238145113,
+      "gripper": 0.002106535481289029,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 4.581498146057129,
+          "rms": 0.0178964976221323,
+          "reference_l2": 158.2804412841797,
+          "relative_l2": 0.028945447137283507
+        },
+        "planning_slots": {
+          "l2": 0.02811039611697197,
+          "rms": 0.00015528948279097676,
+          "reference_l2": 19.633060455322266,
+          "relative_l2": 0.0014317888024101514
+        },
+        "action_velocity": {
+          "l2": 0.041367970407009125,
+          "rms": 0.0025854981504380703,
+          "reference_l2": 22.65305519104004,
+          "relative_l2": 0.0018261541349782874
+        }
+      },
+      "bridge_action_delta_rms": 0.0025854981504380703,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.00019037723541259766
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "task": "Put the blue cup in the orange cup, then the yellow cup in the blue cup.",
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.008660078048706,
+      "loss_anchor": 0.8614606857299805,
+      "loss_bridge": 1.1558595895767212,
+      "anchor_flow_matching_loss_action": 0.0022068603429943323,
+      "anchor_flow_matching_loss_vision": 0.08393920958042145,
+      "bridge_flow_matching_loss_action": 0.0020634455140680075,
+      "bridge_flow_matching_loss_vision": 0.11352251470088959,
+      "weighted_action": 0.0213515292853117,
+      "weighted_vision": 0.9873086214065552,
+      "joints": 0.0021452822256833315,
+      "gripper": 0.0020642484887503088,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 73.81965637207031,
+          "rms": 0.2883589565753937,
+          "reference_l2": 158.2804412841797,
+          "relative_l2": 0.46638520699808456
+        },
+        "planning_slots": {
+          "l2": 1.4838128089904785,
+          "rms": 0.008197018876671791,
+          "reference_l2": 19.633060455322266,
+          "relative_l2": 0.0755772546194262
+        },
+        "action_velocity": {
+          "l2": 0.05240954831242561,
+          "rms": 0.003275596769526601,
+          "reference_l2": 22.65305519104004,
+          "relative_l2": 0.002313575271434255
+        }
+      },
+      "bridge_action_delta_rms": 0.003275596769526601,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": -0.0002703666687011719
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "task": "Put the blue cup in the orange cup, then the yellow cup in the blue cup.",
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.0117743015289307,
+      "loss_anchor": 0.8652536869049072,
+      "loss_bridge": 1.158294916152954,
+      "anchor_flow_matching_loss_action": 0.0024969330988824368,
+      "anchor_flow_matching_loss_vision": 0.08402843773365021,
+      "bridge_flow_matching_loss_action": 0.0022903725039213896,
+      "bridge_flow_matching_loss_vision": 0.11353912949562073,
+      "weighted_action": 0.023936528712511063,
+      "weighted_vision": 0.9878377914428711,
+      "joints": 0.0024369281018152833,
+      "gripper": 0.0020907250000163913,
+      "changes": {
+        "action_velocity": {
+          "l2": 0.2654370963573456,
+          "rms": 0.0165898185223341,
+          "reference_l2": 22.65305519104004,
+          "relative_l2": 0.011717496563657068
+        }
+      },
+      "bridge_action_delta_rms": 0.0165898185223341,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0028438568115234375
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "task": "Put the blue cup in the orange cup, then the yellow cup in the blue cup.",
+      "weights": "ema",
+      "intervention": "same_task",
+      "objective": 1.008812427520752,
+      "loss_anchor": 0.8614606857299805,
+      "loss_bridge": 1.1561641693115234,
+      "anchor_flow_matching_loss_action": 0.0022068603429943323,
+      "anchor_flow_matching_loss_vision": 0.08393920958042145,
+      "bridge_flow_matching_loss_action": 0.002132215304300189,
+      "bridge_flow_matching_loss_vision": 0.1134842038154602,
+      "weighted_action": 0.021695378236472607,
+      "weighted_vision": 0.9871170520782471,
+      "joints": 0.0021718229399994016,
+      "gripper": 0.00215354235842824,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 16.547822952270508,
+          "rms": 0.06464023143053055,
+          "reference_l2": 158.2804412841797,
+          "relative_l2": 0.10454749063126653
+        },
+        "planning_slots": {
+          "l2": 0.37372130155563354,
+          "rms": 0.002064542844891548,
+          "reference_l2": 19.633060455322266,
+          "relative_l2": 0.01903530539245717
+        },
+        "action_velocity": {
+          "l2": 0.04787817969918251,
+          "rms": 0.002992386231198907,
+          "reference_l2": 22.65305519104004,
+          "relative_l2": 0.0021135418289237986
+        }
+      },
+      "bridge_action_delta_rms": 0.002992386231198907,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 51,
+        "dataset_index": 1644,
+        "global_frame_index": 25567,
+        "task": "Stack the three cups together."
+      },
+      "donor_state_rms": 0.6095156073570251,
+      "paired_objective_delta": -0.00011801719665527344
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1314,
+      "global_frame_index": 25237,
+      "task": "Put the blue cup in the orange cup, then the yellow cup in the blue cup.",
+      "weights": "ema",
+      "intervention": "mismatched",
+      "objective": 1.0089812278747559,
+      "loss_anchor": 0.8614606857299805,
+      "loss_bridge": 1.1565016508102417,
+      "anchor_flow_matching_loss_action": 0.0022068603429943323,
+      "anchor_flow_matching_loss_vision": 0.08393920958042145,
+      "bridge_flow_matching_loss_action": 0.0021402458660304546,
+      "bridge_flow_matching_loss_vision": 0.11350991576910019,
+      "weighted_action": 0.02173553127795458,
+      "weighted_vision": 0.9872456192970276,
+      "joints": 0.0021788334706798196,
+      "gripper": 0.002136590308509767,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 4.900245189666748,
+          "rms": 0.019141599535942078,
+          "reference_l2": 158.2804412841797,
+          "relative_l2": 0.03095925908412623
+        },
+        "planning_slots": {
+          "l2": 0.1477249562740326,
+          "rms": 0.0008160733268596232,
+          "reference_l2": 19.633060455322266,
+          "relative_l2": 0.007524295899266499
+        },
+        "action_velocity": {
+          "l2": 0.04443527013063431,
+          "rms": 0.0027772043831646442,
+          "reference_l2": 22.65305519104004,
+          "relative_l2": 0.001961557492174821
+        }
+      },
+      "bridge_action_delta_rms": 0.0027772043831646442,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 27,
+        "dataset_index": 368,
+        "global_frame_index": 13769,
+        "task": "Pour the contents in the orange cup into the black bowl."
+      },
+      "donor_state_rms": 0.09637915343046188,
+      "paired_objective_delta": 5.078315734863281e-05
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "task": "Stack the three cups together.",
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.4326927661895752,
+      "loss_anchor": 1.259154200553894,
+      "loss_bridge": 1.6062312126159668,
+      "anchor_flow_matching_loss_action": 0.002558175940066576,
+      "anchor_flow_matching_loss_vision": 0.12335724383592606,
+      "bridge_flow_matching_loss_action": 0.0025751052889972925,
+      "bridge_flow_matching_loss_vision": 0.15804801881313324,
+      "weighted_action": 0.02566640544682741,
+      "weighted_vision": 1.4070263504981995,
+      "joints": 0.002168449107557535,
+      "gripper": 0.005353980697691441,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 11.164933204650879,
+          "rms": 0.04361309856176376,
+          "reference_l2": 156.57687377929688,
+          "relative_l2": 0.07130640007788394
+        },
+        "planning_slots": {
+          "l2": 0.017395082861185074,
+          "rms": 9.60951583692804e-05,
+          "reference_l2": 19.46125602722168,
+          "relative_l2": 0.0008938314586095307
+        },
+        "action_velocity": {
+          "l2": 0.0594266802072525,
+          "rms": 0.0037141675129532814,
+          "reference_l2": 23.51791000366211,
+          "relative_l2": 0.0025268691052053025
+        }
+      },
+      "bridge_action_delta_rms": 0.0037141675129532814,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 2.574920654296875e-05
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "task": "Stack the three cups together.",
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.4326586723327637,
+      "loss_anchor": 1.259154200553894,
+      "loss_bridge": 1.6061631441116333,
+      "anchor_flow_matching_loss_action": 0.002558175940066576,
+      "anchor_flow_matching_loss_vision": 0.12335724383592606,
+      "bridge_flow_matching_loss_action": 0.0025540729984641075,
+      "bridge_flow_matching_loss_vision": 0.15806224942207336,
+      "weighted_action": 0.02556124422699213,
+      "weighted_vision": 1.4070974588394165,
+      "joints": 0.0021506085759028792,
+      "gripper": 0.005394736770540476,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 80.20092010498047,
+          "rms": 0.31328535079956055,
+          "reference_l2": 156.57687377929688,
+          "relative_l2": 0.5122143402736969
+        },
+        "planning_slots": {
+          "l2": 0.901614785194397,
+          "rms": 0.004980778321623802,
+          "reference_l2": 19.46125602722168,
+          "relative_l2": 0.046328704783147184
+        },
+        "action_velocity": {
+          "l2": 0.06885544955730438,
+          "rms": 0.004303465597331524,
+          "reference_l2": 23.51791000366211,
+          "relative_l2": 0.002927787781592093
+        }
+      },
+      "bridge_action_delta_rms": 0.004303465597331524,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": -8.344650268554688e-06
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "task": "Stack the three cups together.",
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.4337892532348633,
+      "loss_anchor": 1.2596086263656616,
+      "loss_bridge": 1.6079699993133545,
+      "anchor_flow_matching_loss_action": 0.0027444905135780573,
+      "anchor_flow_matching_loss_vision": 0.12321636080741882,
+      "bridge_flow_matching_loss_action": 0.002746405079960823,
+      "bridge_flow_matching_loss_vision": 0.15805059671401978,
+      "weighted_action": 0.027454477734863758,
+      "weighted_vision": 1.4063348174095154,
+      "joints": 0.002499438705854118,
+      "gripper": 0.004467511549592018,
+      "changes": {
+        "action_velocity": {
+          "l2": 0.2505747377872467,
+          "rms": 0.01566092111170292,
+          "reference_l2": 23.51791000366211,
+          "relative_l2": 0.010654634606061008
+        }
+      },
+      "bridge_action_delta_rms": 0.01566092111170292,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0011222362518310547
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "task": "Stack the three cups together.",
+      "weights": "ema",
+      "intervention": "same_task",
+      "objective": 1.4325628280639648,
+      "loss_anchor": 1.259154200553894,
+      "loss_bridge": 1.605971336364746,
+      "anchor_flow_matching_loss_action": 0.002558175940066576,
+      "anchor_flow_matching_loss_vision": 0.12335724383592606,
+      "bridge_flow_matching_loss_action": 0.0025405813939869404,
+      "bridge_flow_matching_loss_vision": 0.15805655717849731,
+      "weighted_action": 0.025493785738945007,
+      "weighted_vision": 1.4070690274238586,
+      "joints": 0.0021568075753748417,
+      "gripper": 0.005297376541420817,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 16.4071044921875,
+          "rms": 0.0640905573964119,
+          "reference_l2": 156.57687377929688,
+          "relative_l2": 0.10478625671958526
+        },
+        "planning_slots": {
+          "l2": 0.33107832074165344,
+          "rms": 0.0018289702711626887,
+          "reference_l2": 19.46125602722168,
+          "relative_l2": 0.017012176412383322
+        },
+        "action_velocity": {
+          "l2": 0.060455746948719025,
+          "rms": 0.003778484184294939,
+          "reference_l2": 23.51791000366211,
+          "relative_l2": 0.002570625831092351
+        }
+      },
+      "bridge_action_delta_rms": 0.003778484184294939,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 51,
+        "dataset_index": 1314,
+        "global_frame_index": 25237,
+        "task": "Put the blue cup in the orange cup, then the yellow cup in the blue cup."
+      },
+      "donor_state_rms": 0.6095156073570251,
+      "paired_objective_delta": -0.00010418891906738281
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 51,
+      "dataset_index": 1644,
+      "global_frame_index": 25567,
+      "task": "Stack the three cups together.",
+      "weights": "ema",
+      "intervention": "mismatched",
+      "objective": 1.4328622817993164,
+      "loss_anchor": 1.259154200553894,
+      "loss_bridge": 1.6065702438354492,
+      "anchor_flow_matching_loss_action": 0.002558175940066576,
+      "anchor_flow_matching_loss_vision": 0.12335724383592606,
+      "bridge_flow_matching_loss_action": 0.002554516075178981,
+      "bridge_flow_matching_loss_vision": 0.15810251235961914,
+      "weighted_action": 0.02556345984339714,
+      "weighted_vision": 1.4072988033294678,
+      "joints": 0.002164231613278389,
+      "gripper": 0.005301147000864148,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 17.03677749633789,
+          "rms": 0.06655009835958481,
+          "reference_l2": 156.57687377929688,
+          "relative_l2": 0.10880775101150698
+        },
+        "planning_slots": {
+          "l2": 0.21919173002243042,
+          "rms": 0.0012108763912692666,
+          "reference_l2": 19.46125602722168,
+          "relative_l2": 0.011262979620422916
+        },
+        "action_velocity": {
+          "l2": 0.05547165498137474,
+          "rms": 0.003466978669166565,
+          "reference_l2": 23.51791000366211,
+          "relative_l2": 0.00235869832705104
+        }
+      },
+      "bridge_action_delta_rms": 0.003466978669166565,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 117,
+        "dataset_index": 367,
+        "global_frame_index": 51844,
+        "task": "Pick the cubes and put them in the cup."
+      },
+      "donor_state_rms": 0.2769828736782074,
+      "paired_objective_delta": 0.0001952648162841797
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup.",
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.020430564880371,
+      "loss_anchor": 0.8849297761917114,
+      "loss_bridge": 1.1559312343597412,
+      "anchor_flow_matching_loss_action": 0.0022494648583233356,
+      "anchor_flow_matching_loss_vision": 0.08624351024627686,
+      "bridge_flow_matching_loss_action": 0.0020741326734423637,
+      "bridge_flow_matching_loss_vision": 0.11351899057626724,
+      "weighted_action": 0.02161798719316721,
+      "weighted_vision": 0.9988124966621399,
+      "joints": 0.0021526110358536243,
+      "gripper": 0.0022261132253333926,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 8.459304809570312,
+          "rms": 0.03304421156644821,
+          "reference_l2": 180.9311065673828,
+          "relative_l2": 0.04675428659040383
+        },
+        "planning_slots": {
+          "l2": 0.02465796284377575,
+          "rms": 0.00013621730613522232,
+          "reference_l2": 20.095598220825195,
+          "relative_l2": 0.001227033033444237
+        },
+        "action_velocity": {
+          "l2": 0.06445475667715073,
+          "rms": 0.00402842229232192,
+          "reference_l2": 25.09034538269043,
+          "relative_l2": 0.0025689067126838916
+        }
+      },
+      "bridge_action_delta_rms": 0.00402842229232192,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.00010848045349121094
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup.",
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.0203301906585693,
+      "loss_anchor": 0.8849297761917114,
+      "loss_bridge": 1.1557306051254272,
+      "anchor_flow_matching_loss_action": 0.0022494648583233356,
+      "anchor_flow_matching_loss_vision": 0.08624351024627686,
+      "bridge_flow_matching_loss_action": 0.0020517422817647457,
+      "bridge_flow_matching_loss_vision": 0.11352130770683289,
+      "weighted_action": 0.021506035700440407,
+      "weighted_vision": 0.9988241195678711,
+      "joints": 0.0021460478892549872,
+      "gripper": 0.0021824933355674148,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 85.66737365722656,
+          "rms": 0.3346389830112457,
+          "reference_l2": 180.9311065673828,
+          "relative_l2": 0.4734806263140943
+        },
+        "planning_slots": {
+          "l2": 1.787960171699524,
+          "rms": 0.00987720675766468,
+          "reference_l2": 20.095598220825195,
+          "relative_l2": 0.088972726865461
+        },
+        "action_velocity": {
+          "l2": 0.06325884908437729,
+          "rms": 0.003953677602112293,
+          "reference_l2": 25.09034538269043,
+          "relative_l2": 0.0025212426580631655
+        }
+      },
+      "bridge_action_delta_rms": 0.003953677602112293,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 8.106231689453125e-06
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup.",
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.0227077007293701,
+      "loss_anchor": 0.8871219158172607,
+      "loss_bridge": 1.158293604850769,
+      "anchor_flow_matching_loss_action": 0.0024946946650743484,
+      "anchor_flow_matching_loss_vision": 0.086217500269413,
+      "bridge_flow_matching_loss_action": 0.0023378636687994003,
+      "bridge_flow_matching_loss_vision": 0.1134914979338646,
+      "weighted_action": 0.024162791669368744,
+      "weighted_vision": 0.9985449910163879,
+      "joints": 0.002436780370771885,
+      "gripper": 0.0022727700415998697,
+      "changes": {
+        "action_velocity": {
+          "l2": 0.2700614929199219,
+          "rms": 0.016878843307495117,
+          "reference_l2": 25.09034538269043,
+          "relative_l2": 0.010763562190986599
+        }
+      },
+      "bridge_action_delta_rms": 0.016878843307495117,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0023856163024902344
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup.",
+      "weights": "ema",
+      "intervention": "same_task",
+      "objective": 1.0206501483917236,
+      "loss_anchor": 0.8849297761917114,
+      "loss_bridge": 1.1563706398010254,
+      "anchor_flow_matching_loss_action": 0.0022494648583233356,
+      "anchor_flow_matching_loss_vision": 0.08624351024627686,
+      "bridge_flow_matching_loss_action": 0.002090699737891555,
+      "bridge_flow_matching_loss_vision": 0.11354635655879974,
+      "weighted_action": 0.02170082274824381,
+      "weighted_vision": 0.9989493489265442,
+      "joints": 0.0021644793450832367,
+      "gripper": 0.0022093028528615832,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 16.72064208984375,
+          "rms": 0.06531526893377304,
+          "reference_l2": 180.9311065673828,
+          "relative_l2": 0.09241441345861999
+        },
+        "planning_slots": {
+          "l2": 0.35349583625793457,
+          "rms": 0.0019528119591996074,
+          "reference_l2": 20.095598220825195,
+          "relative_l2": 0.017590709784971945
+        },
+        "action_velocity": {
+          "l2": 0.06398741155862808,
+          "rms": 0.0039992136880755424,
+          "reference_l2": 25.09034538269043,
+          "relative_l2": 0.002550280220645043
+        }
+      },
+      "bridge_action_delta_rms": 0.0039992136880755424,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 55,
+        "dataset_index": 2459,
+        "global_frame_index": 28085,
+        "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup."
+      },
+      "donor_state_rms": 0.6155092120170593,
+      "paired_objective_delta": 0.00032806396484375
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 1645,
+      "global_frame_index": 27271,
+      "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup.",
+      "weights": "ema",
+      "intervention": "mismatched",
+      "objective": 1.0205109119415283,
+      "loss_anchor": 0.8849297761917114,
+      "loss_bridge": 1.1560920476913452,
+      "anchor_flow_matching_loss_action": 0.0022494648583233356,
+      "anchor_flow_matching_loss_vision": 0.08624351024627686,
+      "bridge_flow_matching_loss_action": 0.002104545012116432,
+      "bridge_flow_matching_loss_vision": 0.11350465565919876,
+      "weighted_action": 0.021770048886537552,
+      "weighted_vision": 0.9987408518791199,
+      "joints": 0.0021713110618293285,
+      "gripper": 0.0022168628638610244,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 16.37594985961914,
+          "rms": 0.06396879255771637,
+          "reference_l2": 180.9311065673828,
+          "relative_l2": 0.09050931136333026
+        },
+        "planning_slots": {
+          "l2": 0.3525365889072418,
+          "rms": 0.00194751366507262,
+          "reference_l2": 20.095598220825195,
+          "relative_l2": 0.017542975582677898
+        },
+        "action_velocity": {
+          "l2": 0.05491044372320175,
+          "rms": 0.0034319027327001095,
+          "reference_l2": 25.09034538269043,
+          "relative_l2": 0.0021885088820293363
+        }
+      },
+      "bridge_action_delta_rms": 0.0034319027327001095,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 27,
+        "dataset_index": 368,
+        "global_frame_index": 13769,
+        "task": "Pour the contents in the orange cup into the black bowl."
+      },
+      "donor_state_rms": 0.28373828530311584,
+      "paired_objective_delta": 0.0001888275146484375
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup.",
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.1809089183807373,
+      "loss_anchor": 1.034099817276001,
+      "loss_bridge": 1.3277181386947632,
+      "anchor_flow_matching_loss_action": 0.002438429044559598,
+      "anchor_flow_matching_loss_vision": 0.10097154974937439,
+      "bridge_flow_matching_loss_action": 0.002684215782210231,
+      "bridge_flow_matching_loss_vision": 0.13008759915828705,
+      "weighted_action": 0.025613224133849144,
+      "weighted_vision": 1.1552957892417908,
+      "joints": 0.0021759445080533624,
+      "gripper": 0.0052589671686291695,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 7.0023016929626465,
+          "rms": 0.02735278382897377,
+          "reference_l2": 181.6549530029297,
+          "relative_l2": 0.03854726544587923
+        },
+        "planning_slots": {
+          "l2": 0.02412775158882141,
+          "rms": 0.00013328825298231095,
+          "reference_l2": 19.934133529663086,
+          "relative_l2": 0.0012103737317159028
+        },
+        "action_velocity": {
+          "l2": 0.05905253067612648,
+          "rms": 0.003690783167257905,
+          "reference_l2": 25.0610294342041,
+          "relative_l2": 0.002356348961289263
+        }
+      },
+      "bridge_action_delta_rms": 0.003690783167257905,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.00010776519775390625
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup.",
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.1807559728622437,
+      "loss_anchor": 1.034099817276001,
+      "loss_bridge": 1.3274121284484863,
+      "anchor_flow_matching_loss_action": 0.002438429044559598,
+      "anchor_flow_matching_loss_vision": 0.10097154974937439,
+      "bridge_flow_matching_loss_action": 0.0026837412733584642,
+      "bridge_flow_matching_loss_vision": 0.1300574690103531,
+      "weighted_action": 0.025610851123929024,
+      "weighted_vision": 1.1551451086997986,
+      "joints": 0.002175096655264497,
+      "gripper": 0.00526300398632884,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 90.19371795654297,
+          "rms": 0.3523198962211609,
+          "reference_l2": 181.6549530029297,
+          "relative_l2": 0.4965111958994498
+        },
+        "planning_slots": {
+          "l2": 0.758571445941925,
+          "rms": 0.004190568812191486,
+          "reference_l2": 19.934133529663086,
+          "relative_l2": 0.03805389608799043
+        },
+        "action_velocity": {
+          "l2": 0.055312443524599075,
+          "rms": 0.003457027720287442,
+          "reference_l2": 25.0610294342041,
+          "relative_l2": 0.002207109794504565
+        }
+      },
+      "bridge_action_delta_rms": 0.003457027720287442,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": -4.5180320739746094e-05
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup.",
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.1818588972091675,
+      "loss_anchor": 1.0366278886795044,
+      "loss_bridge": 1.3270899057388306,
+      "anchor_flow_matching_loss_action": 0.0025927589740604162,
+      "anchor_flow_matching_loss_vision": 0.10107003897428513,
+      "bridge_flow_matching_loss_action": 0.0026625506579875946,
+      "bridge_flow_matching_loss_vision": 0.13004644215106964,
+      "weighted_action": 0.026276548393070698,
+      "weighted_vision": 1.1555823683738708,
+      "joints": 0.002402052632533014,
+      "gripper": 0.004206870449706912,
+      "changes": {
+        "action_velocity": {
+          "l2": 0.2574426829814911,
+          "rms": 0.016090167686343193,
+          "reference_l2": 25.0610294342041,
+          "relative_l2": 0.010272630007374118
+        }
+      },
+      "bridge_action_delta_rms": 0.016090167686343193,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.001057744026184082
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup.",
+      "weights": "ema",
+      "intervention": "same_task",
+      "objective": 1.1809945106506348,
+      "loss_anchor": 1.034099817276001,
+      "loss_bridge": 1.327889084815979,
+      "anchor_flow_matching_loss_action": 0.002438429044559598,
+      "anchor_flow_matching_loss_vision": 0.10097154974937439,
+      "bridge_flow_matching_loss_action": 0.0027007912285625935,
+      "bridge_flow_matching_loss_vision": 0.13008812069892883,
+      "weighted_action": 0.025696100667119026,
+      "weighted_vision": 1.1552983522415161,
+      "joints": 0.0021947005297988653,
+      "gripper": 0.005193976452574134,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 16.690099716186523,
+          "rms": 0.0651959553360939,
+          "reference_l2": 181.6549530029297,
+          "relative_l2": 0.09187803272238522
+        },
+        "planning_slots": {
+          "l2": 0.2954513728618622,
+          "rms": 0.0016321555012837052,
+          "reference_l2": 19.934133529663086,
+          "relative_l2": 0.014821380243200153
+        },
+        "action_velocity": {
+          "l2": 0.0527314767241478,
+          "rms": 0.003295717528089881,
+          "reference_l2": 25.0610294342041,
+          "relative_l2": 0.0021041225326593397
+        }
+      },
+      "bridge_action_delta_rms": 0.003295717528089881,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 55,
+        "dataset_index": 1645,
+        "global_frame_index": 27271,
+        "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup."
+      },
+      "donor_state_rms": 0.6155092120170593,
+      "paired_objective_delta": 0.0001933574676513672
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 55,
+      "dataset_index": 2459,
+      "global_frame_index": 28085,
+      "task": "Pick up the yellow cup and put it in the light blue cup. Pick up the orange cup and place it in the yellow cup.",
+      "weights": "ema",
+      "intervention": "mismatched",
+      "objective": 1.1806647777557373,
+      "loss_anchor": 1.034099817276001,
+      "loss_bridge": 1.3272298574447632,
+      "anchor_flow_matching_loss_action": 0.002438429044559598,
+      "anchor_flow_matching_loss_vision": 0.10097154974937439,
+      "bridge_flow_matching_loss_action": 0.0026724571362137794,
+      "bridge_flow_matching_loss_vision": 0.13005052506923676,
+      "weighted_action": 0.025554430671036243,
+      "weighted_vision": 1.1551104187965393,
+      "joints": 0.002177081420086324,
+      "gripper": 0.005203975131735206,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 13.469614028930664,
+          "rms": 0.052615921944379807,
+          "reference_l2": 181.6549530029297,
+          "relative_l2": 0.07414944545284945
+        },
+        "planning_slots": {
+          "l2": 0.09704522043466568,
+          "rms": 0.000536104547791183,
+          "reference_l2": 19.934133529663086,
+          "relative_l2": 0.004868293888483141
+        },
+        "action_velocity": {
+          "l2": 0.05407584831118584,
+          "rms": 0.003379740519449115,
+          "reference_l2": 25.0610294342041,
+          "relative_l2": 0.0021577664418438204
+        }
+      },
+      "bridge_action_delta_rms": 0.003379740519449115,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 51,
+        "dataset_index": 1644,
+        "global_frame_index": 25567,
+        "task": "Stack the three cups together."
+      },
+      "donor_state_rms": 0.2990773022174835,
+      "paired_objective_delta": -0.00013637542724609375
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "task": "Pick the cubes and put them in the cup.",
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.123186707496643,
+      "loss_anchor": 0.9844081997871399,
+      "loss_bridge": 1.261965274810791,
+      "anchor_flow_matching_loss_action": 0.0021660199854522943,
+      "anchor_flow_matching_loss_vision": 0.09627480059862137,
+      "bridge_flow_matching_loss_action": 0.0024137210566550493,
+      "bridge_flow_matching_loss_vision": 0.12378279864788055,
+      "weighted_action": 0.02289870474487543,
+      "weighted_vision": 1.1002880036830902,
+      "joints": 0.002329248934984207,
+      "gripper": 0.0020142216235399246,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 7.961205005645752,
+          "rms": 0.031098514795303345,
+          "reference_l2": 158.88290405273438,
+          "relative_l2": 0.05010737343398111
+        },
+        "planning_slots": {
+          "l2": 0.017294324934482574,
+          "rms": 9.553854761179537e-05,
+          "reference_l2": 19.866785049438477,
+          "relative_l2": 0.0008705145241892768
+        },
+        "action_velocity": {
+          "l2": 0.05222056061029434,
+          "rms": 0.0032637850381433964,
+          "reference_l2": 22.887231826782227,
+          "relative_l2": 0.002281645985216385
+        }
+      },
+      "bridge_action_delta_rms": 0.0032637850381433964,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": -1.0609626770019531e-05
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "task": "Pick the cubes and put them in the cup.",
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.1231735944747925,
+      "loss_anchor": 0.9844081997871399,
+      "loss_bridge": 1.2619390487670898,
+      "anchor_flow_matching_loss_action": 0.0021660199854522943,
+      "anchor_flow_matching_loss_vision": 0.09627480059862137,
+      "bridge_flow_matching_loss_action": 0.002388290362432599,
+      "bridge_flow_matching_loss_vision": 0.12380561232566833,
+      "weighted_action": 0.02277155127376318,
+      "weighted_vision": 1.1004020869731903,
+      "joints": 0.002314766636118293,
+      "gripper": 0.0020138751715421677,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 74.289794921875,
+          "rms": 0.29019540548324585,
+          "reference_l2": 158.88290405273438,
+          "relative_l2": 0.4675757619411191
+        },
+        "planning_slots": {
+          "l2": 1.4982250928878784,
+          "rms": 0.00827663391828537,
+          "reference_l2": 19.866785049438477,
+          "relative_l2": 0.07541356536347207
+        },
+        "action_velocity": {
+          "l2": 0.05489256605505943,
+          "rms": 0.003430785145610571,
+          "reference_l2": 22.887231826782227,
+          "relative_l2": 0.0023983925391460026
+        }
+      },
+      "bridge_action_delta_rms": 0.003430785145610571,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": -2.372264862060547e-05
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "task": "Pick the cubes and put them in the cup.",
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.1236824989318848,
+      "loss_anchor": 0.9853453636169434,
+      "loss_bridge": 1.2620197534561157,
+      "anchor_flow_matching_loss_action": 0.0023764213547110558,
+      "anchor_flow_matching_loss_vision": 0.09615811705589294,
+      "bridge_flow_matching_loss_action": 0.0024436062667518854,
+      "bridge_flow_matching_loss_vision": 0.12375836074352264,
+      "weighted_action": 0.024100137874484062,
+      "weighted_vision": 1.0995824038982391,
+      "joints": 0.0024590418906882405,
+      "gripper": 0.0020668176002800465,
+      "changes": {
+        "action_velocity": {
+          "l2": 0.2675423324108124,
+          "rms": 0.016721395775675774,
+          "reference_l2": 22.887231826782227,
+          "relative_l2": 0.011689588956657448
+        }
+      },
+      "bridge_action_delta_rms": 0.016721395775675774,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0004851818084716797
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "task": "Pick the cubes and put them in the cup.",
+      "weights": "ema",
+      "intervention": "same_task",
+      "objective": 1.1232200860977173,
+      "loss_anchor": 0.9844081997871399,
+      "loss_bridge": 1.26203191280365,
+      "anchor_flow_matching_loss_action": 0.0021660199854522943,
+      "anchor_flow_matching_loss_vision": 0.09627480059862137,
+      "bridge_flow_matching_loss_action": 0.002419461961835623,
+      "bridge_flow_matching_loss_vision": 0.12378372997045517,
+      "weighted_action": 0.02292740996927023,
+      "weighted_vision": 1.1002926528453827,
+      "joints": 0.002334018819965422,
+      "gripper": 0.0020037968643009663,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 20.12846565246582,
+          "rms": 0.07862710952758789,
+          "reference_l2": 158.88290405273438,
+          "relative_l2": 0.12668742286951803
+        },
+        "planning_slots": {
+          "l2": 0.5415860414505005,
+          "rms": 0.0029918751679360867,
+          "reference_l2": 19.866785049438477,
+          "relative_l2": 0.027260879911005436
+        },
+        "action_velocity": {
+          "l2": 0.051847703754901886,
+          "rms": 0.003240481484681368,
+          "reference_l2": 22.887231826782227,
+          "relative_l2": 0.002265354943197221
+        }
+      },
+      "bridge_action_delta_rms": 0.003240481484681368,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 117,
+        "dataset_index": 367,
+        "global_frame_index": 51844,
+        "task": "Pick the cubes and put them in the cup."
+      },
+      "donor_state_rms": 0.5991356372833252,
+      "paired_objective_delta": 2.276897430419922e-05
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 0,
+      "global_frame_index": 51477,
+      "task": "Pick the cubes and put them in the cup.",
+      "weights": "ema",
+      "intervention": "mismatched",
+      "objective": 1.1232134103775024,
+      "loss_anchor": 0.9844081997871399,
+      "loss_bridge": 1.2620186805725098,
+      "anchor_flow_matching_loss_action": 0.0021660199854522943,
+      "anchor_flow_matching_loss_vision": 0.09627480059862137,
+      "bridge_flow_matching_loss_action": 0.002401392674073577,
+      "bridge_flow_matching_loss_vision": 0.12380047887563705,
+      "weighted_action": 0.022837063297629356,
+      "weighted_vision": 1.1003763973712921,
+      "joints": 0.002321296720765531,
+      "gripper": 0.0020205735927447677,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 6.579660415649414,
+          "rms": 0.025701826438307762,
+          "reference_l2": 158.88290405273438,
+          "relative_l2": 0.04141201002636242
+        },
+        "planning_slots": {
+          "l2": 0.09875407814979553,
+          "rms": 0.0005455448408611119,
+          "reference_l2": 19.866785049438477,
+          "relative_l2": 0.004970813239487219
+        },
+        "action_velocity": {
+          "l2": 0.047757115215063095,
+          "rms": 0.0029848197009414434,
+          "reference_l2": 22.887231826782227,
+          "relative_l2": 0.0020866269707277827
+        }
+      },
+      "bridge_action_delta_rms": 0.0029848197009414434,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 27,
+        "dataset_index": 368,
+        "global_frame_index": 13769,
+        "task": "Pour the contents in the orange cup into the black bowl."
+      },
+      "donor_state_rms": 0.11239878088235855,
+      "paired_objective_delta": 1.609325408935547e-05
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "task": "Pick the cubes and put them in the cup.",
+      "weights": "ema",
+      "intervention": "reverse_time",
+      "objective": 1.2173662185668945,
+      "loss_anchor": 1.0271943807601929,
+      "loss_bridge": 1.4075380563735962,
+      "anchor_flow_matching_loss_action": 0.002295131329447031,
+      "anchor_flow_matching_loss_vision": 0.10042429715394974,
+      "bridge_flow_matching_loss_action": 0.0025258157402276993,
+      "bridge_flow_matching_loss_vision": 0.13822798430919647,
+      "weighted_action": 0.024104734882712364,
+      "weighted_vision": 1.193261444568634,
+      "joints": 0.0020313687855377793,
+      "gripper": 0.005064206197857857,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 7.879077911376953,
+          "rms": 0.0307777039706707,
+          "reference_l2": 142.81234741210938,
+          "relative_l2": 0.05517084519758317
+        },
+        "planning_slots": {
+          "l2": 0.02310204692184925,
+          "rms": 0.000127621999126859,
+          "reference_l2": 19.768003463745117,
+          "relative_l2": 0.0011686585832615232
+        },
+        "action_velocity": {
+          "l2": 0.056558746844530106,
+          "rms": 0.0035349216777831316,
+          "reference_l2": 21.6857852935791,
+          "relative_l2": 0.0026081023158186696
+        }
+      },
+      "bridge_action_delta_rms": 0.0035349216777831316,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": -2.384185791015625e-07
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "task": "Pick the cubes and put them in the cup.",
+      "weights": "ema",
+      "intervention": "zero_candidate",
+      "objective": 1.2174198627471924,
+      "loss_anchor": 1.0271943807601929,
+      "loss_bridge": 1.4076454639434814,
+      "anchor_flow_matching_loss_action": 0.002295131329447031,
+      "anchor_flow_matching_loss_vision": 0.10042429715394974,
+      "bridge_flow_matching_loss_action": 0.0025518035981804132,
+      "bridge_flow_matching_loss_vision": 0.13821274042129517,
+      "weighted_action": 0.02423467393964529,
+      "weighted_vision": 1.1931852102279663,
+      "joints": 0.0020511423936113715,
+      "gripper": 0.005029741209000349,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 67.344482421875,
+          "rms": 0.2630653977394104,
+          "reference_l2": 142.81234741210938,
+          "relative_l2": 0.4715592428961413
+        },
+        "planning_slots": {
+          "l2": 0.8617874383926392,
+          "rms": 0.004760762210935354,
+          "reference_l2": 19.768003463745117,
+          "relative_l2": 0.043595067148443856
+        },
+        "action_velocity": {
+          "l2": 0.055603329092264175,
+          "rms": 0.003475208068266511,
+          "reference_l2": 21.6857852935791,
+          "relative_l2": 0.0025640449879731886
+        }
+      },
+      "bridge_action_delta_rms": 0.003475208068266511,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 5.340576171875e-05
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "task": "Pick the cubes and put them in the cup.",
+      "weights": "ema",
+      "intervention": "disabled",
+      "objective": 1.218656063079834,
+      "loss_anchor": 1.0282392501831055,
+      "loss_bridge": 1.409072756767273,
+      "anchor_flow_matching_loss_action": 0.0024448714684695005,
+      "anchor_flow_matching_loss_vision": 0.10037904977798462,
+      "bridge_flow_matching_loss_action": 0.002714531496167183,
+      "bridge_flow_matching_loss_vision": 0.13819274306297302,
+      "weighted_action": 0.02579701505601406,
+      "weighted_vision": 1.1928589940071106,
+      "joints": 0.0022999433567747474,
+      "gripper": 0.004538008477538824,
+      "changes": {
+        "action_velocity": {
+          "l2": 0.2579900622367859,
+          "rms": 0.016124378889799118,
+          "reference_l2": 21.6857852935791,
+          "relative_l2": 0.011896735983694057
+        }
+      },
+      "bridge_action_delta_rms": 0.016124378889799118,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "paired_objective_delta": 0.0012896060943603516
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "task": "Pick the cubes and put them in the cup.",
+      "weights": "ema",
+      "intervention": "same_task",
+      "objective": 1.2173092365264893,
+      "loss_anchor": 1.0271943807601929,
+      "loss_bridge": 1.407423973083496,
+      "anchor_flow_matching_loss_action": 0.002295131329447031,
+      "anchor_flow_matching_loss_vision": 0.10042429715394974,
+      "bridge_flow_matching_loss_action": 0.0025222045369446278,
+      "bridge_flow_matching_loss_vision": 0.1382201910018921,
+      "weighted_action": 0.02408667840063572,
+      "weighted_vision": 1.193222463130951,
+      "joints": 0.002043327665887773,
+      "gripper": 0.004966048989444971,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 20.225261688232422,
+          "rms": 0.07900518923997879,
+          "reference_l2": 142.81234741210938,
+          "relative_l2": 0.141621239722844
+        },
+        "planning_slots": {
+          "l2": 0.4492480158805847,
+          "rms": 0.002481771633028984,
+          "reference_l2": 19.768003463745117,
+          "relative_l2": 0.022726018674800105
+        },
+        "action_velocity": {
+          "l2": 0.053226180374622345,
+          "rms": 0.00332663650624454,
+          "reference_l2": 21.6857852935791,
+          "relative_l2": 0.0024544271583460697
+        }
+      },
+      "bridge_action_delta_rms": 0.00332663650624454,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 117,
+        "dataset_index": 0,
+        "global_frame_index": 51477,
+        "task": "Pick the cubes and put them in the cup."
+      },
+      "donor_state_rms": 0.5991356372833252,
+      "paired_objective_delta": -5.7220458984375e-05
+    },
+    {
+      "split": "val",
+      "source_index": 0,
+      "episode_id": 117,
+      "dataset_index": 367,
+      "global_frame_index": 51844,
+      "task": "Pick the cubes and put them in the cup.",
+      "weights": "ema",
+      "intervention": "mismatched",
+      "objective": 1.2173326015472412,
+      "loss_anchor": 1.0271943807601929,
+      "loss_bridge": 1.407470941543579,
+      "anchor_flow_matching_loss_action": 0.002295131329447031,
+      "anchor_flow_matching_loss_vision": 0.10042429715394974,
+      "bridge_flow_matching_loss_action": 0.002524032723158598,
+      "bridge_flow_matching_loss_vision": 0.1382230669260025,
+      "weighted_action": 0.024095820263028145,
+      "weighted_vision": 1.1932368278503418,
+      "joints": 0.002041007741354406,
+      "gripper": 0.00498960237018764,
+      "changes": {
+        "feedback_encoding": {
+          "l2": 16.918920516967773,
+          "rms": 0.06608973443508148,
+          "reference_l2": 142.81234741210938,
+          "relative_l2": 0.11846959190542078
+        },
+        "planning_slots": {
+          "l2": 0.17129749059677124,
+          "rms": 0.0009462953312322497,
+          "reference_l2": 19.768003463745117,
+          "relative_l2": 0.00866539157133061
+        },
+        "action_velocity": {
+          "l2": 0.04378151521086693,
+          "rms": 0.002736344700679183,
+          "reference_l2": 21.6857852935791,
+          "relative_l2": 0.0020189038403801824
+        }
+      },
+      "bridge_action_delta_rms": 0.002736344700679183,
+      "source_sigma": [
+        0.9372654557228088
+      ],
+      "bridge_sigma": [
+        0.6246873736381531
+      ],
+      "donor": {
+        "split": "val",
+        "source_index": 0,
+        "episode_id": 51,
+        "dataset_index": 1644,
+        "global_frame_index": 25567,
+        "task": "Stack the three cups together."
+      },
+      "donor_state_rms": 0.2769828736782074,
+      "paired_objective_delta": -3.3855438232421875e-05
+    }
+  ],
+  "summary": [
+    {
+      "weights": "ema",
+      "split": "val",
+      "intervention": "correct",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.2124139308929442,
+      "loss_anchor": 1.0629810571670533,
+      "loss_bridge": 1.3618468761444091,
+      "anchor_flow_matching_loss_action": 0.0026047945255413653,
+      "anchor_flow_matching_loss_vision": 0.10369331017136574,
+      "bridge_flow_matching_loss_action": 0.003123415936715901,
+      "bridge_flow_matching_loss_vision": 0.133061271160841,
+      "bridge_action_delta_rms": 0.0,
+      "paired_objective_delta": 0.0
+    },
+    {
+      "weights": "ema",
+      "split": "val",
+      "intervention": "disabled",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.2144811034202576,
+      "loss_anchor": 1.0653113067150115,
+      "loss_bridge": 1.3636509299278259,
+      "anchor_flow_matching_loss_action": 0.0028552929870784283,
+      "anchor_flow_matching_loss_vision": 0.10367583930492401,
+      "bridge_flow_matching_loss_action": 0.0033056192798539994,
+      "bridge_flow_matching_loss_vision": 0.13305947184562683,
+      "bridge_action_delta_rms": 0.016756867151707412,
+      "paired_objective_delta": 0.0020671725273132325
+    },
+    {
+      "weights": "ema",
+      "split": "val",
+      "intervention": "mismatched",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.2125613570213318,
+      "loss_anchor": 1.0629810571670533,
+      "loss_bridge": 1.3621416807174682,
+      "anchor_flow_matching_loss_action": 0.0026047945255413653,
+      "anchor_flow_matching_loss_vision": 0.10369331017136574,
+      "bridge_flow_matching_loss_action": 0.003137351723853499,
+      "bridge_flow_matching_loss_vision": 0.13307681679725647,
+      "bridge_action_delta_rms": 0.003394040325656533,
+      "paired_objective_delta": 0.00014742612838745118
+    },
+    {
+      "weights": "ema",
+      "split": "val",
+      "intervention": "reverse_time",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.2123640537261964,
+      "loss_anchor": 1.0629810571670533,
+      "loss_bridge": 1.3617470502853393,
+      "anchor_flow_matching_loss_action": 0.0026047945255413653,
+      "anchor_flow_matching_loss_vision": 0.10369331017136574,
+      "bridge_flow_matching_loss_action": 0.003103088098578155,
+      "bridge_flow_matching_loss_vision": 0.13307161554694175,
+      "bridge_action_delta_rms": 0.0036780710099264978,
+      "paired_objective_delta": -4.987716674804687e-05
+    },
+    {
+      "weights": "ema",
+      "split": "val",
+      "intervention": "same_task",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.2124082446098328,
+      "loss_anchor": 1.0629810571670533,
+      "loss_bridge": 1.3618354320526123,
+      "anchor_flow_matching_loss_action": 0.0026047945255413653,
+      "anchor_flow_matching_loss_vision": 0.10369331017136574,
+      "bridge_flow_matching_loss_action": 0.003113272681366652,
+      "bridge_flow_matching_loss_vision": 0.13307026997208596,
+      "bridge_action_delta_rms": 0.0036799409426748753,
+      "paired_objective_delta": -5.686283111572266e-06
+    },
+    {
+      "weights": "ema",
+      "split": "val",
+      "intervention": "zero_candidate",
+      "episodes": 5,
+      "windows": 10,
+      "objective": 1.2122506380081177,
+      "loss_anchor": 1.0629810571670533,
+      "loss_bridge": 1.36152024269104,
+      "anchor_flow_matching_loss_action": 0.0026047945255413653,
+      "anchor_flow_matching_loss_vision": 0.10369331017136574,
+      "bridge_flow_matching_loss_action": 0.0030817127553746104,
+      "bridge_flow_matching_loss_vision": 0.13307031020522117,
+      "bridge_action_delta_rms": 0.003880724171176553,
+      "paired_objective_delta": -0.00016329288482666015
+    }
+  ],
+  "scope": "same-checkpoint input sensitivity on legal paired-FM states; not trained B4/control or rollout",
+  "limitations": [
+    "Zero candidate and reversed time are distribution-shift interventions.",
+    "Disabled planning uses the frozen common SFT base, not an equal-exposure trained control.",
+    "Episode prefix only; windows within episodes are correlated. Raw and EMA are not independent runs.",
+    "Synthetic paired-FM gains need separate actual-sampler and environment verification."
+  ],
+  "elapsed_seconds": 129.1798585370052
+}

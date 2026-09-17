@@ -1,0 +1,39 @@
+{
+  "date": "2026-09-17",
+  "gpu_constraint": [0, 1, 2, 3],
+  "dataset": {
+    "repository": "nvidia/Cosmos3-DROID",
+    "revision": "5c11a20accb11497270a5247a7f1e66ad04c956c",
+    "root": "datasets/droid_plus_lerobot_640x360_20260412",
+    "episode_limit": 128,
+    "full_dataset_downloaded": false,
+    "payload_files": 13,
+    "train_windows": 49731,
+    "validation_windows": 2460,
+    "validation_episodes": 5,
+    "video_backend": "pyav",
+    "raw_video_shape": [3, 33, 540, 640],
+    "raw_action_shape": [33, 8]
+  },
+  "base_weights": {
+    "hf_snapshot": "models/Cosmos3-Edge-Policy-DROID",
+    "dcp": "models/Cosmos3-Edge-Policy-DROID-DCP",
+    "native_tensor_count": 549,
+    "native_tensor_bytes": 6739314048,
+    "bitwise_equal": true,
+    "vae_reused": "cookbooks/cosmos3/generator/action/finetune/checkpoints/wan22_vae/Wan2.2_VAE.pth"
+  },
+  "sft_smoke": {
+    "optimizer_updates": 2,
+    "checkpoint": "outputs/edge_droid_smoke/cosmos3_action/edge_droid_warmstart/action_policy_droid_edge/checkpoints/iter_000000002",
+    "last_validation_objective": 0.9401718974113464
+  },
+  "feedback_smoke": {
+    "optimizer_updates": 2,
+    "checkpoint": "outputs/edge_droid_feedback_smoke/cosmos3_action/edge_droid_planning/action_policy_droid_edge_feedback/checkpoints/iter_000000002",
+    "last_validation_objective": 1.0875545740127563,
+    "reloaded_inference_finite": true,
+    "predicted_action_shape": [32, 8]
+  },
+  "scope": "Resource validation and two-update engineering smoke only; objectives are not comparable task-success evidence. No RoboLab rollout or real-time claim."
+}
