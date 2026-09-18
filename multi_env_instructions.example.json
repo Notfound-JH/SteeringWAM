@@ -1,0 +1,14 @@
+[
+  {"subgoal":"approach","instruction":"Move the open gripper above the nearest orange.","completion_condition":"Open fingers aligned above the orange.","avoid":"Do not close the gripper or push objects."},
+  {"subgoal":"approach","instruction":"Approach the nearest orange from directly above with fingers open.","completion_condition":"Open fingers aligned above the orange.","avoid":"Do not close the gripper or push objects."},
+  {"subgoal":"approach","instruction":"Center the open gripper over the nearest orange while keeping clearance.","completion_condition":"Open fingers aligned above the orange.","avoid":"Do not close the gripper or push objects."},
+  {"subgoal":"approach","instruction":"Move toward the nearest orange and align the wrist above its center.","completion_condition":"Open fingers aligned above the orange.","avoid":"Do not close the gripper or push objects."},
+  {"subgoal":"approach","instruction":"Position the open fingers on opposite sides of the nearest orange without contact.","completion_condition":"Open fingers aligned above the orange.","avoid":"Do not close the gripper or push objects."},
+  {"subgoal":"approach","instruction":"Bring the open hand above the nearest orange for a top-down grasp.","completion_condition":"Open fingers aligned above the orange.","avoid":"Do not close the gripper or push objects."},
+  {"subgoal":"approach","instruction":"Reach over the nearest orange with the gripper open and facing downward.","completion_condition":"Open fingers aligned above the orange.","avoid":"Do not close the gripper or push objects."},
+  {"subgoal":"approach","instruction":"Align the open gripper with the nearest orange, stopping above the fruit.","completion_condition":"Open fingers aligned above the orange.","avoid":"Do not close the gripper or push objects."},
+  {"subgoal":"approach","instruction":"Move the wrist toward the nearest orange while maintaining open fingers.","completion_condition":"Open fingers aligned above the orange.","avoid":"Do not close the gripper or push objects."},
+  {"subgoal":"approach","instruction":"Prepare to grasp the nearest orange by centering the open hand above it.","completion_condition":"Open fingers aligned above the orange.","avoid":"Do not close the gripper or push objects."},
+  {"subgoal":"approach","instruction":"Approach the top of the nearest orange with a clear path for the open fingers.","completion_condition":"Open fingers aligned above the orange.","avoid":"Do not close the gripper or push objects."},
+  {"subgoal":"approach","instruction":"Bring the open gripper into alignment just above the nearest orange.","completion_condition":"Open fingers aligned above the orange.","avoid":"Do not close the gripper or push objects."}
+]

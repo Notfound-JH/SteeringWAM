@@ -2,7 +2,307 @@
 
 本文面向接管实验的 agent。实现与命令按 2026-09-16 的本地代码核对。
 这是现有 RoboLab 安装上的推理流程，不是训练流程，也不是开箱通用的任意任务搜索器。
-当前任务固定为 `ToolsPickingAllHammersTask`；迁移到其他任务需要修改并测试任务绑定，不能只换 prompt。
+历史分支搜索任务固定为 `ToolsPickingAllHammersTask`；下面的新 session harness 另行支持六任务队列，不能与历史 session 混用。
+
+## 四路指令采样 Harness（新实现，2026-09-17）
+
+### 初始姿态修复与检查模型
+
+已复现旧入口在 reset 后驱动目标仍为零，8个原始物理预热步把机械臂拉向零位的问题。
+当前入口显式启用 `reset_joint_targets=True`，每个预热步写入场景控制目标；检查点恢复后
+同步机器人位置目标并清空速度/力矩目标。模型生成动作本身不修改。
+水果单环境初始化、工具单环境初始化/重复reset/检查点恢复已生成实测证据；旧实验保持原样，
+不能更改 hash 后直接续跑。诊断不加载模型，可用 `--initialization-diagnostic --task ...`。
+详细证据及真实4x3指令/seed核对位于当前实验的 `media/initial_pose_fix/REPORT.md`。
+历史各组并不统一：水果/工具初轮12条不同文本，但多个任务/后续轮次是同文不同seed。
+`audit_sampling_prompts.py --session ... --output ...` 从实际请求与服务日志生成只读核对报告。
+后续 Copilot 检查明确指定 `--model gpt-6-astra --reasoning-effort low`，不得自动替换其他模型。
+
+入口：[instruction_sampling.py](instruction_sampling.py)；持久 worker：
+[instruction_sampling_worker.py](instruction_sampling_worker.py)。仅由 Cosmos 生成动作，
+不包含 Agent 直接动作或动作修正。不是缺失旧实现的恢复版本，不读取或迁移旧 session。
+
+| 顺序 | CLI 任务名 | 原生任务 | 最多提交轮数 | 物理 GPU |
+| --- | --- | --- | --- | --- |
+| 首批并行 | `fruits` | `FruitsOnPlate3Task` | 8 | 0,1,2,3 |
+| 首批并行 | `tools` | `ToolsPickingAllHammersTask` | 8 | 4,5,6,7 |
+| 随后依次 | `blocks` | `BlocksInBinTask` | 10 | 0,1,2,3 |
+| 随后依次 | `black_items` | `BlackItemsInBinTask` | 10 | 0,1,2,3 |
+| 随后依次 | `organic` | `ClearOrganicObjectsTask` | 10 | 0,1,2,3 |
+| 随后依次 | `toys` | `CleanUpToysTask` | 10 | 0,1,2,3 |
+
+每张卡独立加载一个模型并绑定一个环境的渲染器；PhysX 沿用 CPU。
+每个任务从同一已提交起点并行执行四个候选，人工审阅后才能再开下一批。
+三批共 12 个候选中选一个已接受候选提交，再进入下一轮；不是把四段动作串起来执行。
+原生全任务成功可提前选择/停止。每组固定 12 条；用户现授权第一组全无 accept 时，
+从同一已提交检查点再试一组 12 条，最多补一次。第二组仍全无可接受候选则停止该起点。
+预测 32 步、执行前 16 步；原生终止可缩短有效长度，未执行尾部未经验证。
+任务总指令和 checker 不变，Agent 可在提交轮边界自由选择下一子目标。
+同轮四个候选可使用四种措辞，批间可根据实际失败证据改写，但仍针对同一子目标和起点。
+
+启动前需要可用的八卡、两个互不冲突的八端口区间，以及不存在的独立目录。
+`start` 会检查既有 compute 进程，拒绝共享或终止其他作业；不会复用不明模型服务。
+用户明确授权共享时，追加 `--allow-gpu-sharing`；此授权会记录到 experiment manifest 并用于后续任务切换。
+该开关不会终止、重配或接管其他进程，也不保证共享时的峰值显存或性能。
+模型基准种子为 `3407 + GPU编号`，服务内部 RNG 随请求推进，场景种子固定 3407。
+推理参数沿用当前启动脚本；采样模式仅关闭预测视频解码，保留实际相机帧。
+
+```bash
+cd /home/aiscuser/SteeringWAM
+PY="$PWD/RoboLab/.venv/bin/python"
+SESSION="$PWD/diagnostics/instruction_search_new"
+"$PY" instruction_sampling.py start --session "$SESSION" --base-port 18840 --master-port 29840
+"$PY" instruction_sampling.py status --session "$SESSION" --task fruits
+```
+
+服务 PID、启动命令、卡号、端口、源码身份及日志保存在新目录中。
+八个模型和首批两个任务就绪后 `start` 返回；后续必须由外部 Agent 逐批看图、写 decision，
+持久服务存活不代表候选在自动采样。水果与工具的 `run-batch` 可由两个独立终端同时调用，
+同一任务禁止第二个控制者；状态转换持有任务文件锁并消费最新 `request_id`。
+
+每轮首先看 `status` 的检查点真实图像，再用文件编辑工具写独立 instruction decision：
+
+```json
+{
+  "request_id": "CURRENT_TOKEN",
+  "instruction": {
+    "subgoal": "VISUALLY_CHOSEN_SUBGOAL",
+    "instruction": "SHORT ENGLISH INSTRUCTION BASED ON CURRENT IMAGES",
+    "completion_condition": "OBSERVABLE COMPLETION CONDITION",
+    "avoid": "ONE IMPORTANT CONSTRAINT"
+  }
+}
+```
+
+```bash
+"$PY" instruction_sampling.py instruct --session "$SESSION" --task fruits --decision /absolute/path/instruction.json
+"$PY" instruction_sampling.py status --session "$SESSION" --task fruits
+"$PY" instruction_sampling.py run-batch --session "$SESSION" --task fruits --decision /absolute/path/batch.json
+"$PY" instruction_sampling.py status --session "$SESSION" --task fruits
+"$PY" instruction_sampling.py review --session "$SESSION" --task fruits --decision /absolute/path/review.json
+```
+
+`batch.json` 至少包含最新 `request_id`；可增加 `instructions` 数组，恰好四项、
+每项与上例 `instruction` 同结构。缺省时四个候选共用当前指令，模型随机种子独立。
+`review.json` 包含最新 `request_id` 和恰好四项 `reviews`，每项包含
+`candidate_id`、`verdict`、`subgoal_complete`、`evidence`、`reviewed_frame_sha256`。
+这些内容由 Agent 实际看图后填写，harness 不自动生成 accept、证据或已审阅 hash。
+
+**简短审阅方式：** 用图像工具打开该批 `review_sheet`，每个候选保留五时刻的手腕/viewport
+两视角，再逐候选写一句“实际变化；有用/有害；是否完成”。不确定时打开原分辨率图片，
+不要靠缩略图猜。viewport 明确是调试视角，不宣称是真机观测。
+下一批只解释最相关的指令修改；第三批后比较已接受候选，记录一句选优理由。
+
+```bash
+"$PY" instruction_sampling.py select --session "$SESSION" --task fruits --decision /absolute/path/select.json
+"$PY" instruction_sampling.py export --session "$SESSION" --task fruits
+"$PY" instruction_sampling.py export --session "$SESSION" --task tools
+"$PY" instruction_sampling.py next-task --session "$SESSION"
+```
+
+选择文件字段为 `request_id`、`candidate_id`、`reason`。每次提交后重新读取状态和末态图片。
+达到轮数/成功/协议停止后才导出；首批两个任务均停止并导出后 `next-task` 激活 `blocks`，
+此后每个新增任务停止、导出，再调用一次 `next-task`。不会自动把未完成子目标标成成功。
+`stop-services --session ...` 只停止此目录记录且 PID 启动身份仍匹配的服务。
+
+新版 `instruction-sampling-v3-visual-review` 按用户澄清，保留四卡三批、12 条中选一条末态进入下一轮。
+恢复是重放与场景校正，不是完整 PhysX 快照。执行候选前实际写回所选检查点；
+重放中的状态数值差、事件差和校正前后误差只记录诊断，不再用 `1e-5` 阻塞。
+起点相机图像先落盘，图像 MAE 同样只记录；是否一致、是否有用由 Agent 看真实图像判断。
+保留字段/形状/有限值、文件 hash、动作前缀和 token 校验。重放提前终止时不能在冻结环境上继续执行，
+仍作为运行错误报告。这些内部状态不得用作 Agent 选动作或评分的依据。
+历史 v1/v2 session 不迁移、不替换 hash，新版使用独立新 session，不声称数值轨迹精确复现。
+失败留在 `execution_unknown`，禁止再开一批。`recover --session ... --task ...` 仅导入四个
+有完整成功凭据的结果，不重跑；缺失或失败记录仍为技术阻塞。
+导出保留全部已选动作、逐段来源/长度/评价、实际双视角视频，并解码检查视频。
+所有候选的独立 HDF5、原始预测、执行动作、恢复轨迹和审阅记录留在原候选目录，不覆盖。
+
+验证：根目录独立的四组检查不加载 Isaac，可运行：
+
+```bash
+"$PY" -m pytest test_instruction_sampling.py -q
+```
+
+当前四组检查通过。首次 v1 共享八卡运行在像素校验处停止，未生成或执行模型动作；
+这些历史失败证据和 SAS 备份保留。用户随后澄清采用实际图像审阅，新版不以 MAE 阻塞。
+八卡共享仍需显式 `--allow-gpu-sharing`，不终止既有训练。
+既有 RoboLab 客户端十项测试通过，但其测试配置会初始化 Isaac 渲染，不能称作纯 CPU 测试；
+测试进程已退出，没有产生本次任务候选。实际采样、模型/环境同卡峰值显存、跨卡图像一致性仍待验证。
+
+### 一次额外十二候选组
+
+单进程十二环境入口见下节；本节描述的仍是旧四路三批流程。
+
+新增 [retry_instruction_sampling.py](retry_instruction_sampling.py) 独立入口，不修改已锁定的
+父实验代码、状态或历史评价。只允许父任务处于 `stopped/no_acceptable_candidate`、12 条全部
+执行完成并审阅且无 accept 时创建额外组；未知执行、缺失产物或已接受候选不能走补采入口。
+
+创建独立 decision，字段为 `request_id`（最新父 token）、`user_request`（真实用户补采授权）、
+`reason`（依据上组实际图像准备怎样调整指令），然后：
+
+```bash
+"$PY" retry_instruction_sampling.py --session "$SESSION" --task fruits --decision /absolute/path/retry.json
+```
+
+返回 `retry_session`，其目录在父实验根的 `retries/` 下。通过原 CLI 的 `--session RETRY_SESSION`
+继续 `instruct/run-batch/review/select/export`，仍为四路三批。补采继承 genesis、已选动作、
+当前 checkpoint、step/chunk 及总轮数上限，不从初始场景重新计数。完成后只对这个子目录
+运行 `stop-services`，不在子目录执行 `next-task`；原任务队列由原实验控制者维护。
+共享模型记录为借用，子目录不会停止父实验模型；所有新环境/自有模型 PID 均留痕。
+
+同一检查点最多一个额外组，重复决策或目录已存在会拒绝，不允许删除目录后补第三组。
+合法选择推进到新 checkpoint 后，该新起点可再享有一次额外组。父状态和导出保持原样，
+子记录包含第一组历史、授权、父状态 hash 和额外入口代码身份。SAS 递归同步这些子目录。
+当前控制者先完成原队列已有工作，再逐个补采此前全拒绝的任务，避免抢占正在使用的四卡。
+判定仍以“对当前指令有可见贡献”为准，而不是必须一段内抓取或抬升成功。
+
+### 单任务、单进程十二环境
+
+新增 [sampling_multi_env.py](sampling_multi_env.py)，不修改旧会话锁定源码。
+一个 Isaac 进程创建同一任务的 12 个环境，共同起点、各自指令；共享一个现有 Cosmos
+WebSocket 服务，顺序发送 12 次推理请求，不做模型 batch/microbatch。收齐动作后，
+每步以 `(12, 8)` 同步执行，默认执行模型 32 步预测的前 16 步。
+
+指令 JSON 必须是 12 个对象组成的数组，每项包含 `subgoal`、`instruction`、
+`completion_condition`、`avoid`，且共享同一 subgoal。可用的格式示例：
+[multi_env_instructions.example.json](multi_env_instructions.example.json)。示例是 fruits 的
+approach 指令，不代表已根据当前图像审阅或已执行的候选。
+
+从 SteeringWAM 根目录运行；使用新的输出目录，端口指向已就绪的 Cosmos 服务：
+
+```bash
+export LD_LIBRARY_PATH="$PWD/packages/ffmpeg/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+RoboLab/.venv/bin/python sampling_multi_env.py \
+  --task FruitsOnPlate3Task --sim-gpu 4 --policy-port 18745 \
+  --instructions multi_env_instructions.example.json \
+  --output-dir diagnostics/multi_env_round_001 --execute-steps 16
+```
+
+若 GPU 已有模型或其他计算进程，入口默认拒绝启动；检查余量后显式添加
+`--allow-gpu-sharing`。入口不启动、停止或重启模型服务。要模型和仿真同卡，需确保该
+端口的模型已部署在 `--sim-gpu` 指定的物理卡上。不要向正用于其他实验的模型服务发送
+测试请求，以免改变其随机数序列。`--initialization-only` 只检查十二环境和相机，不请求
+模型；该检查仍会占用仿真显存。`--no-videos` 跳过 MP4 编码，保留所有 PNG。
+
+每轮输出 `candidate_00` 至 `candidate_11`，包含模型输入、原始/处理后动作、实际执行
+前缀、逐步场景、相机 PNG、双视角 MP4、审阅拼图、结果和单环境 checkpoint。
+共享 `rollout.hdf5` 内是独立 `demo_0` 至 `demo_11`，每路执行动作均与模型前缀校验。
+提前终止的环境不再增加有效轨迹。只有根目录 `result.json` 的 `status=complete`
+才表示整轮产物已完成校验；失败后保留目录，不自动重试。
+
+人工/视觉审阅后，新一轮命令添加以下参数，并使用新的输出目录及新的十二条指令：
+
+```bash
+--checkpoint diagnostics/multi_env_round_001/candidate_03/checkpoint.json
+```
+
+续跑按 hash 验证父链，从 genesis 在十二环境回放已选动作，再校正各段场景状态。
+拒绝续接已终止的候选；状态使用环境相对坐标，避免克隆环境原点偏移。这里只支持
+此入口生成的 checkpoint，不迁移旧 session。当前是独立轮次执行入口，不自动做视觉
+接受/选优，也尚未接入旧 dashboard、SAS 同步或旧会话的轮数/重试预算状态机。
+
+验证：`RoboLab/.venv/bin/python -m pytest test_instruction_sampling.py -q`。
+新增测试覆盖十二指令、状态复制、串行请求、提前终止、HDF5 一致性和父链续跑；
+完整闭环使用替身环境。真实十二环境 GPU 初始化、相机画面和峰值显存仍待空闲资源实测。
+
+### Copilot CLI 与 tmux 接管（旧会话）
+
+本机已安装独立 GitHub Copilot CLI 1.0.86：`/home/aiscuser/.local/bin/copilot`。
+2026-09-18 已通过官方设备码登录，并验证图片附件和 `view` 读取实际候选 PNG；
+这些只读测试不是候选接受记录。凭据保存在用户本地，禁止写入实验产物或 SAS。
+本机无系统密钥链，CLI 使用本地配置；目录/配置权限已检查为 700/600。
+
+当前接管的是初态修复后的 `instruction_posefixed_20260918T055850Z`，不是历史 shared/visual/relaxed session。
+唯一 CLI 会话 UUID：`80f0fbfd-23e8-4c78-aacb-86feb4d36f44`，显式模型 `gpt-6-astra`、effort `low`。
+tmux 会话 `robolab-posefixed-055850` 内，`controller` 窗格运行 CLI，`sas` 窗格运行增量上传器。
+八环境初始化均已核对关节初态；详见新 session 的 `INITIAL_POSE_VALIDATION.json`。
+八份模型和八个环境属于独立新实验；历史已选、待审和失败候选全部保留，不移植或改写。
+旧 visual/relaxed 控制者及其 GPU 服务已停止，不要恢复为第二个采样控制者。
+旧 tmux 中的只读 videos/review 服务仍继续展示各实验结果，不是采样控制者。
+
+```bash
+tmux attach -t robolab-posefixed-055850
+tmux capture-pane -p -t robolab-posefixed-055850:controller -S -60
+```
+
+接入后按 `Ctrl-b d` 仅离开 tmux，不终止任务。CLI 的运行轨迹保存在 session 的
+`copilot_control/console.log`、`lifecycle.log` 和 `CLI_PROGRESS.md`；权威进度仍是经校验的
+任务 `session.json`。`ACK.md` 是控制者确认，不是任务完成证据。
+启动脚本使用固定 UUID、独立控制锁、受限工具/目录和有限 autopilot 次数，不使用
+`--allow-all`、`--allow-all-paths` 或 `--yolo`，不自动循环重启失败实验。
+
+如果控制者已退出，先查看退出码、真实进程和最后状态；特别是 `pending_review` 必须先审阅，
+`execution_unknown` 不得重跑。仅在确认不存在旧控制者且没有未解决阻塞后，才可重新运行
+该 session 内 `copilot_control/run_controller.sh`，它用相同 UUID 续接。
+不要在控制者活着时另开 `copilot --resume` 或从编辑器同时提交决策。
+服务进程存活、tmux 存活、ACK 存在均不等于采样成功，需核对真实 review/select 记录。
+
+### 全部 Chunk 视频与 Copilot 输出
+
+旧 `8765` 首页只连接历史 rollout；同端口的新增静态入口会自动更新最新实验快照，
+可直接沿用已有 Dev Tunnel 地址打开 `/assets/sampling-latest.html`，不用重启旧服务。
+所有实验的实时筛选页面另在独立端口：
+
+```text
+http://127.0.0.1:8766/sampling?session=instruction_relaxed_20260918T041558Z
+```
+
+远程 VS Code 需转发端口 `8766`，打开该端口地址后的 `/sampling`。页面按实验、任务、
+判定筛选，逐候选显示实际执行双视角视频、Copilot 当前指令、完整模型 prompt、review
+原文、子目标完成标记、是否选中和选优理由；页面底部还有 CLI 进度与最近控制者输出。
+所有文本来自实际记录，不生成新的判定，不把接受或视频存在当作任务成功。
+
+[rollout_dashboard/sampling_media.py](rollout_dashboard/sampling_media.py) 在 tmux 的 `videos`
+窗格独立运行，串行补齐所有 `instruction_*` 实验及 `retries/` 中的已完成候选，包括被拒绝
+候选。检查源图 hash，按 `control_dt` 编码从第0帧到实际有效末帧；不使用未执行预测尾部，
+不插帧、不连接不同弃选分支。每个 MP4 验证帧数及完整解码后才发布，画面包含实际指令。
+执行失败而没有完整帧的候选不会编造视频，页面会展示失败原因。
+
+每个实验内的新增派生产物位于：
+
+```text
+media/chunks/<candidate_id>/actual.mp4
+media/chunks/<candidate_id>/poster.jpg
+media/chunks/<candidate_id>/manifest.json
+media/copilot_outputs.json
+media/review.html
+media/video_status.json
+```
+
+`review.html` 为自包含离线页面，保持实验目录中的相对路径即可播放视频；
+`copilot_outputs.json` 保存全部可见指令、审阅和选优输出。SAS 已有同步器会上传整个
+`media/`，不会修改原候选 `result.json`、动作、hash 或 session 状态。
+新增候选自动编码，已有视频命中缓存；页面可手动刷新或启用15秒自动刷新。
+
+```bash
+"$PY" rollout_dashboard/sampling_media.py --watch
+"$PY" rollout_dashboard/server.py --host 0.0.0.0 --port 8766
+"$PY" -m pytest test_sampling_media.py -q
+```
+
+这两个服务只是生成媒体和展示结果，不启动采样、不提交评价，也不接管 Copilot 控制者。
+
+### 结果增量备份到 SAS
+
+[sync_instruction_results.py](sync_instruction_results.py) 是独立进程，不修改 session、token 或锁定执行源码。
+使用仓库外 SAS 文件和 Azure Blob SDK；凭据不进入命令参数、输出或备份状态。
+默认每 5 秒检查一次，完整候选先核对并上传 `artifacts`，最后上传 `result.json`。
+后续 review、selection、导出和日志继续增量上传。上传串行执行；网络错误保留待传状态并重试，
+不重跑候选、不删除本地或远端文件。核对远端长度和 SHA-256 元数据，并启用传输内容校验。
+
+```bash
+"$PY" sync_instruction_results.py --session "$SESSION"
+```
+
+默认目标为 `jinghe/steeringwam/instruction_sampling/<session目录名>/`，可用 `--remote-prefix`
+指定。上传状态保存在仓库外 `~/.blob-sync/instruction-results/<session目录名>/status.json`。
+`completed_candidates` 表示已上传并校验的候选，`errors` 非空则仍需重试，不能声称备份完成。
+失败分支也备份已有产物，并单独列入 `failed_candidates_backed_up`，不能计为完成候选。
+`--once` 只补传一轮；重复启动同一上传器会被文件锁拒绝。每轮重读 SAS 文件，续期可替换私密文件。
+不要把 SAS 粘贴到日志或决策文件。根目录验证命令为 `"$PY" -m pytest test_sync_instruction_results.py -q`。
+
+同步延迟是检查间隔加上传耗时，不是零延迟；未完成分支的动作文件不会冒充已完成候选。
+初始化及服务记录也会备份，但它们不代表成功采样。同步进程不会代替 Agent 看图、审阅或启动下一批。
 
 ## 当前机器恢复说明（2026-09-17）
 
@@ -100,10 +400,14 @@ RTX GPU 上可用的完整实时光追降噪能力。
 `MASTER_PORT` 分别启动，但这不等于仿真侧已经支持安全并行。
 
 仓库根目录的 [rollout_dashboard](rollout_dashboard/server.py) 会扫描 `diagnostics/rollout_*`，
-按 chunk 展示该次模型指令和对应动作实际执行后的 viewport 视频；页面只在打开、切换 run 或点击刷新时
+按 chunk 展示该次模型指令、模型生成的未来视频和对应动作实际执行后的 viewport 视频；页面只在打开、切换 run 或点击刷新时
 读取结果，不持续轮询，也不控制仿真或重发动作。新 rollout 在 15 Hz 的每个控制步保存全部五路相机，
-每段视频使用 chunk 起点和每个动作后的 `egocentric_mirrored_camera` 实际帧，不做插帧，
-也不是模型预测的未来视频。旧的稀疏运行仍按原始 3.75 Hz 采样间隔播放。
+每段执行视频使用 chunk 起点和每个动作后的 `egocentric_mirrored_camera` 实际帧，不做插帧。
+模型服务同时 VAE 解码 33 帧生成结果；runner 去掉第一个条件帧，将后续 32 帧以 15 FPS 编码为
+`chunks/NNN/prediction.mp4`。页面左侧 `PREDICTED FUTURE · MODEL` 是模型生成结果，右侧
+`EXECUTED · VIEWPORT` 是仿真实际执行记录，不能将二者混称。VAE 解码和约 33 MB 的本机
+WebSocket 原始帧传输会增加每次规划的延迟与峰值内存。
+旧 run 没有保存生成 latent，无法追溯恢复当时的预测视频，页面会明确显示未捕获；旧的稀疏执行运行仍按原始 3.75 Hz 采样间隔播放。
 视频第一次访问时由本机 FFmpeg 编码为 H.264 并缓存到对应 `chunks/NNN/viewport.mp4`。
 使用 RoboLab 环境启动：
 

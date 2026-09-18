@@ -4,27 +4,47 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
+import subprocess
 import sys
 import traceback
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--output-dir", required=True, type=Path)
+parser.add_argument("--sim-gpu", type=int, default=4, help="Physical renderer GPU index; CUDA_VISIBLE_DEVICES must match its UUID.")
+parser.add_argument("--seed", type=int, default=3407)
+parser.add_argument("--initialization-diagnostic", action="store_true", help="Capture reset and warmup robot positions/targets without policy inference.")
+parser.add_argument("--worker-socket", type=Path, help="Serve persistent language-sampling commands on a local Unix socket.")
 parser.add_argument("--task", help="Capture a registered RoboLab task instead of the small cube scene.")
 parser.add_argument("--rollout-chunks", type=int, default=0, help="Run this many sequential policy chunks; zero only captures cameras.")
 parser.add_argument("--execute-steps", type=int, default=16)
 parser.add_argument("--policy-port", type=int, default=18745)
+parser.add_argument("--instruction", help="Override the task instruction sent to the policy.")
+parser.add_argument("--replay-actions", type=Path, help="Replay actions after reset before starting the rollout.")
+parser.add_argument("--replay-steps", type=int, default=0)
+parser.add_argument("--replay-state", type=Path, help="NPZ state expected at the replay boundary.")
 parser.add_argument("--render-width", type=int, default=640)
 parser.add_argument("--render-height", type=int, default=480)
 parser.add_argument("--rendering-mode", choices=("performance", "balanced", "quality"), default="balanced")
 args = parser.parse_args()
+if args.sim_gpu not in range(8):
+    parser.error("--sim-gpu must be a physical GPU index in 0..7")
+if args.initialization_diagnostic and (not args.task or args.worker_socket or args.rollout_chunks or args.replay_actions):
+    parser.error("--initialization-diagnostic requires a task and cannot execute policy/replay/worker commands")
+if args.worker_socket and (not args.task or args.rollout_chunks or args.replay_actions):
+    parser.error("--worker-socket requires a task and cannot be combined with sequential rollout/replay")
 if args.rollout_chunks < 0 or not 1 <= args.execute_steps <= 32:
     parser.error("rollout-chunks must be nonnegative and execute-steps must be in 1..32")
+if args.replay_steps < 0 or bool(args.replay_actions) != bool(args.replay_steps):
+    parser.error("--replay-actions and a positive --replay-steps must be provided together")
+if args.replay_state and not args.replay_actions:
+    parser.error("--replay-state requires --replay-actions")
 if args.render_width < 320 or args.render_height < 240:
     parser.error("render-width and render-height must be at least 320x240")
 if args.rollout_chunks and not args.task:
     parser.error("--rollout-chunks requires --task")
-if args.rollout_chunks:
+if args.rollout_chunks or args.worker_socket:
     import urllib.request
 
     with urllib.request.urlopen(f"http://127.0.0.1:{args.policy_port}/healthz", timeout=5) as response:
@@ -33,21 +53,26 @@ if args.rollout_chunks:
 sys.argv = [sys.argv[0]]
 if (args.output_dir / "result.json").exists():
     raise SystemExit("Use a new output directory; existing results must not be overwritten.")
-args.output_dir.mkdir(parents=True, exist_ok=True)
-gpu_uuid = "GPU-9bda66e3-4891-0eb0-79dd-c3530fa33f8a"
+gpu_uuid = subprocess.check_output([
+    "nvidia-smi", "-i", str(args.sim_gpu), "--query-gpu=uuid", "--format=csv,noheader",
+], text=True).strip()
 if os.environ.get("CUDA_VISIBLE_DEVICES") != gpu_uuid:
-    raise SystemExit("This probe requires CUDA_VISIBLE_DEVICES to contain only physical GPU 4's UUID.")
+    raise SystemExit(f"CUDA_VISIBLE_DEVICES must contain only physical GPU {args.sim_gpu}'s UUID ({gpu_uuid}).")
+args.output_dir.mkdir(parents=True, exist_ok=True)
 
 result = {
     "status": "starting",
     "cuda_visible_devices": gpu_uuid,
-    "renderer_active_gpu": 4,
+    "renderer_active_gpu": args.sim_gpu,
+    "seed": args.seed,
     "physics_device": "cpu",
     "renderer": "RaytracedLighting",
     "multi_gpu": False,
     "model_loaded": False,
     "task": args.task,
     "rollout_chunks_requested": args.rollout_chunks,
+    "replay_actions": str(args.replay_actions) if args.replay_actions else None,
+    "replay_steps": args.replay_steps,
     "camera_capture_fps": 15 if args.rollout_chunks else None,
     "renderer_resolution": [args.render_width, args.render_height],
     "rendering_quality": args.rendering_mode,
@@ -77,7 +102,7 @@ try:
     dlss_mode = {"performance": 0, "balanced": 1, "quality": 2}[args.rendering_mode]
     simulation_app = SimulationApp({
         "headless": True,
-        "active_gpu": 4,
+        "active_gpu": args.sim_gpu,
         "physics_gpu": 0,
         "multi_gpu": False,
         "width": args.render_width,
@@ -138,9 +163,39 @@ try:
                 frames.append(save_frame(tensor[0].detach().cpu().numpy(), f"{prefix}{name}"))
         return frames
 
+    def save_prediction_video(video, relative_path):
+        video = np.asarray(video)
+        if video.dtype != np.uint8 or video.ndim != 4 or video.shape[-1] != 3 or video.shape[0] < 2:
+            raise ValueError(f"Invalid predicted video: shape={video.shape}, dtype={video.dtype}")
+        future = np.ascontiguousarray(video[1:])
+        path = args.output_dir / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_suffix(".tmp.mp4")
+        ffmpeg = shutil.which("ffmpeg")
+        if not ffmpeg:
+            raise RuntimeError("ffmpeg is required to save predicted videos")
+        try:
+            subprocess.run([
+                ffmpeg, "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
+                "-video_size", f"{future.shape[2]}x{future.shape[1]}", "-framerate", "15",
+                "-i", "pipe:0", "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "24",
+                "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(temporary),
+            ], input=future.tobytes(), check=True)
+            temporary.replace(path)
+        finally:
+            temporary.unlink(missing_ok=True)
+        return {
+            "path": str(path.relative_to(args.output_dir)),
+            "source_shape": list(video.shape),
+            "future_shape": list(future.shape),
+            "fps": 15,
+        }
+
     acquire_physx_interface().overwrite_gpu_setting(0)
     if args.task:
         import robolab.constants
+        from isaaclab.envs.mdp import reset_scene_to_default
+        from isaaclab.managers import EventTermCfg
         from robolab.core.environments.factory import get_envs
         from robolab.core.environments.runtime import create_env
         from robolab.registrations.droid.auto_env_registrations_jointpos import auto_register_droid_envs
@@ -153,7 +208,9 @@ try:
             raise RuntimeError(f"Expected one registered task, got {task_envs}")
         env, env_cfg = create_env(
             task_envs[0], device="cpu", use_fabric=True, num_envs=1,
-            seed=3407, rendering_mode=args.rendering_mode,
+            seed=args.seed, rendering_mode=args.rendering_mode,
+            events={"reset": EventTermCfg(func=reset_scene_to_default, mode="reset",
+                                         params={"reset_joint_targets": True})},
         )
         if env.device != "cpu":
             raise RuntimeError(f"Unexpected physics device: {env.device}")
@@ -165,24 +222,100 @@ try:
             env.recorder_manager.set_hdf5_file("rollout.hdf5")
             env.recorder_manager.set_episode_index(0, env_ids=[0])
         set_stage("resetting_robolab")
+        def record_initialization(stage):
+            if not args.initialization_diagnostic:
+                return
+            robot = env.scene["robot"]
+            data = robot.data
+            values = {"stage": stage, "joint_names": list(data.joint_names)}
+            for name in ("joint_pos", "joint_vel", "default_joint_pos", "joint_pos_target", "joint_vel_target", "joint_effort_target"):
+                value = getattr(data, name, None)
+                values[name] = value.detach().cpu().numpy().tolist() if value is not None else None
+            result.setdefault("initialization_trace", []).append(values)
+            save_result()
+
+        record_initialization("before_reset")
         env.reset()
+        record_initialization("after_reset")
         for step in range(8):
             set_stage(f"stepping_robolab_{step}")
+            env.scene.write_data_to_sim()
             env.sim.step(render=True)
             env.scene.update(env.physics_dt)
+            record_initialization(f"after_physics_step_{step + 1}")
         set_stage("reading_robolab_observations")
         observation = env.observation_manager.compute()
         result["frames"] = capture_observation(observation, "")
         if not result["frames"]:
             raise RuntimeError("RoboLab returned no camera images.")
         result["physics_steps"] = 8
+        if args.initialization_diagnostic:
+            from instruction_sampling_worker import flat_state, restore_scene_state
+
+            saved_scene = flat_state(env.scene.get_state(is_relative=True))
+            robot = env.scene["robot"]
+            robot.set_joint_position_target(robot.data.default_joint_pos * 0)
+            env.reset_eval_state()
+            env.reset(seed=args.seed)
+            record_initialization("repeated_reset")
+            for step in range(8):
+                env.scene.write_data_to_sim()
+                env.sim.step(render=True)
+                env.scene.update(env.physics_dt)
+                record_initialization(f"repeated_reset_step_{step + 1}")
+            robot.set_joint_position_target(robot.data.default_joint_pos * 0)
+            observation = restore_scene_state(env, saved_scene)
+            record_initialization("restored_checkpoint")
+            for step in range(8):
+                env.scene.write_data_to_sim()
+                env.sim.step(render=True)
+                env.scene.update(env.physics_dt)
+                record_initialization(f"restored_checkpoint_step_{step + 1}")
+            observation = env.observation_manager.compute()
+            result["restored_frames"] = capture_observation(observation, "restored/")
+        if args.worker_socket:
+            from instruction_sampling_worker import serve
+
+            set_stage("sampling_worker")
+            faulthandler.cancel_dump_traceback_later()
+            serve(env, env_cfg, args)
         if args.rollout_chunks:
             import time
             import torch
             from policies.cosmos3.client import Cosmos3Client
 
+            if args.replay_actions:
+                replay_actions = np.load(args.replay_actions)
+                if replay_actions.ndim != 2 or replay_actions.shape[1] != 8:
+                    raise ValueError(f"Replay actions must have shape (N, 8), got {replay_actions.shape}")
+                if len(replay_actions) < args.replay_steps or not np.isfinite(replay_actions[:args.replay_steps]).all():
+                    raise ValueError("Replay action prefix is missing or contains non-finite values")
+                set_stage("replaying_actions")
+                for replay_step, replay_action in enumerate(replay_actions[:args.replay_steps]):
+                    observation, _, terminated, truncated, _ = env.step(
+                        torch.as_tensor(replay_action, dtype=torch.float32, device=env.device).unsqueeze(0))
+                    if terminated[0] or truncated[0]:
+                        raise RuntimeError(f"Replay terminated unexpectedly at step {replay_step + 1}")
+                result["replay_complete"] = True
+                if args.replay_state:
+                    expected = np.load(args.replay_state)
+                    actual_joint = observation["proprio_obs"]["arm_joint_pos"][0].cpu().numpy()
+                    actual_gripper = observation["proprio_obs"]["gripper_pos"][0].cpu().numpy()
+                    joint_error = float(np.max(np.abs(actual_joint - expected["joint_position"])))
+                    gripper_error = float(np.max(np.abs(actual_gripper - expected["gripper_position"])))
+                    result["replay_state_check"] = {
+                        "expected": str(args.replay_state),
+                        "joint_max_abs_error": joint_error,
+                        "gripper_max_abs_error": gripper_error,
+                    }
+                    if joint_error > 1e-5 or gripper_error > 1e-5:
+                        raise RuntimeError(f"Replay state mismatch: joint={joint_error}, gripper={gripper_error}")
+                result["replay_frames"] = capture_observation(observation, "replay/")
+
+            instruction = args.instruction or env_cfg.instruction
+
             result.update({"mode": "sequential_closed_loop", "chunks": [], "steps_executed": 0,
-                           "instruction": env_cfg.instruction, "native_success": False,
+                           "instruction": instruction, "native_success": False,
                            "native_terminated": False, "native_truncated": False})
 
             class RecordingCosmosClient(Cosmos3Client):
@@ -197,6 +330,10 @@ try:
                     set_stage(f"policy_request_{chunk_index}")
                     started = time.monotonic()
                     reply = self.client.request(request, timeout=240)
+                    if not isinstance(reply, dict) or "video" not in reply:
+                        raise ValueError("Policy response did not contain a predicted video")
+                    prediction_video = save_prediction_video(
+                        reply["video"], f"chunks/{chunk_index:03d}/prediction.mp4")
                     raw = self._unpack_response(reply)
                     if raw.shape != (32, 8) or not np.isfinite(raw).all():
                         raise ValueError(f"Invalid model action chunk: {raw.shape}")
@@ -204,6 +341,7 @@ try:
                     result["chunks"].append({"index": chunk_index,
                         "input": input_frame, "start_step": result["steps_executed"],
                         "prompt": request["prompt"], "generated_shape": list(raw.shape),
+                        "prediction_video": prediction_video,
                         "inference_seconds": time.monotonic() - started, "executed_steps": 0})
                     save_result()
                     return reply
@@ -220,7 +358,7 @@ try:
             executed = []
             proprioception = [observation["proprio_obs"]["arm_joint_pos"][0].cpu().numpy().copy()]
             for step in range(args.rollout_chunks * args.execute_steps):
-                prediction = client.infer(observation, env_cfg.instruction, env_id=0)
+                prediction = client.infer(observation, instruction, env_id=0)
                 action = np.asarray(prediction["action"], dtype=np.float32)
                 if action.shape != (8,) or not np.isfinite(action).all():
                     raise ValueError("Invalid executable action")
@@ -277,6 +415,8 @@ try:
         frame = np.asarray(annotator.get_data())
         result["frames"] = [save_frame(frame, "camera")]
     result["status"] = ("rollout_complete" if result["closed_loop_complete"] else "task_terminated") if args.rollout_chunks else "frame_captured"
+    if args.worker_socket:
+        result["status"] = "sampling_worker_stopped"
     exit_code = 0
 except Exception as error:
     result.update({"status": "failed", "error": f"{type(error).__name__}: {error}"})

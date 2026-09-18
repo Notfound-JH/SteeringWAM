@@ -1,37 +1,211 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>RoboLab Chunk Review</title>
-  <link rel="stylesheet" href="/assets/review.css">
+  <meta name="description" content="Industrial operations control dashboard">
+  <title>Operations Control</title>
+  <link rel="stylesheet" href="/assets/review.css?v=7">
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">
-      <span class="brand-mark" aria-hidden="true"></span>
-      <div><strong>CHUNK REVIEW</strong><small>RoboLab action playback</small></div>
-    </div>
-    <div class="top-actions">
-      <label class="run-picker"><span>RUN</span><select id="run-select" aria-label="选择 rollout"></select></label>
-      <button id="refresh" class="icon-button" title="立即刷新" aria-label="立即刷新">↻</button>
+    <a class="wordmark" href="#dashboard" aria-label="Operations home">OPS CTRL</a>
+    <nav class="main-nav" aria-label="Primary navigation">
+      <a class="nav-link active" href="#dashboard">Dashboard</a>
+      <a class="nav-link" href="#operations">Operations</a>
+      <a class="nav-link" href="#employees">Employees</a>
+      <a class="nav-link" href="#reports">Reports</a>
+    </nav>
+    <div class="header-tools">
+      <label class="search-box">
+        <i data-lucide="search" aria-hidden="true"></i>
+        <input id="search-input" type="search" placeholder="Search operations..." aria-label="Search operations">
+        <kbd>⌘K</kbd>
+      </label>
+      <div class="location">
+        <i data-lucide="map-pin" aria-hidden="true"></i>
+        <span><small>Facility</small>Dallas, TX</span>
+      </div>
+      <button class="icon-btn notification-btn" type="button" aria-label="Notifications" title="Notifications">
+        <i data-lucide="bell" aria-hidden="true"></i>
+        <span class="notification-dot"></span>
+      </button>
+      <button class="avatar" type="button" aria-label="Open operator profile" title="Operator profile">JD</button>
     </div>
   </header>
 
-  <main class="review-main">
-    <section class="review-heading">
+  <main>
+    <section class="hero" id="dashboard">
       <div>
-        <div class="status-line"><span id="status-dot" class="status-dot"></span><span id="status">CONNECTING</span></div>
-        <h1 id="task">Waiting for rollout</h1>
+        <p class="eyebrow"><span class="live-dot"></span>Control room online</p>
+        <h1>Operations Control</h1>
+        <p class="hero-copy">Manage operations, assign employees, and track performance.</p>
       </div>
-      <div class="review-summary">
-        <span id="chunk-count">0 CHUNKS</span>
-        <span id="steps">0 STEPS</span>
-        <span id="native-result">PENDING</span>
+      <div class="hero-action">
+        <label for="operation-select">Select operation</label>
+        <select id="operation-select">
+          <option value="morning-sort">Morning Sort</option>
+          <option value="inbound-scan">Inbound Scan</option>
+          <option value="dock-audit">Dock Audit</option>
+        </select>
+        <button id="start-operation" class="primary-btn" type="button">
+          <i data-lucide="play" aria-hidden="true"></i>
+          Start Operation
+        </button>
       </div>
     </section>
-    <section id="chunks" class="review-grid" aria-live="polite"></section>
+
+    <section class="operations-board" id="operations" aria-labelledby="workflow-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-index">01 / ACTIVE WORKFLOW</p>
+          <h2 id="workflow-title">Morning Sort</h2>
+        </div>
+        <span id="workflow-state" class="state-badge">Ready</span>
+      </div>
+
+      <div class="workflow-row">
+        <article class="operation-card searchable" data-search="unload trailer dock crew">
+          <div class="card-topline"><span>STEP 01</span><i data-lucide="package-open" aria-hidden="true"></i></div>
+          <h3>Unload Trailer</h3>
+          <dl>
+            <div><dt>Status</dt><dd><span class="status-dot ready"></span>Ready</dd></div>
+            <div><dt>Employees</dt><dd>6 / 6</dd></div>
+            <div><dt>Duration</dt><dd>45 min</dd></div>
+          </dl>
+        </article>
+
+        <div class="flow-arrow" aria-hidden="true"><i data-lucide="arrow-right"></i></div>
+
+        <article class="operation-card searchable" data-search="sort packages conveyor line">
+          <div class="card-topline"><span>STEP 02</span><i data-lucide="scan-line" aria-hidden="true"></i></div>
+          <h3>Sort Packages</h3>
+          <dl>
+            <div><dt>Status</dt><dd><span class="status-dot waiting"></span>Waiting</dd></div>
+            <div><dt>Employees</dt><dd>8 / 10</dd></div>
+            <div><dt>Duration</dt><dd>1h 20m</dd></div>
+          </dl>
+        </article>
+
+        <div class="flow-arrow" aria-hidden="true"><i data-lucide="arrow-right"></i></div>
+
+        <article class="operation-card searchable" data-search="load outbound route trucks">
+          <div class="card-topline"><span>STEP 03</span><i data-lucide="truck" aria-hidden="true"></i></div>
+          <h3>Load Outbound</h3>
+          <dl>
+            <div><dt>Status</dt><dd><span class="status-dot waiting"></span>Waiting</dd></div>
+            <div><dt>Employees</dt><dd>5 / 6</dd></div>
+            <div><dt>Duration</dt><dd>55 min</dd></div>
+          </dl>
+        </article>
+
+        <button class="add-card" type="button" data-add="step">
+          <i data-lucide="plus" aria-hidden="true"></i>
+          <span>Add step</span>
+        </button>
+      </div>
+
+      <div class="employee-row" id="employees">
+        <article class="employee-card searchable" data-search="elena marquez dock lead">
+          <div class="employee-head">
+            <div class="employee-avatar coral">EM</div>
+            <div><h3>Elena Marquez</h3><p>Dock Lead</p></div>
+            <span class="employee-status ready"><span></span>Ready</span>
+          </div>
+          <div class="employee-meta"><span><i data-lucide="clock-3"></i>06:00–14:00</span><span>92% eff.</span></div>
+        </article>
+
+        <article class="employee-card searchable" data-search="malik thompson sorter">
+          <div class="employee-head">
+            <div class="employee-avatar navy">MT</div>
+            <div><h3>Malik Thompson</h3><p>Sorter</p></div>
+            <span class="employee-status ready"><span></span>Ready</span>
+          </div>
+          <div class="employee-meta"><span><i data-lucide="clock-3"></i>06:00–14:00</span><span>88% eff.</span></div>
+        </article>
+
+        <article class="employee-card searchable" data-search="priya shah scanner">
+          <div class="employee-head">
+            <div class="employee-avatar yellow">PS</div>
+            <div><h3>Priya Shah</h3><p>Scanner</p></div>
+            <span class="employee-status assigned"><span></span>Assigned</span>
+          </div>
+          <div class="employee-meta"><span><i data-lucide="clock-3"></i>06:30–14:30</span><span>95% eff.</span></div>
+        </article>
+
+        <button class="add-card employee-add" type="button" data-add="employee">
+          <i data-lucide="user-plus" aria-hidden="true"></i>
+          <span>Add employee</span>
+        </button>
+      </div>
+      <p id="search-empty" class="search-empty" hidden>No matching operations or employees.</p>
+    </section>
+
+    <section class="metrics-section" id="reports" aria-labelledby="metrics-title">
+      <div class="section-heading metrics-heading">
+        <div>
+          <p class="section-index">02 / LIVE PERFORMANCE</p>
+          <h2 id="metrics-title">Live Metrics</h2>
+        </div>
+        <p id="last-updated">Updated just now</p>
+      </div>
+
+      <div class="metrics-layout">
+        <div class="metric-strip">
+          <article class="metric-card">
+            <div class="metric-icon"><i data-lucide="users" aria-hidden="true"></i></div>
+            <div><span>Employees Active</span><strong id="active-employees">18</strong><small>of 22 scheduled</small></div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-icon"><i data-lucide="timer" aria-hidden="true"></i></div>
+            <div><span>Avg. Cycle Time</span><strong>4.2 min</strong><small class="positive">↓ 8% vs. target</small></div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-icon"><i data-lucide="boxes" aria-hidden="true"></i></div>
+            <div><span>Units Completed</span><strong id="units-completed">1,248</strong><small>72% of shift goal</small></div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-icon"><i data-lucide="triangle-alert" aria-hidden="true"></i></div>
+            <div><span>Exceptions</span><strong>3</strong><small class="warning">Requires review</small></div>
+          </article>
+        </div>
+
+        <aside class="control-panel" aria-label="Operation controls">
+          <div class="control-panel-head">
+            <div>
+              <span>Current Operation</span>
+              <strong id="current-operation">Morning Sort</strong>
+            </div>
+            <span id="current-state" class="state-badge">Ready</span>
+          </div>
+          <div class="countdown-wrap">
+            <svg class="countdown-ring" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="ring-track" cx="60" cy="60" r="52"></circle>
+              <circle id="ring-progress" class="ring-progress" cx="60" cy="60" r="52"></circle>
+            </svg>
+            <div class="countdown-copy">
+              <strong id="countdown">00:45:00</strong>
+              <span>remaining</span>
+            </div>
+          </div>
+          <div class="control-actions">
+            <button id="reset-operation" class="secondary-btn" type="button">
+              <i data-lucide="rotate-ccw" aria-hidden="true"></i>
+              Reset
+            </button>
+            <label class="auto-toggle">
+              <input id="auto-advance" type="checkbox" checked>
+              <span class="toggle-track"><span></span></span>
+              Auto-advance
+            </label>
+          </div>
+        </aside>
+      </div>
+    </section>
   </main>
-  <script src="/assets/review.js"></script>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script src="/assets/review.js?v=7"></script>
 </body>
 </html>

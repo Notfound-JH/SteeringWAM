@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RoboLab · Copilot 采样记录</title>
+    <link rel="stylesheet" href="/assets/sampling.css?v=1">
+</head>
+
+<body>
+    <header>
+        <div><strong>RoboLab</strong><span>Copilot 采样记录</span></div><a href="/">旧版看板</a>
+    </header>
+    <main>
+        <section class="toolbar" aria-label="筛选">
+            <label>实验<select id="run"></select></label>
+            <label>任务<select id="task">
+                    <option value="">全部任务</option>
+                </select></label>
+            <label>判定<select id="verdict">
+                    <option value="">全部候选</option>
+                    <option value="selected">已选中</option>
+                    <option value="accept">接受</option>
+                    <option value="reject">拒绝</option>
+                    <option value="uncertain">不确定</option>
+                    <option value="pending">待审阅</option>
+                </select></label>
+            <button id="refresh" type="button">刷新</button>
+            <label class="check"><input type="checkbox" id="auto">自动刷新</label>
+        </section>
+        <div id="error" role="alert" hidden></div>
+        <section id="summary" aria-live="polite"></section>
+        <section class="workspace">
+            <aside>
+                <h1>候选 Chunk <span id="visible-count"></span></h1>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>任务 / 轮次</th>
+                                <th>候选</th>
+                                <th>判定</th>
+                                <th>视频</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rows"></tbody>
+                    </table>
+                </div>
+            </aside>
+            <article id="detail">
+                <div class="detail-heading">
+                    <h2 id="title">选择候选</h2><span id="badge"></span>
+                </div>
+                <div class="video-wrap"><video id="video" controls playsinline preload="metadata"></video>
+                    <p id="video-state"></p>
+                </div>
+                <div class="play-controls"><button id="previous" type="button" title="上一个候选">上一条</button><button
+                        id="next" type="button" title="下一个候选">下一条</button><label>速度<select id="speed">
+                            <option value="0.25">0.25×</option>
+                            <option value="0.5">0.5×</option>
+                            <option value="1" selected>1×</option>
+                        </select></label><a id="download" download>下载视频</a><a id="sheet" target="_blank"
+                        rel="noopener">原始审阅图</a></div>
+                <dl class="record">
+                    <dt>Copilot 当前指令</dt>
+                    <dd id="instruction"></dd>
+                    <dt>子目标</dt>
+                    <dd id="subgoal"></dd>
+                    <dt>完成条件 / 避免动作</dt>
+                    <dd id="condition"></dd>
+                    <dt>Copilot 判断原文</dt>
+                    <dd id="evidence"></dd>
+                    <dt>子目标完成 / 原生成功</dt>
+                    <dd id="completion"></dd>
+                    <dt>Copilot 选优理由</dt>
+                    <dd id="reason"></dd>
+                </dl>
+                <details>
+                    <summary>发送给 Cosmos 的完整 Prompt</summary>
+                    <pre id="prompt"></pre>
+                </details>
+                <p id="candidate-id" class="muted"></p>
+            </article>
+        </section>
+        <section class="outputs">
+            <h2>Copilot 输出</h2>
+            <div id="progress"></div>
+            <details open>
+                <summary>控制者最近输出</summary>
+                <pre id="console"></pre>
+            </details>
+            <details>
+                <summary>控制进程记录</summary>
+                <pre id="lifecycle"></pre>
+            </details>
+        </section>
+    </main>
+    <script src="/assets/sampling.js?v=1"></script>
+</body>
+
+</html>
