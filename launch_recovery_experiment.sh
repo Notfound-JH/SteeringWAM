@@ -64,6 +64,7 @@ export OMNI_KIT_ACCEPT_EULA=YES OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 PYTHONU
 printf 'Episode: %s\nAgent socket: %s\nSimulator log: %s/launch.log\n' "$RUN" "$SOCKET" "$RUN"
 "$PY" probe_isaac_camera.py --task "$TASK" --sim-gpu "$SIM_GPU" --seed 3407 \
     --policy-port "$PORT" --recovery-worker-socket "$SOCKET" --output-dir "$RUN" >"$RUN/launch.log" 2>&1
+"$PY" verify_recovery_episode.py "$RUN/recovery"
 if [[ -n "$SYNC_PID" ]]; then
     kill "$SYNC_PID"
     wait "$SYNC_PID"

@@ -1,5 +1,9 @@
 # RoboLab + Cosmos3-Edge: 外部视觉 Agent 探索与采样
 
+新增 live-state WAM + Coding Agent Recovery 实验见
+[recovery_README.md](recovery_README.md)。它不使用本文的 reset/restore 分支采样；
+Recovery 和 WAM continuation 始终共享同一个环境状态。
+
 本文面向接管实验的 agent。实现与命令按 2026-09-16 的本地代码核对。
 这是现有 RoboLab 安装上的推理流程，不是训练流程，也不是开箱通用的任意任务搜索器。
 历史分支搜索任务固定为 `ToolsPickingAllHammersTask`；下面的新 session harness 另行支持六任务队列，不能与历史 session 混用。

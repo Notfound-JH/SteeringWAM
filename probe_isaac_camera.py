@@ -290,6 +290,14 @@ try:
             set_stage("recovery_worker")
             faulthandler.cancel_dump_traceback_later()
             serve(env, env_cfg, args, observation)
+            manifest = json.loads((args.output_dir / "recovery/manifest.json").read_text())
+            result.update(
+                model_loaded=True,
+                native_success=manifest["native_success"],
+                acceptance_success=manifest["acceptance_success"],
+                recovery_manifest="recovery/manifest.json",
+                steps_executed=manifest["step"],
+            )
         if args.rollout_chunks:
             import time
             import torch
@@ -428,6 +436,8 @@ try:
     result["status"] = ("rollout_complete" if result["closed_loop_complete"] else "task_terminated") if args.rollout_chunks else "frame_captured"
     if args.worker_socket:
         result["status"] = "sampling_worker_stopped"
+    if args.recovery_worker_socket:
+        result["status"] = "recovery_worker_stopped"
     exit_code = 0
 except Exception as error:
     result.update({"status": "failed", "error": f"{type(error).__name__}: {error}"})

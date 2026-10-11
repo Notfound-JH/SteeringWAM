@@ -1,5 +1,57 @@
 # Live WAM + Coding Agent recovery
 
+## Verified first episode: 2026-10-11
+
+The real Isaac Sim episode
+[recovery_cube_20261011](diagnostics/recovery_cube_20261011/) passed the full-chain
+verifier. This is real simulator stepping, **not hardware** and not a mock.
+
+| Phase | Actual control steps | Observed outcome |
+|---|---:|---|
+| Frozen WAM | 1-96 | Fingers closed above cube; cube stayed on table |
+| Agent Action recovery | 97-116 | Reopened, moved flange forward/down to an open pre-grasp pose |
+| WAM continuation | 117-212 | Grasped and lifted cube, transported it and released it inside bowl |
+
+Native `RubiksCubeTask` success and full-chain `acceptance_success` are both
+true; no reset or state restoration occurred. Only **one** correction attempt
+was needed. The Agent did not pick/place the cube itself.
+
+Correction target `[0.475, -0.065, 0.195]` m versus measured
+`[0.47323275, -0.06489056, 0.19715637]` m: final tracking error **2.79 mm**.
+The complete episode contains 212 actual actions, 12 WAM predictions, 96 WAM
+continuation steps, and 213 wrist-video frames at 15 Hz. HDF5 has 212 action,
+robot-state and EE-pose records, with native `success=True`. Each WAM executed
+prefix was checked against its prediction; every actual command was checked
+against HDF5.
+
+Useful artifacts:
+[verification](diagnostics/recovery_cube_20261011/recovery/verification.json),
+[manifest](diagnostics/recovery_cube_20261011/recovery/manifest.json),
+[full video](diagnostics/recovery_cube_20261011/recovery/episode_wrist.mp4),
+[failure](diagnostics/recovery_cube_20261011/failure_01.json),
+[executed proposal](diagnostics/recovery_cube_20261011/proposal_01.json),
+[assessment](diagnostics/recovery_cube_20261011/assessment_01.json).
+
+The successful schedule used seed 3407 and 16 executed steps per WAM chunk:
+
+1. Six chunks: `Pick up the rubiks cube and put it in the bowl.`
+2. Inspect the real missed grasp; execute the saved Action proposal: reopen for
+   4 steps, move to the target over 12 steps, hold for 4 steps.
+3. Inspect feedback; hand control back after the saved visual assessment.
+4. Three chunks: `Grasp the cube with the open gripper, lift it, and place it in the red bowl.`
+5. Three chunks: `Place the grasped rubiks cube inside the red bowl and release it.`
+
+Do not reuse the saved request IDs in a new episode. Read its current token and
+images, and diagnose its actual state; the saved assessments are not automatic
+success labels for future runs. This is one verified success, not a success-rate
+estimate or a claim of bitwise reproducibility. Condition/Joint interfaces are
+implemented and protocol-tested, but this full real episode used Action mode.
+
+The original probe's generic `result.json` in this first episode still says
+`frame_captured`; it was not rewritten retroactively. Use the recovery manifest
+and independent verification as authority. The launcher has since been corrected
+to report the recovery manifest and native/acceptance results explicitly.
+
 This is a simulator experiment, not a physical-robot safety controller. It keeps
 one RoboLab environment alive. There is no reset, state restore, replay, shell,
 Python `exec`, or simulator handle in the recovery tool API. WAM training is not
