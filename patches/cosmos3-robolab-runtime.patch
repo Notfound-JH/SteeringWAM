@@ -1,0 +1,32 @@
+diff --git a/cosmos_framework/scripts/action_policy_server_robolab.py b/cosmos_framework/scripts/action_policy_server_robolab.py
+index 71bb2c8..fab9ab7 100644
+--- a/cosmos_framework/scripts/action_policy_server_robolab.py
++++ b/cosmos_framework/scripts/action_policy_server_robolab.py
+@@ -328,6 +328,10 @@ class RobolabServerArgs(pydantic.BaseModel):
+     """Output directory for OmniInference. Defaults to /tmp/cosmos3_action_server/robolab."""
+     sampler: Literal["unipc", "edm"] = "unipc"
+     """Diffusion sampler used by OmniInference."""
++    guardrails: bool = True
++    """Enable auxiliary guardrail models during setup."""
++    use_torch_compile: bool = True
++    """Whether to compile model execution with torch.compile."""
+ 
+     seed: int = 0
+     """Base generation seed used to initialize the request RNG."""
+@@ -382,6 +386,7 @@ class RobolabPolicyService:
+         self.pipe: OmniInference = pipe
+         self.model = pipe.model
+         self.model.eval()
++        self.model.requires_grad_(False)
+         assert isinstance(pipe.setup_args, OmniSetupArgs)
+         self.setup_args: OmniSetupArgs = pipe.setup_args
+ 
+@@ -433,6 +438,8 @@ class RobolabPolicyService:
+             "checkpoint_path": args.checkpoint_path,
+             "output_dir": args.output_dir or _DEFAULT_ROBOLAB_OUTPUT_DIR,
+             "sampler": args.sampler,
++            "guardrails": args.guardrails,
++            "use_torch_compile": args.use_torch_compile,
+         }
+         if args.experiment is not None:
+             setup_overrides["experiment"] = args.experiment

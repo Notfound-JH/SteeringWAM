@@ -16,6 +16,7 @@ parser.add_argument("--sim-gpu", type=int, default=4, help="Physical renderer GP
 parser.add_argument("--seed", type=int, default=3407)
 parser.add_argument("--initialization-diagnostic", action="store_true", help="Capture reset and warmup robot positions/targets without policy inference.")
 parser.add_argument("--worker-socket", type=Path, help="Serve persistent language-sampling commands on a local Unix socket.")
+parser.add_argument("--recovery-worker-socket", type=Path, help="Serve a persistent live-state WAM recovery session.")
 parser.add_argument("--task", help="Capture a registered RoboLab task instead of the small cube scene.")
 parser.add_argument("--rollout-chunks", type=int, default=0, help="Run this many sequential policy chunks; zero only captures cameras.")
 parser.add_argument("--execute-steps", type=int, default=16)
@@ -30,10 +31,12 @@ parser.add_argument("--rendering-mode", choices=("performance", "balanced", "qua
 args = parser.parse_args()
 if args.sim_gpu not in range(8):
     parser.error("--sim-gpu must be a physical GPU index in 0..7")
-if args.initialization_diagnostic and (not args.task or args.worker_socket or args.rollout_chunks or args.replay_actions):
+if args.initialization_diagnostic and (not args.task or args.worker_socket or args.recovery_worker_socket or args.rollout_chunks or args.replay_actions):
     parser.error("--initialization-diagnostic requires a task and cannot execute policy/replay/worker commands")
-if args.worker_socket and (not args.task or args.rollout_chunks or args.replay_actions):
+if args.worker_socket and (not args.task or args.rollout_chunks or args.replay_actions or args.recovery_worker_socket):
     parser.error("--worker-socket requires a task and cannot be combined with sequential rollout/replay")
+if args.recovery_worker_socket and (not args.task or args.rollout_chunks or args.replay_actions):
+    parser.error("--recovery-worker-socket requires a task and cannot be combined with rollout/replay")
 if args.rollout_chunks < 0 or not 1 <= args.execute_steps <= 32:
     parser.error("rollout-chunks must be nonnegative and execute-steps must be in 1..32")
 if args.replay_steps < 0 or bool(args.replay_actions) != bool(args.replay_steps):
@@ -44,7 +47,7 @@ if args.render_width < 320 or args.render_height < 240:
     parser.error("render-width and render-height must be at least 320x240")
 if args.rollout_chunks and not args.task:
     parser.error("--rollout-chunks requires --task")
-if args.rollout_chunks or args.worker_socket:
+if args.rollout_chunks or args.worker_socket or args.recovery_worker_socket:
     import urllib.request
 
     with urllib.request.urlopen(f"http://127.0.0.1:{args.policy_port}/healthz", timeout=5) as response:
@@ -212,6 +215,8 @@ try:
             events={"reset": EventTermCfg(func=reset_scene_to_default, mode="reset",
                                          params={"reset_joint_targets": True})},
         )
+        if args.recovery_worker_socket:
+            env.cfg.reset_early_termination = False
         if env.device != "cpu":
             raise RuntimeError(f"Unexpected physics device: {env.device}")
         result["render_mode"] = env.sim.render_mode.name
@@ -279,6 +284,12 @@ try:
             set_stage("sampling_worker")
             faulthandler.cancel_dump_traceback_later()
             serve(env, env_cfg, args)
+        if args.recovery_worker_socket:
+            from recovery_worker import serve
+
+            set_stage("recovery_worker")
+            faulthandler.cancel_dump_traceback_later()
+            serve(env, env_cfg, args, observation)
         if args.rollout_chunks:
             import time
             import torch
