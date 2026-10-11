@@ -221,5 +221,25 @@ Destination prefix: `jinghe/steeringwam/recovery/RUN_NAME/` in that configured
 container. Failed attempts are included. Check `errors=[]` in
 `~/.blob-sync/instruction-results/RUN_NAME/status.json`; an upload process merely
 being alive is not proof of synchronization. After finalization, perform a final
-`--once` pass. Code is synchronized to the current GitHub branch at explicit
-validated checkpoints; do not periodically commit unrelated worktree changes.
+`--once` pass.
+
+[sync_recovery_code.py](sync_recovery_code.py) periodically pushes already
+committed checkpoints on the recovery branch and verifies the remote commit:
+
+```bash
+$PY sync_recovery_code.py --interval 60
+# One foreground retry after configuring local GitHub authentication:
+$PY sync_recovery_code.py --once
+```
+
+It never stages, commits, force-pushes, or modifies unrelated worktree changes.
+Authentication or permission failures are recorded as `blocked`, not `synced`,
+in `~/.blob-sync/recovery-code/status.json`. The first experiment's GitHub upload
+remains blocked: HTTPS credentials are unavailable, and the existing SSH key
+was rejected even with GitHub's independently verified host key. The VS Code
+integrated-task fallback timed out without creating a task or pushing the branch.
+
+As an additional recoverable backup, an incremental Git bundle of the experiment
+commits is stored with the episode on Azure. It is not a substitute claim for
+GitHub synchronization; it can be fetched into a checkout containing base commit
+`27a8c70`, then pushed when authentication is available.
