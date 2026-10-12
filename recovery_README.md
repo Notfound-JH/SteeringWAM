@@ -234,12 +234,25 @@ $PY sync_recovery_code.py --once
 
 It never stages, commits, force-pushes, or modifies unrelated worktree changes.
 Authentication or permission failures are recorded as `blocked`, not `synced`,
-in `~/.blob-sync/recovery-code/status.json`. The first experiment's GitHub upload
-remains blocked: HTTPS credentials are unavailable, and the existing SSH key
-was rejected even with GitHub's independently verified host key. The VS Code
-integrated-task fallback timed out without creating a task or pushing the branch.
+in `~/.blob-sync/recovery-code/status.json`. GitHub authentication was completed
+on 2026-10-12, and the recovery branch was pushed with its remote commit verified
+against the local checkpoint. The initial HTTPS/SSH authentication failures and
+VS Code task timeout did not alter the verified episode.
+
+For another machine, install GitHub CLI, authorize it in your own browser, then
+configure Git's credential helper:
+
+```bash
+gh auth login --hostname github.com --web
+gh auth setup-git --hostname github.com
+gh auth status --hostname github.com
+```
+
+These flags also work with Ubuntu's older GitHub CLI package. Do not send tokens
+to the Agent or store them in the repository/episode. Check the CLI's credential
+storage policy before authenticating on a shared Linux account.
 
 As an additional recoverable backup, an incremental Git bundle of the experiment
 commits is stored with the episode on Azure. It is not a substitute claim for
 GitHub synchronization; it can be fetched into a checkout containing base commit
-`27a8c70`, then pushed when authentication is available.
+`27a8c70` if a separate restore is needed.
