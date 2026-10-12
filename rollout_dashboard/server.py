@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import shutil
 import subprocess
 from urllib.parse import quote
@@ -11,6 +12,11 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+
+if __package__:
+    from .recovery import DOWNLOADS, episode_file, load_episode, summary
+else:
+    from recovery import DOWNLOADS, episode_file, load_episode, summary
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB_DIR = Path(__file__).resolve().parent / "web"
@@ -320,6 +326,43 @@ def create_app(diagnostics_dir: Path | None = None) -> FastAPI:
     @app.get("/sampling")
     def sampling_index():
         return FileResponse(WEB_DIR / "sampling.html", headers={"Cache-Control": "no-store"})
+
+    @app.get("/recovery")
+    def recovery_index():
+        return FileResponse(WEB_DIR / "recovery.html", headers={"Cache-Control": "no-store"})
+
+    @app.get("/api/recovery")
+    def recovery_runs():
+        episodes = []
+        for marker in sorted(diagnostics.glob("*/recovery/manifest.json"), reverse=True):
+            try:
+                directory = resolve_run(marker.parent.parent.name)
+                episodes.append(summary(directory))
+            except (OSError, ValueError, KeyError, HTTPException):
+                logging.exception("Cannot read recovery episode %s", marker.parent.parent.name)
+                episodes.append({"id": marker.parent.parent.name, "error": "Episode metadata is unreadable"})
+        return {"episodes": episodes}
+
+    @app.get("/api/recovery/{run_id}")
+    def recovery_episode(run_id: str):
+        directory = resolve_run(run_id)
+        if not (directory / "recovery/manifest.json").is_file():
+            raise HTTPException(404, "Finalized recovery episode not found")
+        try:
+            return load_episode(directory)
+        except (OSError, ValueError, KeyError, TypeError, StopIteration) as error:
+            logging.exception("Cannot load recovery episode %s", run_id)
+            raise HTTPException(500, "Episode data is incomplete, invalid, or differs from its manifest") from error
+
+    @app.get("/api/recovery/{run_id}/download/{kind}")
+    def recovery_download(run_id: str, kind: str):
+        if kind not in DOWNLOADS:
+            raise HTTPException(404, "Unknown recovery download")
+        try:
+            path = episode_file(resolve_run(run_id), DOWNLOADS[kind])
+        except (OSError, ValueError) as error:
+            raise HTTPException(404, "Recovery artifact not found") from error
+        return FileResponse(path, filename=path.name, headers={"Cache-Control": "no-store"})
 
     @app.get("/six")
     def six_index():

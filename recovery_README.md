@@ -1,5 +1,42 @@
 # Live WAM + Coding Agent recovery
 
+## Read-only experiment dashboard
+
+Start the existing dashboard server without launching a model or simulator:
+
+```bash
+./RoboLab/.venv/bin/python rollout_dashboard/server.py --host 127.0.0.1 --port 8767
+```
+
+Open **http://127.0.0.1:8767/recovery**. When connected to this server over
+VS Code Remote SSH, forward port **8767** in the Ports panel and open its local
+address. Keep it bound to localhost; the dashboard has no authentication and is
+not intended to be exposed directly to the public internet.
+
+The page reads finalized episodes from `diagnostics/*/recovery/manifest.json`.
+It provides:
+
+- Full actual video, phase timeline and step-by-step camera/robot-state inspection.
+- Failure evidence, every recorded correction attempt, its original bounded code,
+  before/after observations and measured Cartesian tracking error.
+- Separate WAM input, predicted future, condition and actual execution length.
+- Explicit local/native/full-chain outcomes, including unverified, mock and
+  failed records; a native success label alone never earns verified acceptance.
+- Allowlisted downloads of Manifest, JSONL, HDF5, verification and video.
+
+The new page does not send robot commands or execute displayed code. It does not
+encode new videos, rewrite episode data, or open the simulator. Corrupt event
+logs and missing files are visible errors rather than success-shaped defaults.
+Existing rollout and sampling pages remain available; the old home page links
+to Recovery Lab. A specific episode can be bookmarked with
+`/recovery?episode=recovery_cube_20261011`.
+
+Focused API tests:
+
+```bash
+./RoboLab/.venv/bin/python -m pytest test_recovery_dashboard.py -q
+```
+
 ## Verified first episode: 2026-10-11
 
 The real Isaac Sim episode
