@@ -155,6 +155,82 @@ one RoboLab environment alive. There is no reset, state restore, replay, shell,
 Python `exec`, or simulator handle in the recovery tool API. WAM training is not
 part of this experiment.
 
+## Six historical tasks: 2026-10-12 diagnostic batch
+
+All six tasks were run through the live recovery pipeline, one new episode per
+historical task. **None reached its complete native task goal in this batch.**
+The previous successful cube-in-bowl episode remains unchanged and is not
+included in these six results.
+
+| Task | Actual steps | WAM continuation steps | Observed partial progress / final problem |
+|---|---:|---:|---|
+| `tools` | 458 | 160 | Clearer hammer approach, but final closure was empty; no hammer placed |
+| `fruits` | 1040 | 768 | WAM placed two lemons on the displaced plate; third-fruit grasp stalled |
+| `blocks` | 1030 | 752 | WAM placed blue/red blocks; final approach to green block failed |
+| `black_items` | 740 | 448 | Mouse grasp locally recovered, then dropped before reaching the bin |
+| `organic` | 514 | 160 | Orange contact was lost; later grasp attempts failed |
+| `toys` | 1926 | 1280 | WAM placed all three cubes and blue/red blocks; lizard grasp repeatedly slipped |
+
+Each episode used all three allowed correction attempts. After the budget was
+exhausted, an unresolved failure ended the episode; no reset, fourth correction,
+or replacement episode was used. These are early stops on unresolved failure,
+not native timeouts. Every episode has `native_success=false` and
+`acceptance_success=false`, while its independent **recording** verification
+passed. Partial progress is not full-task success.
+
+Totals: **5708 actual control steps**, 312 WAM predictions, 18 correction
+attempts (5 Action, 13 Joint), and 3568 WAM continuation steps. Of the actual
+steps, 716 are bounded controller corrections and 208 are corrected-condition
+WAM prefixes. All successful and unsuccessful attempts are retained. The Agent
+gave 13 positive and 5 negative local assessments; positive labels include
+pre-grasp readiness or short grasp retention and are not native success labels.
+Condition-only correction was not exercised in this batch.
+
+**Methodological limitation:** this batch used actual camera images and robot
+state **plus archived simulator object poses** for diagnosis, Cartesian targets,
+and assessment. Its `experiment.json` files explicitly record
+`agent_input_mode=debug_ground_truth_assisted`; the dashboard displays that
+warning. It is a privileged-state-assisted debugging baseline, **not a pure
+visual GPT benchmark**. The exact hosted Agent model/version was not
+independently recorded. Local assessments remain Agent judgments. One episode
+per task does not establish a generalization success rate.
+
+Each initial state matched its original SHA-256-verified genesis exactly
+(`max_state_error=0.0`, seed 3407). Restoration occurred only at episode step
+zero. In fruits, an orange was initially already on the plate, but WAM later
+displaced it and the plate; it is not counted as a new placement. Historical
+short rollouts and these longer interactive episodes are not paired
+success-rate comparisons.
+
+Data directories:
+`diagnostics/recovery_six_{tools,fruits,blocks,black_items,organic,toys}_20261012/`.
+The [machine-readable batch results](diagnostics/recovery_six_20261012_services/results.json)
+list every outcome and its provenance. Each episode contains the standard
+JSONL, actual/predicted actions and video, HDF5, all proposals/assessments, and
+independent verification. The shared policy log is in
+[batch services](diagnostics/recovery_six_20261012_services/).
+
+All episode files were synchronized to
+`jinghe/steeringwam/recovery/recovery_six_<task>_20261012/` in the configured Azure
+container. Metadata, genesis, manifest, verification, events, video and HDF5 were
+downloaded from Azure and SHA-256-compared with the local files for every task.
+The dashboard now lists these six recordings alongside the original success.
+
+To start another episode from the same fruits scene, use a **new** output
+directory (the launcher starts a frozen policy server unless `REUSE_POLICY=1`):
+
+```bash
+RECOVERY_GENESIS=/home/aiscuser/steeringwam-data/replay-dependencies/fruits/genesis.npz \
+RECOVERY_GENESIS_SHA256=e3fe11d18035c730cf93511a092e17280c8ba463d0fe48b816afd11ff7d4831c \
+SIM_GPU=6 \
+bash launch_recovery_experiment.sh diagnostics/recovery_fruits_new FruitsOnPlate3Task
+```
+
+Use the printed socket and the interactive tools below. Inspect fresh
+observations and tokens; do not replay old request IDs or automatically reuse
+the saved local-success assessments. The run reproduces initialization and the
+available workflow, not bitwise stochastic-policy or Agent behavior.
+
 ## Minimal integration
 
 - [probe_isaac_camera.py](probe_isaac_camera.py) initializes the registered DROID
