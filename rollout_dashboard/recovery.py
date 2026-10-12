@@ -58,6 +58,8 @@ def load_episode(directory: Path) -> dict:
     events = [json.loads(line) for line in raw_events.splitlines() if line.strip()]
     verification_path = directory / "recovery/verification.json"
     verification = read_json(episode_file(directory, "verification.json")) if verification_path.exists() else None
+    experiment_path = directory / "experiment.json"
+    experiment = read_json(episode_file(directory, "../experiment.json")) if experiment_path.exists() else {}
 
     def reference_path(reference: dict) -> Path:
         path = Path(reference["path"])
@@ -173,6 +175,8 @@ def load_episode(directory: Path) -> dict:
             and manifest.get("mock_execution") is False
         ),
         "verification": verification, "mock_execution": manifest.get("mock_execution"),
+        "agent_input_mode": experiment.get("agent_input_mode"),
+        "agent_model_version": experiment.get("agent_model_version"),
         "attempt_limit": manifest["safety_limits"]["max_attempts"],
         "failure": manifest.get("failure"),
         "video": media(manifest["episode_video"]),

@@ -147,6 +147,10 @@ function render() {
   $("tracking-error").textContent = tracking.length ? `${fixed(tracking.at(-1).error_mm, 2)} mm` : "—";
   $("execution-kind").textContent = episode.mock_execution === false ? "真实仿真 · 记录回放" : "MOCK / 未确认执行类型";
   $("execution-kind").className = `badge ${episode.mock_execution === false ? "" : "amber"}`;
+  const assisted = episode.agent_input_mode === "debug_ground_truth_assisted";
+  const inputMode = assisted ? "Agent 使用仿真物体真值辅助，不是纯视觉评测" : `Agent 输入来源：${episode.agent_input_mode || "未记录，不能判定为纯视觉"}`;
+  $("agent-provenance").textContent = `${inputMode} · Agent 模型版本：${episode.agent_model_version || "未记录精确版本"}`;
+  $("agent-provenance").className = assisted ? "failure-note" : "muted";
   $("video-duration").textContent = `${fixed(1 / episode.dt, 0)} FPS · ${fixed(episode.duration, 2)} s`;
   $("episode-video").src = episode.video;
   $("step-slider").max = episode.steps;

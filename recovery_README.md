@@ -80,6 +80,9 @@ It provides:
 - Separate WAM input, predicted future, condition and actual execution length.
 - Explicit local/native/full-chain outcomes, including unverified, mock and
   failed records; a native success label alone never earns verified acceptance.
+- Agent-input provenance from `experiment.json`, with a prominent warning for
+  `debug_ground_truth_assisted` episodes and an explicit unknown label when the
+  input mode or exact Agent model version was not recorded.
 - Allowlisted downloads of Manifest, JSONL, HDF5, verification and video.
 
 The new page does not send robot commands or execute displayed code. It does not
@@ -225,8 +228,15 @@ $PY recovery_client.py --socket "$SOCKET" --output /tmp/wam.json wam \
 ```
 
 Read the real camera PNGs referenced by `latest_observation`, robot state, and
-recent history. `scene.npz` is archival simulator ground truth, **not** an Agent
-perception input. Predicted video is never evidence of actual success.
+recent history. For a visual-only experiment, `scene.npz` is archival simulator
+ground truth, **not** an Agent perception input. If a debugging run consults its
+object poses for diagnosis, controller targets or assessment, record
+`"agent_input_mode": "debug_ground_truth_assisted"` in `experiment.json`.
+Such a run is a privileged-state-assisted diagnostic baseline, not a visual-only
+Agent evaluation. Record the actual Agent model/version when known; do not infer
+it from the client name. These provenance fields are metadata declarations, not
+proof supplied by the trajectory verifier. Predicted video is never evidence of
+actual success.
 
 ## GPT Agent configuration and tools
 

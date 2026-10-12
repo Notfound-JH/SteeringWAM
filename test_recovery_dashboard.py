@@ -46,6 +46,8 @@ def test_read_only_routes_and_unverified_episode(episode):
         assert response.status_code == 200
         data = response.json()
         assert data["verified"] is False
+        assert data["agent_input_mode"] is None
+        assert data["agent_model_version"] is None
         assert data["observations"][1]["step"] == 1
         assert data["attempts"] == []
         assert data["segments"] == []
@@ -69,6 +71,28 @@ def test_download_rejects_symlink_escape(episode, tmp_path):
     (run / "recovery/verification.json").symlink_to(secret)
     with TestClient(create_app(run.parent)) as client:
         assert client.get(f"/api/recovery/{run.name}/download/verification").status_code == 404
+
+
+def test_agent_input_provenance_is_exposed_without_changing_outcomes(episode):
+    run, _ = episode
+    (run / "experiment.json").write_text(json.dumps({
+        "agent_input_mode": "debug_ground_truth_assisted", "agent_model_version": None,
+    }))
+    with TestClient(create_app(run.parent)) as client:
+        data = client.get(f"/api/recovery/{run.name}").json()
+        assert data["agent_input_mode"] == "debug_ground_truth_assisted"
+        assert data["agent_model_version"] is None
+        assert data["native_success"] is False
+        assert data["verified"] is False
+
+
+def test_agent_provenance_rejects_symlink_escape(episode, tmp_path):
+    run, _ = episode
+    outside = tmp_path / "outside-experiment.json"
+    outside.write_text('{"agent_input_mode":"not-episode-data"}')
+    (run / "experiment.json").symlink_to(outside)
+    with TestClient(create_app(run.parent)) as client:
+        assert client.get(f"/api/recovery/{run.name}").status_code == 500
 
 
 def test_mock_success_cannot_be_verified(episode):
