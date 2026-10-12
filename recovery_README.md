@@ -55,6 +55,22 @@ The `host` process must remain running for the URL to work. Hosting a new tunnel
 without an existing tunnel ID can produce a new address, so use its actual output
 rather than a guessed or previously expired URL.
 
+Current private deployment (2026-10-12):
+**https://0kvl8z1c-8767.usw3.devtunnels.ms/recovery**.
+Sign in as `Notfound-JH` through GitHub. Page, API, stylesheet and video range
+requests were verified through an authenticated tunnel client; unauthenticated
+HTTPS requests redirect to GitHub sign-in.
+
+If hosting stops, keep the dashboard running on port 8767 and resume the existing
+tunnel rather than creating a different address:
+
+```bash
+~/.local/bin/devtunnel host peaceful-cat-0kljz4n.usw3
+```
+
+The address requires an active host process and an unexpired tunnel. No
+anonymous/public access grant was added.
+
 The page reads finalized episodes from `diagnostics/*/recovery/manifest.json`.
 It provides:
 
