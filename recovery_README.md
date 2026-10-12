@@ -231,6 +231,32 @@ observations and tokens; do not replay old request IDs or automatically reuse
 the saved local-success assessments. The run reproduces initialization and the
 available workflow, not bitwise stochastic-policy or Agent behavior.
 
+### Tools completion follow-up: two additional failed trials
+
+The request to complete all four hammers has **not yet been achieved**. Two
+additional independent episodes retained the original three-correction limit,
+unchanged physics/native checker, frozen policy and no in-episode resets:
+
+| Episode | Actual steps | WAM continuation | Outcome |
+|---|---:|---:|---|
+| `recovery_tools_complete_20261012T1050` | 238 | 0 | Wrong-bin approach; corrected blue-handle contact slipped during lift |
+| `recovery_tools_isolated_grasp_20261012T1125` | 522 | 320 | Clearance-first approach reached the wooden handle, but WAM did not establish a retained grasp |
+
+Both recordings passed verification, but native/full-chain success is false
+and no hammer was extracted. The second episode's positive local assessments
+refer only to navigation and handle contact, not grasp retention. All six new
+correction attempts are preserved; these episodes are not concatenated with
+each other or with the earlier tools failure.
+
+The final 192 WAM steps of the second episode include **57 actual close
+commands**, of which **54** still had measured gripper closure below 0.05.
+Therefore the failure cannot simply be described as WAM never commanding
+closure. Contact obstruction and gripper dynamics need further diagnosis;
+these measurements alone do not establish a simulator defect. The
+[follow-up results](diagnostics/recovery_tools_isolated_grasp_20261012T1125/followup_results.json)
+record the exact metrics and unresolved goal. Inputs remained explicitly
+privileged-state-assisted, including archived object poses and static geometry.
+
 ## Minimal integration
 
 - [probe_isaac_camera.py](probe_isaac_camera.py) initializes the registered DROID
