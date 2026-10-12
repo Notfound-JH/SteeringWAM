@@ -307,6 +307,27 @@ native outcome. `--require-success` continues to require the original WAM
 failure/recovery/continuation chain and cannot be satisfied by this baseline.
 The dashboard distinguishes direct-control programs and their task outcome.
 
+### Strict single-blue-hammer placement
+
+The unmodified single-hammer checker can terminate while the handle touches the
+table but the head is still near the gripper. A native success alone therefore
+does not establish a fully released, settled placement.
+
+For a separately labeled, stricter experiment, add `VERIFY_BLUE_PLACEMENT=1`
+and select `ToolsPickingHammerTask` with `AGENT_CONTROL=1`. The original native
+predicate must still pass. Additionally, the entire hammer world bounding box
+must clear the bin horizontally by 5 mm, the commanded gripper must be open
+with measured closure below 0.1, the flange must be at least 20 cm from the
+hammer bounding box, and linear/angular speed must remain at or below
+0.01 m/s and 0.05 rad/s for 15 consecutive control steps (1 second).
+
+This strengthens the experiment's termination condition; it is not the
+unmodified benchmark. Physics, action limits, the 60-second task horizon and
+the no-reset rule remain unchanged. Raw native outcomes and every stability
+sample are recorded, and the verifier independently recomputes the consecutive
+sample checks. `stable_blue_placement_verified` is separate from an ordinary
+native success label.
+
 ## Minimal integration
 
 - [probe_isaac_camera.py](probe_isaac_camera.py) initializes the registered DROID

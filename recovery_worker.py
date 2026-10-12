@@ -122,6 +122,9 @@ class RecoverySession:
             "native_goal": env_cfg.instruction,
             "status": "ready_agent" if self.agent_control else "ready_wam",
             "experiment_mode": "agent_control" if self.agent_control else "wam_recovery",
+            "success_criterion": (
+                "native_and_stable_blue_placement" if args.verify_blue_placement else "native"
+            ),
             "control_programs": 0,
             "request_id": uuid.uuid4().hex,
             "step": 0,
@@ -204,12 +207,15 @@ class RecoverySession:
             terminated = [self.state["native_terminated"]]
         if truncated is None:
             truncated = [self.state["native_truncated"]]
-        return {
+        result = {
             "native_success": bool(self.env.termination_manager.get_term("success")[0]),
             "native_terminated": bool(terminated[0]),
             "native_truncated": bool(truncated[0]),
             "episode_step": int(self.env.episode_length_buf[0]),
         }
+        if self.args.verify_blue_placement:
+            result["placement_verification"] = getattr(self.env, "_blue_placement_sample", None)
+        return result
 
     def _snapshot(self, label: str, *, video_frame: bool = False) -> dict[str, Any]:
         directory = self.directory / "observations" / f"{self.step:05d}_{label}"
@@ -682,9 +688,15 @@ class RecoverySession:
             "source_identity": {
                 "recovery_worker.py": digest(Path(__file__)),
                 "recovery_protocol.py": digest(Path(__file__).with_name("recovery_protocol.py")),
+                "blue_placement_verification.py": digest(
+                    Path(__file__).with_name("blue_placement_verification.py")
+                ),
             },
             "correction_attempts_preserved": self.attempts,
-            "task_success_authority": "RoboLab termination_manager.success",
+            "task_success_authority": (
+                "RoboLab native goal AND strict blue placement verification"
+                if self.args.verify_blue_placement else "RoboLab termination_manager.success"
+            ),
             "mock_execution": False,
             "wam_continuation_steps": self.continuation_steps,
             "acceptance_success": bool(

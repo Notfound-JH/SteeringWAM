@@ -11,6 +11,7 @@ import h5py
 import numpy as np
 
 from recovery_protocol import SafetyLimits, compile_program, validate_recovery_proposal
+from blue_placement_verification import STABLE_STEPS, placement_sample_passes
 
 
 def verify_agent_programs(manifest: dict, events: list[dict], actual: list[dict]) -> None:
@@ -130,6 +131,29 @@ def verify(directory: Path) -> dict:
     )
     if agent_success != manifest.get("agent_control_success", False):
         raise ValueError("Agent baseline success label disagrees with execution")
+    stable_placement = False
+    if manifest.get("success_criterion") == "native_and_stable_blue_placement":
+        count = 0
+        for event in actual:
+            sample = event["events"]["placement_verification"]
+            with np.load(event["observation"]["scene"]["path"]) as scene:
+                np.testing.assert_array_equal(
+                    sample["object_velocity"], scene["rigid_object/blue_hammer/root_velocity"][0]
+                )
+            np.testing.assert_allclose(
+                sample["gripper_closure"], event["robot_state"]["gripper_pos"][0], atol=1e-6
+            )
+            if sample["gripper_command"] != event["actual_action"][-1]:
+                raise ValueError("Placement gripper command disagrees with execution")
+            passed = placement_sample_passes(sample)
+            count = count + 1 if passed else 0
+            if sample["sample_passed"] != passed or sample["stable_steps"] != count:
+                raise ValueError("Placement stability history disagrees with measured samples")
+            if sample["episode_step"] != event["episode_step"]:
+                raise ValueError("Placement sample step mismatch")
+        stable_placement = count >= STABLE_STEPS
+        if bool(manifest["native_success"]) != stable_placement:
+            raise ValueError("Strict completion label disagrees with placement history")
     return {
         "recording_verified": True,
         "actual_steps": len(actual),
@@ -140,6 +164,7 @@ def verify(directory: Path) -> dict:
         "acceptance_success": accepted,
         "agent_control_steps": sum(event["action_source"] == "agent_control" for event in actual),
         "agent_control_success": agent_success,
+        "stable_blue_placement_verified": stable_placement,
     }
 
 

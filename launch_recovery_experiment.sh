@@ -6,7 +6,13 @@ cd "$ROOT"
 RUN="${1:?Usage: bash launch_recovery_experiment.sh NEW_RUN_DIR [TASK]}"
 TASK="${2:-RubiksCubeTask}"
 AGENT_CONTROL="${AGENT_CONTROL:-0}"
+VERIFY_BLUE_PLACEMENT="${VERIFY_BLUE_PLACEMENT:-0}"
 [[ "$AGENT_CONTROL" == 0 || "$AGENT_CONTROL" == 1 ]] || { echo "AGENT_CONTROL must be 0 or 1." >&2; exit 2; }
+[[ "$VERIFY_BLUE_PLACEMENT" == 0 || "$VERIFY_BLUE_PLACEMENT" == 1 ]] || { echo "VERIFY_BLUE_PLACEMENT must be 0 or 1." >&2; exit 2; }
+if [[ "$VERIFY_BLUE_PLACEMENT" == 1 && ( "$AGENT_CONTROL" != 1 || "$TASK" != ToolsPickingHammerTask ) ]]; then
+    echo "VERIFY_BLUE_PLACEMENT requires Agent-only ToolsPickingHammerTask." >&2
+    exit 2
+fi
 [[ ! -e "$RUN" ]] || { echo "Use a new episode directory." >&2; exit 2; }
 mkdir -p "$RUN/services/model"
 RUN="$(cd "$RUN" && pwd)"
@@ -70,6 +76,9 @@ export OMNI_KIT_ACCEPT_EULA=YES OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 PYTHONU
 GENESIS_ARGS=()
 if [[ "$AGENT_CONTROL" == 1 ]]; then
     GENESIS_ARGS+=(--agent-control)
+fi
+if [[ "$VERIFY_BLUE_PLACEMENT" == 1 ]]; then
+    GENESIS_ARGS+=(--verify-blue-placement)
 fi
 if [[ -n "${RECOVERY_GENESIS:-}" ]]; then
     GENESIS_ARGS+=(--recovery-genesis "$RECOVERY_GENESIS" --recovery-genesis-sha256 "${RECOVERY_GENESIS_SHA256:?Provide the historical genesis SHA-256}")

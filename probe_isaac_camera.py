@@ -18,6 +18,7 @@ parser.add_argument("--initialization-diagnostic", action="store_true", help="Ca
 parser.add_argument("--worker-socket", type=Path, help="Serve persistent language-sampling commands on a local Unix socket.")
 parser.add_argument("--recovery-worker-socket", type=Path, help="Serve a persistent live-state WAM recovery session.")
 parser.add_argument("--agent-control", action="store_true", help="Run an explicitly separate bounded Agent-only baseline without WAM.")
+parser.add_argument("--verify-blue-placement", action="store_true", help="Require a fully outside, released, stationary blue hammer for 15 steps in addition to the original native goal.")
 parser.add_argument("--recovery-genesis", type=Path, help="Initialize a recovery episode from a historical scene before any WAM action.")
 parser.add_argument("--recovery-genesis-sha256", help="Required SHA-256 of the historical recovery genesis.")
 parser.add_argument("--task", help="Capture a registered RoboLab task instead of the small cube scene.")
@@ -34,6 +35,8 @@ parser.add_argument("--rendering-mode", choices=("performance", "balanced", "qua
 args = parser.parse_args()
 if args.agent_control and not args.recovery_worker_socket:
     parser.error("--agent-control requires --recovery-worker-socket")
+if args.verify_blue_placement and (not args.agent_control or args.task != "ToolsPickingHammerTask"):
+    parser.error("--verify-blue-placement requires Agent-only ToolsPickingHammerTask")
 args.recovery_initialization = {"kind": "seeded_reset", "seed": args.seed}
 if bool(args.recovery_genesis) != bool(args.recovery_genesis_sha256):
     parser.error("--recovery-genesis and --recovery-genesis-sha256 must be supplied together")
@@ -230,6 +233,14 @@ try:
         )
         if args.recovery_worker_socket:
             env.cfg.reset_early_termination = False
+        if args.verify_blue_placement:
+            from isaaclab.managers import TerminationTermCfg
+            from blue_placement_verification import strict_blue_placement_success
+
+            env._blue_native_success_cfg = env.termination_manager.get_term_cfg("success")
+            env.termination_manager.set_term_cfg(
+                "success", TerminationTermCfg(func=strict_blue_placement_success)
+            )
         if env.device != "cpu":
             raise RuntimeError(f"Unexpected physics device: {env.device}")
         result["render_mode"] = env.sim.render_mode.name
