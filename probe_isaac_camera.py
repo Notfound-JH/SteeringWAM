@@ -17,6 +17,8 @@ parser.add_argument("--seed", type=int, default=3407)
 parser.add_argument("--initialization-diagnostic", action="store_true", help="Capture reset and warmup robot positions/targets without policy inference.")
 parser.add_argument("--worker-socket", type=Path, help="Serve persistent language-sampling commands on a local Unix socket.")
 parser.add_argument("--recovery-worker-socket", type=Path, help="Serve a persistent live-state WAM recovery session.")
+parser.add_argument("--recovery-genesis", type=Path, help="Initialize a recovery episode from a historical scene before any WAM action.")
+parser.add_argument("--recovery-genesis-sha256", help="Required SHA-256 of the historical recovery genesis.")
 parser.add_argument("--task", help="Capture a registered RoboLab task instead of the small cube scene.")
 parser.add_argument("--rollout-chunks", type=int, default=0, help="Run this many sequential policy chunks; zero only captures cameras.")
 parser.add_argument("--execute-steps", type=int, default=16)
@@ -29,6 +31,14 @@ parser.add_argument("--render-width", type=int, default=640)
 parser.add_argument("--render-height", type=int, default=480)
 parser.add_argument("--rendering-mode", choices=("performance", "balanced", "quality"), default="balanced")
 args = parser.parse_args()
+args.recovery_initialization = {"kind": "seeded_reset", "seed": args.seed}
+if bool(args.recovery_genesis) != bool(args.recovery_genesis_sha256):
+    parser.error("--recovery-genesis and --recovery-genesis-sha256 must be supplied together")
+if args.recovery_genesis:
+    if not args.recovery_worker_socket:
+        parser.error("--recovery-genesis requires --recovery-worker-socket")
+    if hashlib.sha256(args.recovery_genesis.read_bytes()).hexdigest() != args.recovery_genesis_sha256:
+        parser.error("Historical recovery genesis SHA-256 mismatch")
 if args.sim_gpu not in range(8):
     parser.error("--sim-gpu must be a physical GPU index in 0..7")
 if args.initialization_diagnostic and (not args.task or args.worker_socket or args.recovery_worker_socket or args.rollout_chunks or args.replay_actions):
@@ -250,6 +260,26 @@ try:
             record_initialization(f"after_physics_step_{step + 1}")
         set_stage("reading_robolab_observations")
         observation = env.observation_manager.compute()
+        if args.recovery_genesis:
+            from instruction_sampling_worker import flat_state, restore_scene_state, state_error
+
+            set_stage("initializing_recovery_genesis")
+            with np.load(args.recovery_genesis, allow_pickle=False) as saved:
+                genesis = {name: saved[name].copy() for name in saved.files}
+            observation = restore_scene_state(env, genesis)
+            error = state_error(flat_state(env.scene.get_state(is_relative=True)), genesis)
+            if error > 1e-5 or int(env.episode_length_buf[0]) != 0:
+                raise RuntimeError(f"Recovery genesis initialization failed: state error={error}")
+            np.savez(args.output_dir / "initial_genesis.npz", **genesis)
+            args.recovery_initialization = {
+                "kind": "historical_genesis_before_execution",
+                "seed": args.seed,
+                "source": str(args.recovery_genesis.resolve()),
+                "sha256": args.recovery_genesis_sha256,
+                "max_state_error": error,
+                "episode_step": 0,
+            }
+            result["recovery_initialization"] = args.recovery_initialization
         result["frames"] = capture_observation(observation, "")
         if not result["frames"]:
             raise RuntimeError("RoboLab returned no camera images.")

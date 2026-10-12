@@ -39,16 +39,17 @@ else
     done
     [[ "$ready" == 1 ]] || { echo "Policy startup timed out." >&2; exit 1; }
 fi
-"$PY" - "$RUN" "$TASK" "$SOCKET" <<'PY'
+"$PY" - "$RUN" "$TASK" "$SOCKET" "${RECOVERY_GENESIS:-}" "${RECOVERY_GENESIS_SHA256:-}" <<'PY'
 import json
 from pathlib import Path
 import sys
-run, task, socket = sys.argv[1:]
+run, task, socket, genesis, genesis_sha256 = sys.argv[1:]
 (Path(run) / "experiment.json").write_text(json.dumps({
     "format": "wam-agent-recovery-v1", "task": task, "socket": socket,
     "seed": 3407, "model": "Cosmos3-Edge-Policy-DROID",
     "agent": "external visual Coding Agent via recovery_client",
     "mock_execution": False, "reset_during_recovery": False,
+    "initial_genesis": genesis or None, "initial_genesis_sha256": genesis_sha256 or None,
 }, indent=2) + "\n")
 PY
 if [[ "${SYNC_BLOB:-1}" == 1 ]]; then
@@ -61,9 +62,16 @@ CUDA_VISIBLE_DEVICES="$(nvidia-smi -i "$SIM_GPU" --query-gpu=uuid --format=csv,n
 export CUDA_DEVICE_ORDER=PCI_BUS_ID LD_LIBRARY_PATH="$ROOT/packages/ffmpeg/lib"
 export PATH="$ROOT/packages/ffmpeg/bin:$PATH"
 export OMNI_KIT_ACCEPT_EULA=YES OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 PYTHONUNBUFFERED=1
+GENESIS_ARGS=()
+if [[ -n "${RECOVERY_GENESIS:-}" ]]; then
+    GENESIS_ARGS=(--recovery-genesis "$RECOVERY_GENESIS" --recovery-genesis-sha256 "${RECOVERY_GENESIS_SHA256:?Provide the historical genesis SHA-256}")
+elif [[ -n "${RECOVERY_GENESIS_SHA256:-}" ]]; then
+    echo "RECOVERY_GENESIS_SHA256 requires RECOVERY_GENESIS." >&2
+    exit 2
+fi
 printf 'Episode: %s\nAgent socket: %s\nSimulator log: %s/launch.log\n' "$RUN" "$SOCKET" "$RUN"
 "$PY" probe_isaac_camera.py --task "$TASK" --sim-gpu "$SIM_GPU" --seed 3407 \
-    --policy-port "$PORT" --recovery-worker-socket "$SOCKET" --output-dir "$RUN" >"$RUN/launch.log" 2>&1
+    --policy-port "$PORT" --recovery-worker-socket "$SOCKET" --output-dir "$RUN" "${GENESIS_ARGS[@]}" >"$RUN/launch.log" 2>&1
 "$PY" verify_recovery_episode.py "$RUN/recovery"
 if [[ -n "$SYNC_PID" ]]; then
     kill "$SYNC_PID"

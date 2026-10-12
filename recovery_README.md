@@ -204,6 +204,15 @@ This foreground launcher prints the socket, starts the services and a 60-second
 Azure backup sidecar, and waits for `finalize`. Use `REUSE_POLICY=1` only to reuse
 an explicitly selected running model server. `SYNC_BLOB=0` disables upload.
 
+For a new episode using a historical initial scene, supply `RECOVERY_GENESIS`
+and `RECOVERY_GENESIS_SHA256` to the launcher. The SHA-256 is checked before
+startup; the existing scene-restore helper is used **once, before the first WAM
+action**, and the complete state must match within `1e-5` at episode step zero.
+The initialization provenance and copied genesis are saved with the new episode.
+This is not replay of old actions, and it does not add a restore/reset operation
+to the recovery API. During recovery and continuation, the live state remains
+the only execution state.
+
 In another terminal / Coding Agent tool session:
 
 ```bash

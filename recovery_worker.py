@@ -119,6 +119,7 @@ class RecoverySession:
             "safety_limits": self.limits.to_dict(),
             "control_dt": float(env.step_dt),
             "reset_after_initialization_allowed": False,
+            "initialization": args.recovery_initialization,
             "agent": {"interface": "local_socket", "execution": "literal_controller_DSL_no_exec"},
         }
         recorder = env.recorder_manager
