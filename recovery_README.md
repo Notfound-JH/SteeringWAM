@@ -8,10 +8,52 @@ Start the existing dashboard server without launching a model or simulator:
 ./RoboLab/.venv/bin/python rollout_dashboard/server.py --host 127.0.0.1 --port 8767
 ```
 
-Open **http://127.0.0.1:8767/recovery**. When connected to this server over
-VS Code Remote SSH, forward port **8767** in the Ports panel and open its local
-address. Keep it bound to localhost; the dashboard has no authentication and is
-not intended to be exposed directly to the public internet.
+On the server, open **http://127.0.0.1:8767/recovery**. From another computer,
+use the forwarded address rather than assuming its localhost is the server.
+
+For **VS Code Remote Tunnels** (including vscode.dev) or Remote SSH:
+
+1. In the VS Code window connected to this repository, run **Ports: Focus on
+   Ports View** from the Command Palette.
+2. Select **Forward a Port**, then enter **8767**. Connecting to the remote
+   machine's tunnel does not itself forward the web application's port.
+3. Open or copy the **Forwarded Address** shown for that port, and append
+   `/recovery` to its origin. Use the actual address VS Code supplies; do not
+   append the path to the `vscode.dev/tunnel/...` editor URL.
+4. If the forwarded address is HTTPS, keep HTTPS. For a private tunnel, sign in
+   with the account that owns the tunnel; this is separate from `gh` Git
+   authentication on the server.
+5. Keep port visibility **Private**. There is no need to change the server's
+   bind address to `0.0.0.0` or expose the port publicly.
+
+For desktop VS Code versions with the integrated browser's remote proxy support,
+another option is **Browser: Open Integrated Browser** with
+`workbench.browser.enableRemoteProxy=true` and browser storage set to `workspace`
+or `ephemeral`, not `global`. Its remote indicator confirms the browser reaches
+the remote machine's localhost.
+
+The dashboard has no authentication and is not intended to be exposed directly
+to the public internet. Keep it bound to localhost.
+
+### Standalone Microsoft Dev Tunnels
+
+As an alternative to the VS Code Ports panel, use Microsoft's `devtunnel` CLI.
+It is installed on this machine at `~/.local/bin/devtunnel`. Its login is separate
+from both VS Code Remote Tunnels and `gh`:
+
+```bash
+~/.local/bin/devtunnel user login --github --use-device-code-auth
+~/.local/bin/devtunnel host -p 8767 --protocol http
+```
+
+Approve the device code in your own browser. Keep the existing dashboard server
+running while hosting the tunnel. Open the HTTPS address printed by `host`, with
+`/recovery` appended. The browser must sign in as the account that owns this
+tunnel. Do **not** add `--allow-anonymous`: private access is intentional.
+
+The `host` process must remain running for the URL to work. Hosting a new tunnel
+without an existing tunnel ID can produce a new address, so use its actual output
+rather than a guessed or previously expired URL.
 
 The page reads finalized episodes from `diagnostics/*/recovery/manifest.json`.
 It provides:
