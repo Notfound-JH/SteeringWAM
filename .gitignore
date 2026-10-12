@@ -154,6 +154,7 @@ logs/
 /sas-upload-logs/
 
 # Data files (adjust as needed)
+/diagnostics/
 *.csv
 *.pkl
 *.pickle

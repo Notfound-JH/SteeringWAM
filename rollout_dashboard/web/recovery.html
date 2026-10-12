@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="真实 WAM 与 Coding Agent 闭环 Recovery 实验回放">
+  <title>Recovery Lab · WAM + Agent</title>
+  <link rel="stylesheet" href="/assets/recovery.css">
+  <script src="/assets/recovery.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a href="/recovery" class="brand"><span class="brand-mark">W</span><strong>RECOVERY<span> LAB</span></strong></a>
+    <nav aria-label="页面导航"><a href="#playback">实验回放</a><a href="#correction">Agent 修正</a><a href="#predictions">WAM 预测</a></nav>
+    <span class="readonly"><span></span>只读 · 不控制机器人</span>
+  </header>
+  <main>
+    <section class="hero">
+      <div><p class="eyebrow">FROZEN WAM + CODING AGENT</p><h1>从失败，到继续<span>。</span></h1><p class="subtitle">看见失败、理解修正，追踪每一次真实执行。</p></div>
+      <div class="episode-picker"><label for="episode-select">实验记录 / EPISODE</label><div><select id="episode-select" disabled><option>正在读取实验…</option></select><button id="refresh" class="button" type="button">刷新</button></div></div>
+    </section>
+    <div id="message" class="message" role="status" aria-live="polite">正在加载本地实验数据…</div>
+    <div id="content" hidden>
+      <section class="metrics" aria-label="实验概览">
+        <article class="metric outcome"><span>闭环验收 / OUTCOME</span><strong id="outcome">—</strong><small id="outcome-detail"></small></article>
+        <article class="metric"><span>实际控制步 / EXECUTED</span><strong id="step-count">—</strong><small id="phase-counts"></small></article>
+        <article class="metric"><span>局部修正 / ATTEMPTS</span><strong id="attempt-count">—</strong><small>所有尝试均保留，不跳过失败</small></article>
+        <article class="metric"><span>末端跟踪误差 / FINAL ERROR</span><strong id="tracking-error">—</strong><small>修正目标与实际位置的欧氏距离</small></article>
+      </section>
+
+      <section class="panel playback" id="playback">
+        <div class="section-heading"><div><p class="eyebrow">01 / EPISODE PLAYBACK</p><h2 id="task-title">实验回放</h2><p id="task-goal" class="muted"></p></div><span id="execution-kind" class="badge"></span></div>
+        <div class="playback-grid">
+          <div class="player-column">
+            <video id="episode-video" controls preload="metadata" playsinline aria-label="完整实际执行视频"></video>
+            <div class="player-caption"><span><i class="dot actual"></i>ACTUAL · 手腕相机完整录像</span><span id="video-duration"></span></div>
+            <div id="phase-track" class="phase-track" aria-label="按阶段跳转"></div>
+            <div class="legend"><span><i class="dot wam"></i>WAM 执行</span><span><i class="dot correction"></i>Agent 修正</span><span><i class="dot continuation"></i>WAM 续跑</span></div>
+            <div id="timeline" class="timeline"></div>
+          </div>
+          <aside class="inspector">
+            <div class="inspector-title"><h3>实际状态</h3><span id="current-source" class="badge"></span></div>
+            <div class="step-control"><label for="step-slider">控制步 <strong id="current-step">0</strong></label><input id="step-slider" type="range" min="0" max="0" value="0"></div>
+            <label for="camera-select" class="small-label">观测视角</label>
+            <select id="camera-select"></select>
+            <img id="observation-image" class="observation" alt="当前控制步的真实相机观测">
+            <div class="state-label">MEASURED EE POSITION · ROBOT ROOT</div>
+            <div id="ee-position" class="coordinates"></div>
+            <div class="state-row"><span>夹爪位置（0 开 / 1 闭）</span><strong id="gripper"></strong></div>
+            <details><summary>机器人关节与实际命令</summary><pre id="robot-state"></pre></details>
+          </aside>
+        </div>
+      </section>
+
+      <section class="panel" id="correction">
+        <div class="section-heading"><div><p class="eyebrow">02 / CORRECTION EXPERIENCE</p><h2>不止修正意图，更看实际响应。</h2></div><label class="attempt-picker">尝试 <select id="attempt-select"></select></label></div>
+        <div id="failure-evidence" class="failure-note"></div>
+        <div id="attempt-empty" class="message" hidden>此实验没有执行修正尝试。</div>
+        <div id="attempt-content">
+          <div class="correction-grid">
+            <div class="intent">
+              <div class="card-label"><span>AGENT INTENT</span><span id="correction-mode" class="badge amber"></span></div>
+              <h3>诊断与恢复目标</h3><p id="diagnosis"></p><p id="recovery-goal" class="goal"></p>
+              <div class="code-heading"><span>受限控制程序 / CONDITION</span><span>不会在网页中执行</span></div>
+              <pre id="control-code" class="code"></pre>
+            </div>
+            <div class="response">
+              <div class="card-label"><span>ACTUAL RESPONSE</span><span id="local-outcome" class="badge"></span></div>
+              <h3>修正前后对比 <small>实际相机帧</small></h3>
+              <div class="comparison"><figure><img id="before-image" alt="修正前的真实观测"><figcaption id="before-caption"></figcaption></figure><figure><img id="after-image" alt="修正后的真实观测"><figcaption id="after-caption"></figcaption></figure></div>
+              <table class="pose-table"><thead><tr><th>位置 / m</th><th>X</th><th>Y</th><th>Z</th></tr></thead><tbody id="pose-table"></tbody></table>
+              <div class="chart-heading"><span>每步末端跟踪误差</span><span>mm · 目标 vs. 实测</span></div>
+              <svg id="error-chart" viewBox="0 0 600 135" role="img" aria-label="修正过程中每一步的末端位置跟踪误差"></svg>
+              <p id="assessment" class="assessment"></p>
+            </div>
+          </div>
+        </div>
+        <details id="errors-panel"><summary id="errors-title">执行错误记录</summary><pre id="errors"></pre></details>
+      </section>
+
+      <section class="panel" id="predictions">
+        <div class="section-heading"><div><p class="eyebrow">03 / WAM PREDICTIONS</p><h2>预测不是实际执行。</h2><p class="muted">逐个 Action Chunk 查看输入条件、预测未来与实际执行长度。</p></div><label>选择 Chunk <select id="segment-select"></select></label></div>
+        <div id="prediction-empty" class="message" hidden>没有已完成的 WAM prediction 记录。</div>
+        <div id="prediction-content">
+          <div class="prediction-grid"><figure><img id="prediction-input" alt="WAM 推理时的实际多相机输入"><figcaption>ACTUAL INPUT · 模型调用时的真实观测</figcaption></figure><figure><video id="prediction-video" controls preload="metadata" playsinline aria-label="模型预测未来，非实际观测"></video><figcaption class="prediction-warning">PREDICTED FUTURE · 不能作为实际成功证据</figcaption></figure></div>
+          <div class="segment-detail"><span id="segment-stats"></span><button id="segment-jump" class="button" type="button">跳转至实际执行</button></div><pre id="prompt" class="prompt"></pre>
+        </div>
+      </section>
+      <section class="downloads"><div><p class="eyebrow">TRACEABLE BY DESIGN</p><h2>每一步，都有据可查。</h2><p>JSON / JSONL · 原生 HDF5 轨迹 · 完整视频。下载的是已保存记录，不会重新执行实验。</p></div><div id="download-links"></div></section>
+      <footer><span>Recovery Lab · Frozen policy, adaptive recovery.</span><span id="episode-id"></span></footer>
+    </div>
+  </main>
+</body>
+</html>

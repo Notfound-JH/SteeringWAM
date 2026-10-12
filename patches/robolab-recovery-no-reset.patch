@@ -1,0 +1,25 @@
+diff --git a/robolab/core/environments/base.py b/robolab/core/environments/base.py
+index b805020..c6c4ada 100644
+--- a/robolab/core/environments/base.py
++++ b/robolab/core/environments/base.py
+@@ -143,6 +143,7 @@ class RobolabDefaultEnvCfg(ManagerBasedRLEnvCfg):
+     curriculum = None
+     recorders = None
+     rerender_on_reset: bool = True
++    reset_early_termination: bool = True
+     seed: int | None = 0
+     subtasks: list[dict[str, dict]] | None = None
+     # Set from the robot cfg's mandatory ee_recorder_bodies label (HDF5 channel
+diff --git a/robolab/core/environments/env.py b/robolab/core/environments/env.py
+index a73fab2..c12d7ce 100644
+--- a/robolab/core/environments/env.py
++++ b/robolab/core/environments/env.py
+@@ -92,7 +92,7 @@ class RobolabEnv(ManagerBasedRLEnv):
+         for eid in env_ids.tolist():
+             if not self._frozen_envs[eid]:
+                 ep_len = int(self.episode_length_buf[eid].item())
+-                if ep_len <= 2:
++                if ep_len <= 2 and self.cfg.reset_early_termination:
+                     # Physics artifact: terminated before the robot could act.
+                     # Reset this env normally so it gets a clean start.
+                     artifact_ids = torch.tensor([eid], device=self.device, dtype=env_ids.dtype)
