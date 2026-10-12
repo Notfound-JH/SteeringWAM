@@ -1,5 +1,8 @@
 # Live WAM + Coding Agent recovery
 
+For trajectory ingestion, field meanings, time-step alignment and real examples,
+see [Recovery trajectory data contract](recovery_DATA_FORMAT.md).
+
 ## Read-only experiment dashboard
 
 Start the existing dashboard server without launching a model or simulator:

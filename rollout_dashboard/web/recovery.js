@@ -134,12 +134,15 @@ function renderSegment() {
 }
 function render() {
   const agentOnly = episode.experiment_mode === "agent_control";
+  const strictPlacement = episode.success_criterion === "native_and_stable_blue_placement";
   $("task-title").textContent = episode.task;
   $("task-goal").textContent = episode.goal;
   $("episode-id").textContent = episode.id;
   $("outcome").textContent = episode.verified ? "闭环验证通过" : episode.mock_execution !== false ? "非真实执行验证" : episode.native_success ? "尚未通过闭环验证" : "任务未成功";
   if (agentOnly) $("outcome").textContent = episode.agent_control_verified ? "Agent 控制任务验证通过" : "Agent 控制未验证成功";
-  $("outcome-detail").textContent = `原生任务：${episode.native_success === true ? "成功" : episode.native_success === false ? "失败" : "未知"} · ${episode.verification ? "已保存独立校验结果" : "缺少独立校验结果"}`;
+  if (strictPlacement) $("outcome").textContent = episode.stable_blue_placement_verified ? "单锤稳定放置验证通过" : "稳定放置尚未验证通过";
+  $("outcome-detail").textContent = `${strictPlacement ? "原生条件 + 加严放置检查" : "原生任务"}：${episode.native_success === true ? "成功" : episode.native_success === false ? "失败" : "未知"} · ${episode.verification ? "已保存独立校验结果" : "缺少独立校验结果"}`;
+  if (agentOnly && episode.task === "ToolsPickingHammerTask" && !strictPlacement) $("outcome-detail").textContent += " · 未验证稳定放置";
   const agentSteps = episode.observations.filter((item) => ["agent_correction", "agent_condition", "agent_control"].includes(item.source)).length;
   const continuation = episode.observations.filter((item) => item.source === "wam_continuation").length;
   $("step-count").textContent = episode.steps;

@@ -119,9 +119,31 @@ def test_agent_baseline_is_not_a_wam_recovery_success(episode):
     assert data["agent_control_verified"] is True
     assert data["verified"] is False
     assert data["attempt_limit"] is None
+    assert data["stable_blue_placement_verified"] is False
     manifest["mock_execution"] = True
     (run / "recovery/manifest.json").write_text(json.dumps(manifest))
     assert load_episode(run)["agent_control_verified"] is False
+
+
+def test_strict_placement_label_requires_matching_verified_real_run(episode):
+    run, manifest = episode
+    manifest.update(
+        experiment_mode="agent_control", native_success=True,
+        agent_control_success=True, acceptance_success=False, mock_execution=False,
+        success_criterion="native_and_stable_blue_placement",
+    )
+    (run / "recovery/manifest.json").write_text(json.dumps(manifest))
+    (run / "recovery/verification.json").write_text(json.dumps({
+        "recording_verified": True, "agent_control_success": True,
+        "stable_blue_placement_verified": True,
+    }))
+    assert load_episode(run)["stable_blue_placement_verified"] is True
+    manifest["success_criterion"] = "native"
+    (run / "recovery/manifest.json").write_text(json.dumps(manifest))
+    assert load_episode(run)["stable_blue_placement_verified"] is False
+    manifest.update(success_criterion="native_and_stable_blue_placement", mock_execution=True)
+    (run / "recovery/manifest.json").write_text(json.dumps(manifest))
+    assert load_episode(run)["stable_blue_placement_verified"] is False
 
 
 def test_assessment_logged_after_handoff_is_attached_to_attempt(episode):

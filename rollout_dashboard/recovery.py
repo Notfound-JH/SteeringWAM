@@ -43,6 +43,7 @@ def summary(directory: Path) -> dict:
         "native_success": manifest.get("native_success"),
         "acceptance_success": manifest.get("acceptance_success"),
         "experiment_mode": manifest.get("experiment_mode", "wam_recovery"),
+        "success_criterion": manifest.get("success_criterion", "native"),
         "agent_control_success": manifest.get("agent_control_success", False),
     }
 
@@ -181,6 +182,15 @@ def load_episode(directory: Path) -> dict:
         "agent_control_verified": bool(
             result["experiment_mode"] == "agent_control"
             and verification and verification.get("recording_verified") is True
+            and verification.get("agent_control_success") is True
+            and manifest.get("agent_control_success") is True
+            and manifest.get("mock_execution") is False
+        ),
+        "stable_blue_placement_verified": bool(
+            result["experiment_mode"] == "agent_control"
+            and result["success_criterion"] == "native_and_stable_blue_placement"
+            and verification and verification.get("recording_verified") is True
+            and verification.get("stable_blue_placement_verified") is True
             and verification.get("agent_control_success") is True
             and manifest.get("agent_control_success") is True
             and manifest.get("mock_execution") is False
