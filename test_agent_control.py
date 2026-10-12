@@ -7,8 +7,24 @@ import pytest
 
 from instruction_sampling_worker import artifact
 from recovery_protocol import PROTOCOL_VERSION, SafetyLimits
-from recovery_worker import RecoverySession
+from recovery_worker import RecoverySession, _limit_ik_step
 from verify_recovery_episode import verify_agent_programs
+
+
+def test_ik_limit_preserves_direction_of_recorded_singular_step():
+    import torch
+
+    delta = torch.tensor([[-0.347, -0.008, 0.248, 0.290, 1.441, -0.078, -2.025]])
+    bounded = _limit_ik_step(delta, 0.12)
+    torch.testing.assert_close(bounded, delta * (0.12 / 2.025))
+    assert bounded.abs().max().item() <= 0.120001
+
+
+def test_ik_limit_leaves_small_and_zero_steps_unchanged():
+    import torch
+
+    delta = torch.tensor([[0.0, 0.0, 0.0], [0.01, -0.12, 0.05]])
+    torch.testing.assert_close(_limit_ik_step(delta, 0.12), delta)
 
 
 @pytest.fixture

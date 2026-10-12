@@ -259,6 +259,12 @@ privileged-state-assisted, including archived object poses and static geometry.
 
 ## Separate Agent coding control baseline
 
+Cartesian control uses DLS damping `0.1` and uniformly scales oversized joint
+increments before applying joint-position limits. Componentwise step clipping
+distorted the IK direction during a recorded wrist-singularity failure. The
+controller settings are recorded in each new session; physics, gripper force,
+task checks, and the existing per-step safety bounds are unchanged.
+
 `AGENT_CONTROL=1` starts a separately labeled experiment without loading WAM.
 The task, physics, native horizon and success checker are unchanged. This mode
 is **not WAM Recovery**: its `acceptance_success` stays false, and successful

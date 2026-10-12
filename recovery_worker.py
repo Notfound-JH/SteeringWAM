@@ -11,7 +11,7 @@ import subprocess
 import time
 import traceback
 import uuid
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 import numpy as np
 from PIL import Image
@@ -29,6 +29,15 @@ from recovery_protocol import (
 
 
 FORMAT = "wam-agent-recovery-v1"
+
+if TYPE_CHECKING:
+    import torch
+
+
+def _limit_ik_step(delta: torch.Tensor, max_step_rad: float) -> torch.Tensor:
+    # Independent joint clipping can reverse Cartesian motion near singularities.
+    scale = max_step_rad / delta.abs().amax(dim=-1, keepdim=True).clamp_min(max_step_rad)
+    return delta * scale
 
 
 def _jsonable(value: Any) -> Any:
@@ -123,6 +132,10 @@ class RecoverySession:
             "native_terminated": False,
             "native_truncated": False,
             "safety_limits": self.limits.to_dict(),
+            "cartesian_controller": {
+                "method": "dls", "damping": 0.1,
+                "joint_step_limit": "uniform_scale_then_soft_limits",
+            },
             "control_dt": float(env.step_dt),
             "reset_after_initialization_allowed": False,
             "initialization": args.recovery_initialization,
@@ -374,7 +387,8 @@ class RecoverySession:
             raise ValueError("Cartesian targets must have shape (N, 8)")
         controller = DifferentialIKController(
             DifferentialIKControllerCfg(
-                command_type="pose", use_relative_mode=False, ik_method="dls"
+                command_type="pose", use_relative_mode=False, ik_method="dls",
+                ik_params={"lambda_val": 0.1},
             ),
             num_envs=1,
             device=self.env.device,
@@ -405,9 +419,8 @@ class RecoverySession:
             if not torch.isfinite(joint_target).all():
                 raise ValueError("IK returned nonfinite joint targets")
             unconstrained = joint_target.clone()
-            joint_target = joint_pos + torch.clamp(
-                joint_target - joint_pos,
-                -self.limits.max_joint_step_rad, self.limits.max_joint_step_rad,
+            joint_target = joint_pos + _limit_ik_step(
+                joint_target - joint_pos, self.limits.max_joint_step_rad,
             )
             joint_limits = robot.data.soft_joint_pos_limits[:, joint_ids]
             joint_target = torch.clamp(joint_target, joint_limits[..., 0], joint_limits[..., 1])
