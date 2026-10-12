@@ -42,6 +42,8 @@ def summary(directory: Path) -> dict:
         "steps": manifest["step"],
         "native_success": manifest.get("native_success"),
         "acceptance_success": manifest.get("acceptance_success"),
+        "experiment_mode": manifest.get("experiment_mode", "wam_recovery"),
+        "agent_control_success": manifest.get("agent_control_success", False),
     }
 
 
@@ -102,6 +104,7 @@ def load_episode(directory: Path) -> dict:
     names = {
         "failure_detected": "failure",
         "recovery_proposal": "proposal",
+        "agent_control_proposal": "proposal",
         "recovery_assessment": "assessment",
         "control_handed_back_to_wam": "handoff",
     }
@@ -113,21 +116,21 @@ def load_episode(directory: Path) -> dict:
                 "type": names[kind], "step": event["episode_step"],
                 "attempt": event.get("attempt"), "recorded_at": event["recorded_at"],
             })
-        if kind != "recovery_proposal":
+        if kind not in {"recovery_proposal", "agent_control_proposal"}:
             continue
         end = next((
             i for i in range(index + 1, len(events))
-            if events[i]["event_type"] in {"recovery_proposal", "control_handed_back_to_wam"}
+            if events[i]["event_type"] in {"recovery_proposal", "agent_control_proposal", "control_handed_back_to_wam"}
         ), len(events))
         responses = [
             item for item in events[index + 1:end]
             if item["event_type"] == "actual_execution_response"
-            and item["action_source"] in {"agent_correction", "agent_condition"}
+            and item["action_source"] in {"agent_correction", "agent_condition", "agent_control"}
         ]
         assessment = next((
             item["assessment"] for item in events[index + 1:]
             if item["event_type"] == "recovery_assessment"
-            and item["attempt"] == event["attempt"]
+            and item["attempt"] == event.get("attempt")
         ), None)
         tracking = []
         for response in responses:
@@ -139,7 +142,7 @@ def load_episode(directory: Path) -> dict:
                     "error_mm": 1000 * math.dist(target, measured),
                 })
         attempts.append({
-            "number": event["attempt"], "start": event["episode_step"],
+            "number": event.get("attempt", event.get("program_index")), "start": event["episode_step"],
             "end": responses[-1]["episode_step"] if responses else event["episode_step"],
             "proposal": read_json(reference_path(event["proposal"])),
             "assessment": assessment, "tracking": tracking, "executed_steps": len(responses),
@@ -169,15 +172,23 @@ def load_episode(directory: Path) -> dict:
         "duration": (manifest["step"] + 1) * dt,
         "local_recovery_success": manifest.get("local_recovery_success"),
         "verified": bool(
-            verification and verification.get("recording_verified") is True
+            result["experiment_mode"] == "wam_recovery"
+            and verification and verification.get("recording_verified") is True
             and verification.get("acceptance_success") is True
             and manifest.get("acceptance_success") is True
+            and manifest.get("mock_execution") is False
+        ),
+        "agent_control_verified": bool(
+            result["experiment_mode"] == "agent_control"
+            and verification and verification.get("recording_verified") is True
+            and verification.get("agent_control_success") is True
+            and manifest.get("agent_control_success") is True
             and manifest.get("mock_execution") is False
         ),
         "verification": verification, "mock_execution": manifest.get("mock_execution"),
         "agent_input_mode": experiment.get("agent_input_mode"),
         "agent_model_version": experiment.get("agent_model_version"),
-        "attempt_limit": manifest["safety_limits"]["max_attempts"],
+        "attempt_limit": None if result["experiment_mode"] == "agent_control" else manifest["safety_limits"]["max_attempts"],
         "failure": manifest.get("failure"),
         "video": media(manifest["episode_video"]),
         "observations": observations, "phases": phases, "timeline": timeline,

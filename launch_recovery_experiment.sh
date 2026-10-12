@@ -5,6 +5,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 RUN="${1:?Usage: bash launch_recovery_experiment.sh NEW_RUN_DIR [TASK]}"
 TASK="${2:-RubiksCubeTask}"
+AGENT_CONTROL="${AGENT_CONTROL:-0}"
+[[ "$AGENT_CONTROL" == 0 || "$AGENT_CONTROL" == 1 ]] || { echo "AGENT_CONTROL must be 0 or 1." >&2; exit 2; }
 [[ ! -e "$RUN" ]] || { echo "Use a new episode directory." >&2; exit 2; }
 mkdir -p "$RUN/services/model"
 RUN="$(cd "$RUN" && pwd)"
@@ -19,7 +21,9 @@ cleanup() {
     [[ -z "$MODEL_PID" ]] || kill "$MODEL_PID" 2>/dev/null || true
 }
 trap cleanup EXIT
-if [[ "${REUSE_POLICY:-0}" == 1 ]]; then
+if [[ "$AGENT_CONTROL" == 1 ]]; then
+    echo "Agent-only control baseline: no WAM server will be started."
+elif [[ "${REUSE_POLICY:-0}" == 1 ]]; then
     curl -fsS --max-time 5 "http://127.0.0.1:$PORT/healthz" >/dev/null
 else
     if curl -fsS --max-time 2 "http://127.0.0.1:$PORT/healthz" >/dev/null 2>&1; then
@@ -39,14 +43,15 @@ else
     done
     [[ "$ready" == 1 ]] || { echo "Policy startup timed out." >&2; exit 1; }
 fi
-"$PY" - "$RUN" "$TASK" "$SOCKET" "${RECOVERY_GENESIS:-}" "${RECOVERY_GENESIS_SHA256:-}" <<'PY'
+"$PY" - "$RUN" "$TASK" "$SOCKET" "${RECOVERY_GENESIS:-}" "${RECOVERY_GENESIS_SHA256:-}" "$AGENT_CONTROL" <<'PY'
 import json
 from pathlib import Path
 import sys
-run, task, socket, genesis, genesis_sha256 = sys.argv[1:]
+run, task, socket, genesis, genesis_sha256, agent_control = sys.argv[1:]
 (Path(run) / "experiment.json").write_text(json.dumps({
     "format": "wam-agent-recovery-v1", "task": task, "socket": socket,
-    "seed": 3407, "model": "Cosmos3-Edge-Policy-DROID",
+    "seed": 3407, "model": None if agent_control == "1" else "Cosmos3-Edge-Policy-DROID",
+    "experiment_mode": "agent_control" if agent_control == "1" else "wam_recovery",
     "agent": "external visual Coding Agent via recovery_client",
     "mock_execution": False, "reset_during_recovery": False,
     "initial_genesis": genesis or None, "initial_genesis_sha256": genesis_sha256 or None,
@@ -63,8 +68,11 @@ export CUDA_DEVICE_ORDER=PCI_BUS_ID LD_LIBRARY_PATH="$ROOT/packages/ffmpeg/lib"
 export PATH="$ROOT/packages/ffmpeg/bin:$PATH"
 export OMNI_KIT_ACCEPT_EULA=YES OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 PYTHONUNBUFFERED=1
 GENESIS_ARGS=()
+if [[ "$AGENT_CONTROL" == 1 ]]; then
+    GENESIS_ARGS+=(--agent-control)
+fi
 if [[ -n "${RECOVERY_GENESIS:-}" ]]; then
-    GENESIS_ARGS=(--recovery-genesis "$RECOVERY_GENESIS" --recovery-genesis-sha256 "${RECOVERY_GENESIS_SHA256:?Provide the historical genesis SHA-256}")
+    GENESIS_ARGS+=(--recovery-genesis "$RECOVERY_GENESIS" --recovery-genesis-sha256 "${RECOVERY_GENESIS_SHA256:?Provide the historical genesis SHA-256}")
 elif [[ -n "${RECOVERY_GENESIS_SHA256:-}" ]]; then
     echo "RECOVERY_GENESIS_SHA256 requires RECOVERY_GENESIS." >&2
     exit 2

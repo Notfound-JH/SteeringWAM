@@ -94,20 +94,26 @@ class RecoverySession:
         self.closed = False
         self.event_index = 0
         self.continuation_steps = 0
+        self.control_programs = 0
+        self.agent_control = args.agent_control
         self.actual_video_frames: list[Path] = []
         self.limits = SafetyLimits()
         self.client = Cosmos3Client.__new__(Cosmos3Client)
         self.client._image_h, self.client._image_w, self.client._eval_episode_idx = 360, 640, 0
-        self.transport = MsgPackWebSocketTransport(
-            f"ws://127.0.0.1:{args.policy_port}", metadata_timeout=15
-        )
-        self.transport.connect()
+        self.transport = None
+        if not self.agent_control:
+            self.transport = MsgPackWebSocketTransport(
+                f"ws://127.0.0.1:{args.policy_port}", metadata_timeout=15
+            )
+            self.transport.connect()
         self.state = {
             "format": FORMAT,
             "protocol_version": PROTOCOL_VERSION,
             "task": args.task,
             "native_goal": env_cfg.instruction,
-            "status": "ready_wam",
+            "status": "ready_agent" if self.agent_control else "ready_wam",
+            "experiment_mode": "agent_control" if self.agent_control else "wam_recovery",
+            "control_programs": 0,
             "request_id": uuid.uuid4().hex,
             "step": 0,
             "attempts": 0,
@@ -157,7 +163,7 @@ class RecoverySession:
         obs = self.observation
         robot = self.env.scene["robot"]
         joint_ids, _ = robot.find_joints("panda_joint.*", preserve_order=True)
-        return {
+        result = {
             "frame": "robot-root",
             "quaternion_order": "wxyz",
             "ee_link": "base_link",
@@ -169,6 +175,16 @@ class RecoverySession:
             "measured_arm_joint_vel": robot.data.joint_vel[0, joint_ids].detach().cpu().tolist(),
             "joint_position_target": robot.data.joint_pos_target[0].detach().cpu().tolist(),
         }
+        if self.agent_control:
+            result.update(
+                joint_names=list(robot.joint_names),
+                measured_joint_pos=robot.data.joint_pos[0].detach().cpu().tolist(),
+                measured_joint_vel=robot.data.joint_vel[0].detach().cpu().tolist(),
+                body_names=list(robot.body_names),
+                body_pos_w=robot.data.body_pos_w[0].detach().cpu().tolist(),
+                body_quat_w=robot.data.body_quat_w[0].detach().cpu().tolist(),
+            )
+        return result
 
     def _events(self, terminated=None, truncated=None) -> dict[str, Any]:
         if terminated is None:
@@ -235,6 +251,8 @@ class RecoverySession:
         }
 
     def _query_wam(self, condition: str, subgoal: str, execute_steps: int, source: str) -> dict[str, Any]:
+        if self.transport is None:
+            raise ValueError("WAM is disabled in the agent-control baseline")
         if not isinstance(condition, str) or not condition.strip():
             raise ValueError("condition must be nonempty")
         if not isinstance(subgoal, str) or not subgoal.strip():
@@ -344,7 +362,7 @@ class RecoverySession:
         }
 
     def _execute_cartesian_targets(
-        self, targets: np.ndarray, directory: Path
+        self, targets: np.ndarray, directory: Path, source: str = "agent_correction"
     ) -> dict[str, Any]:
         import torch
         from isaaclab.controllers import DifferentialIKController
@@ -401,7 +419,7 @@ class RecoverySession:
                 dim=1,
             )
             self._before_step(
-                "agent_correction", cartesian_intent=target,
+                source, cartesian_intent=target,
                 unconstrained_ik=unconstrained[0].detach().cpu().numpy(),
                 authorized_action=environment_action[0].detach().cpu().numpy(),
             )
@@ -412,14 +430,14 @@ class RecoverySession:
                 raise ValueError("Environment action differs from the IK-authorized joint command")
             self.step += 1
             self._check_step()
-            self.state["last_action_source"] = "agent_correction"
+            self.state["last_action_source"] = source
             joint_commands.append(actual)
             final_events = self._events(terminated, truncated)
-            observation = self._snapshot(f"agent_correction_{index:03d}", video_frame=True)
+            observation = self._snapshot(f"{source}_{index:03d}", video_frame=True)
             observations.append(observation)
             self._event(
                 "actual_execution_response",
-                action_source="agent_correction",
+                action_source=source,
                 cartesian_intent=target,
                 ik_joint_command=authorized,
                 actual_action=actual,
@@ -447,6 +465,41 @@ class RecoverySession:
 
     def status(self) -> dict[str, Any]:
         return dict(self.state)
+
+    def control(self, decision: dict[str, Any]) -> dict[str, Any]:
+        if not self.agent_control or self.state["status"] != "ready_agent":
+            raise ValueError("Direct control requires a ready agent-control baseline")
+        if decision.get("correction_mode") != "action":
+            raise ValueError("Agent-control programs must use action mode")
+        robot = self._robot_state()
+        # Reuse all action bounds, but not the separate Recovery attempt budget.
+        proposal = validate_recovery_proposal(
+            decision, self.state["request_id"], 0, robot["ee_pos"], self.limits
+        )
+        compiled = compile_program(
+            proposal["program"], robot["ee_pos"], robot["ee_quat"],
+            robot["gripper_pos"], self.limits,
+        )
+        self.control_programs += 1
+        self.state["control_programs"] = self.control_programs
+        directory = self.directory / "control_programs" / f"{self.control_programs:03d}"
+        directory.mkdir(parents=True, exist_ok=False)
+        write_json(directory / "proposal.json", proposal)
+        (directory / "control_code.txt").write_text(
+            proposal.get("control_code", json.dumps(proposal["program"], indent=2)) + "\n"
+        )
+        np.save(directory / "compiled_cartesian_targets.npy", compiled)
+        self._event(
+            "agent_control_proposal", program_index=self.control_programs,
+            proposal=artifact(directory / "proposal.json"),
+        )
+        result = self._execute_cartesian_targets(compiled, directory, source="agent_control")
+        write_json(directory / "result.json", result)
+        self.state["latest_observation"] = self._snapshot(f"control_program_{self.control_programs}")
+        self._event("agent_control_completed", program_index=self.control_programs, result=result)
+        self._rotate_token()
+        self._save_state()
+        return {"state": self.status(), "result": result}
 
     def _before_step(self, source: str, **intent: Any) -> None:
         if self.state["native_terminated"] or self.state["native_truncated"]:
@@ -622,11 +675,17 @@ class RecoverySession:
             "mock_execution": False,
             "wam_continuation_steps": self.continuation_steps,
             "acceptance_success": bool(
-                self.state["native_success"]
+                not self.agent_control
+                and self.state["native_success"]
                 and self.state["failure"]
                 and self.state["local_recovery_success"]
                 and self.continuation_steps > 0
                 and self.state.get("last_action_source") == "wam_continuation"
+                and self.state["status"] == "task_success"
+            ),
+            "agent_control_success": bool(
+                self.agent_control and self.state["native_success"]
+                and self.state.get("last_action_source") == "agent_control"
                 and self.state["status"] == "task_success"
             ),
         }
@@ -635,7 +694,8 @@ class RecoverySession:
         self.state["manifest"] = artifact(self.directory / "manifest.json")
         self._rotate_token()
         self._save_state()
-        self.transport.close()
+        if self.transport is not None:
+            self.transport.close()
         self.closed = True
         return self.status()
 
@@ -651,6 +711,7 @@ def serve(env, env_cfg, args, observation) -> None:
         "wam": session.run_wam,
         "mark_failure": session.mark_failure,
         "recover": session.recover,
+        "control": session.control,
         "assess": session.assess,
         "finalize": session.finalize,
     }
@@ -682,7 +743,7 @@ def serve(env, env_cfg, args, observation) -> None:
                             error_type=type(error).__name__, error=str(error),
                             traceback=traceback.format_exc(),
                         )
-                        if operation in {"wam", "recover"}:
+                        if operation in {"wam", "recover", "control"}:
                             session.state["status"] = "execution_unknown"
                             session._rotate_token()
                             session._save_state()
@@ -698,5 +759,5 @@ def serve(env, env_cfg, args, observation) -> None:
                         session._event("client_disconnected", operation=operation)
     finally:
         address.unlink(missing_ok=True)
-        if not session.closed:
+        if not session.closed and session.transport is not None:
             session.transport.close()

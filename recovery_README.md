@@ -257,6 +257,50 @@ these measurements alone do not establish a simulator defect. The
 record the exact metrics and unresolved goal. Inputs remained explicitly
 privileged-state-assisted, including archived object poses and static geometry.
 
+## Separate Agent coding control baseline
+
+`AGENT_CONTROL=1` starts a separately labeled experiment without loading WAM.
+The task, physics, native horizon and success checker are unchanged. This mode
+is **not WAM Recovery**: its `acceptance_success` stays false, and successful
+native completion is recorded separately as `agent_control_success`.
+
+```bash
+AGENT_CONTROL=1 SIM_GPU=7 \
+RECOVERY_GENESIS=/home/aiscuser/steeringwam-data/replay-dependencies/tools/genesis.npz \
+RECOVERY_GENESIS_SHA256=f39ad091d69f571bb68e02519f68f5998bd4377ac0e270cc6ea4b761b75f4d4b \
+bash launch_recovery_experiment.sh diagnostics/agent_tools_new ToolsPickingAllHammersTask
+```
+
+Use `recovery_client.py --socket SOCKET context`, then
+`recovery_client.py --socket SOCKET control proposal.json`. Each proposal uses
+the existing action-only schema and a fresh request token. Its diagnosis and
+goal are retained alongside the literal controller code, compiled targets,
+authorized joint commands and measured response. Observe feedback between
+programs; do not infer grasp from a close command or successful IK alone.
+
+Alternatively, `control --code 'controller.hold(steps=8)' --diagnosis '...'
+--goal '...'` reads the current token and preflights the same bounds before
+submission. The worker still records the complete proposal and literal code.
+
+Programs retain the same workspace, translation, rotation, joint-step and
+48-step bounds. The three-attempt **Recovery** budget does not apply to this
+explicitly separate direct-control baseline; the native task horizon still
+terminates execution. Direct control is rejected in ordinary Recovery mode.
+No unrestricted code, simulator mutation or reset operation is exposed.
+Additional measured joint/body states aid gripper-contact diagnosis.
+
+Finalize and verify with:
+
+```bash
+./RoboLab/.venv/bin/python verify_recovery_episode.py RUN/recovery --require-agent-success
+```
+
+The verifier recompiles every bounded control program, checks its executed
+Cartesian prefix and joint commands against the event log/HDF5, and checks the
+native outcome. `--require-success` continues to require the original WAM
+failure/recovery/continuation chain and cannot be satisfied by this baseline.
+The dashboard distinguishes direct-control programs and their task outcome.
+
 ## Minimal integration
 
 - [probe_isaac_camera.py](probe_isaac_camera.py) initializes the registered DROID

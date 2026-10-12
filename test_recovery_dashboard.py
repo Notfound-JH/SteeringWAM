@@ -105,6 +105,25 @@ def test_mock_success_cannot_be_verified(episode):
     assert load_episode(run)["verified"] is False
 
 
+def test_agent_baseline_is_not_a_wam_recovery_success(episode):
+    run, manifest = episode
+    manifest.update(
+        experiment_mode="agent_control", native_success=True,
+        agent_control_success=True, acceptance_success=False, mock_execution=False,
+    )
+    (run / "recovery/manifest.json").write_text(json.dumps(manifest))
+    (run / "recovery/verification.json").write_text(json.dumps({
+        "recording_verified": True, "agent_control_success": True, "acceptance_success": False,
+    }))
+    data = load_episode(run)
+    assert data["agent_control_verified"] is True
+    assert data["verified"] is False
+    assert data["attempt_limit"] is None
+    manifest["mock_execution"] = True
+    (run / "recovery/manifest.json").write_text(json.dumps(manifest))
+    assert load_episode(run)["agent_control_verified"] is False
+
+
 def test_assessment_logged_after_handoff_is_attached_to_attempt(episode):
     run, manifest = episode
     path = run / "recovery/events.jsonl"

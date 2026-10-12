@@ -7,7 +7,9 @@ import json
 from pathlib import Path
 import socket
 
-from recovery_protocol import PROTOCOL_VERSION
+from recovery_protocol import (
+    PROTOCOL_VERSION, SafetyLimits, compile_program, validate_recovery_proposal,
+)
 
 
 def request(address: Path, operation: str, decision: dict | None = None) -> dict:
@@ -37,10 +39,35 @@ def main() -> None:
     for operation in ("mark_failure", "recover", "assess"):
         command = subparsers.add_parser(operation)
         command.add_argument("decision", type=Path)
+    control = subparsers.add_parser("control")
+    control.add_argument("decision", type=Path, nargs="?")
+    control.add_argument("--code", help="Literal bounded controller calls, never unrestricted Python")
+    control.add_argument("--diagnosis")
+    control.add_argument("--goal")
     finalize = subparsers.add_parser("finalize")
     finalize.add_argument("--reason", required=True)
     args = parser.parse_args()
-    if args.operation == "wam":
+    if args.operation == "control":
+        if bool(args.decision) == bool(args.code):
+            parser.error("control requires either a decision file or --code")
+        context = request(args.socket, "context")
+        state, robot = context["state"], context["robot_state"]
+        if state["status"] != "ready_agent":
+            raise RuntimeError(f"Agent control cannot execute from {state['status']}")
+        decision = json.loads(args.decision.read_text()) if args.decision else {
+            "protocol_version": PROTOCOL_VERSION, "request_id": state["request_id"],
+            "correction_mode": "action", "diagnosis": args.diagnosis,
+            "recovery_goal": args.goal, "control_code": args.code,
+        }
+        limits = SafetyLimits(**state["safety_limits"])
+        proposal = validate_recovery_proposal(
+            decision, state["request_id"], 0, robot["ee_pos"], limits
+        )
+        compile_program(
+            proposal["program"], robot["ee_pos"], robot["ee_quat"], robot["gripper_pos"], limits
+        )
+        result = request(args.socket, "control", decision)
+    elif args.operation == "wam":
         if not 1 <= args.chunks <= 40:
             parser.error("chunks must be in [1, 40]")
         results = []

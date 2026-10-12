@@ -1,8 +1,8 @@
 "use strict";
 
 const $ = (id) => document.getElementById(id);
-const sourceNames = { initial: "初始状态", wam: "WAM 执行", agent_correction: "Agent 修正", agent_condition: "Condition 修正", wam_continuation: "WAM 续跑" };
-const sourceClasses = { initial: "wam", wam: "wam", agent_correction: "correction", agent_condition: "correction", wam_continuation: "continuation" };
+const sourceNames = { initial: "初始状态", wam: "WAM 执行", agent_correction: "Agent 修正", agent_condition: "Condition 修正", agent_control: "Agent 直接控制", wam_continuation: "WAM 续跑" };
+const sourceClasses = { initial: "wam", wam: "wam", agent_correction: "correction", agent_condition: "correction", agent_control: "correction", wam_continuation: "continuation" };
 const eventNames = { failure: "发现失败", proposal: "Agent 介入", assessment: "局部评估", handoff: "交还 WAM", success: "任务成功" };
 const cameraNames = { wrist_cam: "手腕相机", over_shoulder_left_camera: "左肩视角", over_shoulder_right_camera: "右肩视角", head_camera: "头部视角" };
 let episode = null;
@@ -104,7 +104,7 @@ function renderAttempt() {
     proposal.condition ? `Condition: ${proposal.condition}\nWAM execute steps: ${proposal.wam_execute_steps}` : "",
   ].filter(Boolean).join("\n\n");
   const success = attempt.assessment?.local_recovery_success;
-  $("local-outcome").textContent = success === true ? "局部恢复成功" : success === false ? "局部恢复失败" : "未评估";
+  $("local-outcome").textContent = episode.experiment_mode === "agent_control" ? "控制程序 · 非 Recovery" : success === true ? "局部恢复成功" : success === false ? "局部恢复失败" : "未评估";
   $("local-outcome").className = `badge ${success === true ? "" : "amber"}`;
   const camera = "over_shoulder_left_camera";
   const before = episode.observations[attempt.start].frames;
@@ -133,19 +133,22 @@ function renderSegment() {
   $("segment-stats").textContent = `${sourceNames[selectedSegment.source] || selectedSegment.source} · 起点 ${selectedSegment.start} · 预测 ${selectedSegment.predicted_steps} 步 / 实际 ${selectedSegment.executed_steps} 步 · 推理 ${fixed(selectedSegment.inference_seconds, 1)} s`;
 }
 function render() {
+  const agentOnly = episode.experiment_mode === "agent_control";
   $("task-title").textContent = episode.task;
   $("task-goal").textContent = episode.goal;
   $("episode-id").textContent = episode.id;
   $("outcome").textContent = episode.verified ? "闭环验证通过" : episode.mock_execution !== false ? "非真实执行验证" : episode.native_success ? "尚未通过闭环验证" : "任务未成功";
+  if (agentOnly) $("outcome").textContent = episode.agent_control_verified ? "Agent 控制任务验证通过" : "Agent 控制未验证成功";
   $("outcome-detail").textContent = `原生任务：${episode.native_success === true ? "成功" : episode.native_success === false ? "失败" : "未知"} · ${episode.verification ? "已保存独立校验结果" : "缺少独立校验结果"}`;
-  const agentSteps = episode.observations.filter((item) => ["agent_correction", "agent_condition"].includes(item.source)).length;
+  const agentSteps = episode.observations.filter((item) => ["agent_correction", "agent_condition", "agent_control"].includes(item.source)).length;
   const continuation = episode.observations.filter((item) => item.source === "wam_continuation").length;
   $("step-count").textContent = episode.steps;
   $("phase-counts").textContent = `Agent ${agentSteps} 步 · WAM 续跑 ${continuation} 步`;
-  $("attempt-count").textContent = `${episode.attempts.length} / ${episode.attempt_limit}`;
+  $("attempt-count").textContent = agentOnly ? `${episode.attempts.length} 个控制程序` : `${episode.attempts.length} / ${episode.attempt_limit}`;
   const tracking = episode.attempts.flatMap((attempt) => attempt.tracking);
   $("tracking-error").textContent = tracking.length ? `${fixed(tracking.at(-1).error_mm, 2)} mm` : "—";
   $("execution-kind").textContent = episode.mock_execution === false ? "真实仿真 · 记录回放" : "MOCK / 未确认执行类型";
+  if (agentOnly) $("execution-kind").textContent += " · Agent-only 基线，非 WAM Recovery";
   $("execution-kind").className = `badge ${episode.mock_execution === false ? "" : "amber"}`;
   const assisted = episode.agent_input_mode === "debug_ground_truth_assisted";
   const inputMode = assisted ? "Agent 使用仿真物体真值辅助，不是纯视觉评测" : `Agent 输入来源：${episode.agent_input_mode || "未记录，不能判定为纯视觉"}`;

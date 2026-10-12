@@ -17,6 +17,7 @@ parser.add_argument("--seed", type=int, default=3407)
 parser.add_argument("--initialization-diagnostic", action="store_true", help="Capture reset and warmup robot positions/targets without policy inference.")
 parser.add_argument("--worker-socket", type=Path, help="Serve persistent language-sampling commands on a local Unix socket.")
 parser.add_argument("--recovery-worker-socket", type=Path, help="Serve a persistent live-state WAM recovery session.")
+parser.add_argument("--agent-control", action="store_true", help="Run an explicitly separate bounded Agent-only baseline without WAM.")
 parser.add_argument("--recovery-genesis", type=Path, help="Initialize a recovery episode from a historical scene before any WAM action.")
 parser.add_argument("--recovery-genesis-sha256", help="Required SHA-256 of the historical recovery genesis.")
 parser.add_argument("--task", help="Capture a registered RoboLab task instead of the small cube scene.")
@@ -31,6 +32,8 @@ parser.add_argument("--render-width", type=int, default=640)
 parser.add_argument("--render-height", type=int, default=480)
 parser.add_argument("--rendering-mode", choices=("performance", "balanced", "quality"), default="balanced")
 args = parser.parse_args()
+if args.agent_control and not args.recovery_worker_socket:
+    parser.error("--agent-control requires --recovery-worker-socket")
 args.recovery_initialization = {"kind": "seeded_reset", "seed": args.seed}
 if bool(args.recovery_genesis) != bool(args.recovery_genesis_sha256):
     parser.error("--recovery-genesis and --recovery-genesis-sha256 must be supplied together")
@@ -57,7 +60,7 @@ if args.render_width < 320 or args.render_height < 240:
     parser.error("render-width and render-height must be at least 320x240")
 if args.rollout_chunks and not args.task:
     parser.error("--rollout-chunks requires --task")
-if args.rollout_chunks or args.worker_socket or args.recovery_worker_socket:
+if args.rollout_chunks or args.worker_socket or (args.recovery_worker_socket and not args.agent_control):
     import urllib.request
 
     with urllib.request.urlopen(f"http://127.0.0.1:{args.policy_port}/healthz", timeout=5) as response:
@@ -322,9 +325,10 @@ try:
             serve(env, env_cfg, args, observation)
             manifest = json.loads((args.output_dir / "recovery/manifest.json").read_text())
             result.update(
-                model_loaded=True,
+                model_loaded=not args.agent_control,
                 native_success=manifest["native_success"],
                 acceptance_success=manifest["acceptance_success"],
+                agent_control_success=manifest["agent_control_success"],
                 recovery_manifest="recovery/manifest.json",
                 steps_executed=manifest["step"],
             )
