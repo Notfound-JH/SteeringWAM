@@ -331,6 +331,24 @@ sample are recorded, and the verifier independently recomputes the consecutive
 sample checks. `stable_blue_placement_verified` is separate from an ordinary
 native success label.
 
+The first strict episode, `diagnostics/agent_blue_hammer_strict_20261012`,
+reached the unchanged 900-step horizon after 22 bounded programs without a
+reset. The first 17 programs reproduced the earlier grasp with zero measured
+EE/blue-root boundary-position deviation. Subsequent release left the hammer
+visibly outside the bin near the table edge, but **strict success is false**.
+The recorded conservative bounding box did not fully clear the bin. At steps
+833-835, the original native predicate, low-velocity limits and table force
+were satisfied; from step 836 onward, measured velocities and reported table
+force were zero, and the original native predicate became false. A sleeping
+rigid body's contact reporting is a possible explanation, not a verified
+diagnosis. Neither the criterion nor recorded outcomes were changed to force
+success. This remains an Agent-only episode, not a WAM Recovery success.
+
+Placement samples retain raw normalized finger-joint closure, which can
+slightly exceed `[0, 1]`; policy proprioception clips that value. The verifier
+checks raw closure against measured joint position and separately checks the
+clipped observation instead of treating this difference as corrupted data.
+
 ## Minimal integration
 
 - [probe_isaac_camera.py](probe_isaac_camera.py) initializes the registered DROID

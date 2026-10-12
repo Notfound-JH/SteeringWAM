@@ -14,6 +14,15 @@ from recovery_protocol import SafetyLimits, compile_program, validate_recovery_p
 from blue_placement_verification import STABLE_STEPS, placement_sample_passes
 
 
+def verify_placement_gripper(sample: dict, robot_state: dict) -> None:
+    index = robot_state["joint_names"].index("finger_joint")
+    raw_closure = robot_state["measured_joint_pos"][index] / (np.pi / 4)
+    np.testing.assert_allclose(sample["gripper_closure"], raw_closure, atol=1e-6)
+    np.testing.assert_allclose(
+        np.clip(raw_closure, 0, 1), robot_state["gripper_pos"][0], atol=1e-6
+    )
+
+
 def verify_agent_programs(manifest: dict, events: list[dict], actual: list[dict]) -> None:
     if any(event["action_source"] != "agent_control" for event in actual):
         raise ValueError("Agent-only baseline contains non-Agent execution")
@@ -140,9 +149,7 @@ def verify(directory: Path) -> dict:
                 np.testing.assert_array_equal(
                     sample["object_velocity"], scene["rigid_object/blue_hammer/root_velocity"][0]
                 )
-            np.testing.assert_allclose(
-                sample["gripper_closure"], event["robot_state"]["gripper_pos"][0], atol=1e-6
-            )
+            verify_placement_gripper(sample, event["robot_state"])
             if sample["gripper_command"] != event["actual_action"][-1]:
                 raise ValueError("Placement gripper command disagrees with execution")
             passed = placement_sample_passes(sample)

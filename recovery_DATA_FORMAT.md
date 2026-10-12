@@ -94,10 +94,15 @@ Agent-only 动作打失败标签。
 | `recovery_cube_20261011` | 212 | 完整 WAM Recovery 验收成功 |
 | `agent_tools_coding_20261012T1600` | 1576 | 四锤 Agent-only 失败，43 个控制程序保留 |
 | `agent_blue_hammer_20261012` | 712 | 单蓝锤原生条件成功；**未证明稳定放置** |
-| `agent_blue_hammer_strict_20261012` | 运行中 | 严格放置实验；以最终 manifest 为准 |
+| `agent_blue_hammer_strict_20261012` | 900 | 到达原始时限；已松爪但严格放置未通过，不标为成功 |
 
 六任务批次以及两次额外 tools Recovery 的失败数据也保留。
 完整目录清单由本次 handoff 的 `episodes.json` 提供，运行中行只是快照。
+更新后的清单包含 12 条已结束轨迹，共 9,868 个真实仿真执行步。
+严格实验的测量与判据差异另见 handoff 中的 `strict_placement_report.json`：
+833–835 步低速且有桌面支撑力；836 步起速度及报告的支撑力均为零，
+原始成功条件变为 false。物理休眠可能影响接触力报告，但尚未独立确认；
+包围盒分离也未通过，不能仅凭最终图像覆盖这些结局标签。
 
 ## 3. 对齐规则：最容易接错的部分
 
@@ -146,11 +151,15 @@ position 与 JSONL 对应状态的最大误差都是 **0**，不是仅凭名称�
 | `measured_arm_joint_pos` | `(7,)` | 实测 Panda 关节角，rad |
 | `measured_arm_joint_vel` | `(7,)` | 实测关节速度，rad/s |
 | `ee_pos`, `ee_quat` | `(3,)`, `(4,)` | Robot-root frame；m；四元数 **wxyz** |
-| `gripper_pos` | `(1,)` | 实测归一化闭合度，0 开、1 闭 |
+| `gripper_pos` | `(1,)` | 实测归一化闭合度，裁剪至 `[0,1]`，0 开、1 闭 |
 
 关节动作顺序为 `panda_joint1 ... panda_joint7, gripper_command`。
 这里的 EE 是 Robotiq **`base_link` 基座**，不是指尖中心或物体接触点。
 夹爪命令为 1，不代表实测已闭合，也不代表抓到了物体。
+严格实验的 `placement_verification.gripper_closure` 则保留
+`finger_joint / (π/4)` 的未裁剪值，可能略小于 0 或大于 1。
+校验时应先与 `measured_joint_pos` 中对应关节核对，再裁剪后对齐
+`gripper_pos`，不能直接要求两个字段完全相等。
 
 完整机器人状态 HDF5 有 **13 个关节**（7 机械臂 + 夹爪联动关节），
 不要误当作 13 维动作。Agent-only 的 `robot.json` 额外保存

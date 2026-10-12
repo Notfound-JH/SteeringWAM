@@ -3,8 +3,10 @@ import sys
 from types import ModuleType, SimpleNamespace
 
 import pytest
+import numpy as np
 
 from blue_placement_verification import placement_sample_passes, strict_blue_placement_success
+from verify_recovery_episode import verify_placement_gripper
 
 
 SAMPLE = {
@@ -47,6 +49,21 @@ def test_nonfinite_sample_is_an_error():
     sample = {**SAMPLE, "object_velocity": [float("nan"), 0, 0, 0, 0, 0]}
     with pytest.raises(ValueError, match="Nonfinite"):
         placement_sample_passes(sample)
+
+
+@pytest.mark.parametrize("closure", [-0.0002684, 0.0, 0.79, 1.00003995])
+def test_verifier_distinguishes_raw_joint_closure_from_clipped_observation(closure):
+    robot = {
+        "joint_names": ["panda_joint1", "finger_joint"],
+        "measured_joint_pos": [0, closure * (np.pi / 4)],
+        "gripper_pos": [float(np.clip(closure, 0, 1))],
+    }
+    verify_placement_gripper({"gripper_closure": closure}, robot)
+    with pytest.raises(AssertionError):
+        verify_placement_gripper({"gripper_closure": closure + 0.001}, robot)
+    robot["gripper_pos"][0] += 0.001
+    with pytest.raises(AssertionError):
+        verify_placement_gripper({"gripper_closure": closure}, robot)
 
 
 def test_strict_success_requires_fifteen_consecutive_stable_steps(monkeypatch):
