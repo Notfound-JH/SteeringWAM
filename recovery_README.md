@@ -121,6 +121,26 @@ Use `verify_recovery_episode.py RUN/recovery` to verify the versioned contract.
 
 ## Read-only experiment dashboard
 
+### Pure-WAM instruction comparisons
+
+For non-intervening instruction comparisons, the existing V2 recording worker can
+be used with only `wam`, `status`/`context`, and `finalize` operations. Do not call
+`mark_failure`, `recover`, or `control`: annotate errors offline without changing
+the trajectory. Record `study_episode.json` with
+`control_policy="frozen_wam_only_no_recovery"`; the legacy recording container
+still calls its interface `experiment_mode="wam_recovery"`. Verify that every
+actual action source is `wam`, the attempt count is zero, and compare native
+task success rather than the Recovery-only `acceptance_success` field.
+
+The model launcher accepts `SEED=3407 DETERMINISTIC_SEED=1` to use seed 3407 for
+**every inference request**, allowing a shared frozen policy server without
+request interleaving changing the generation-seed sequence. The default remains
+`DETERMINISTIC_SEED=0`, which advances a NumPy RNG initialized from `SEED`.
+Keep the simulator seed, historical genesis, goal checker, horizon and sampler
+settings fixed too. Matching seeds does not guarantee bitwise GPU determinism.
+One run per instruction gives descriptive trajectories, not statistical failure
+probabilities or proof that every difference is caused by language alone.
+
 Start the existing dashboard server without launching a model or simulator:
 
 ```bash
