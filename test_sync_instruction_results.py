@@ -1,10 +1,13 @@
 import hashlib
 import json
+from contextlib import nullcontext
+import sys
 from types import SimpleNamespace
 
 import pytest
 
 from sync_instruction_results import Backup, candidate_artifacts
+import sync_instruction_results
 
 
 class Container:
@@ -119,3 +122,28 @@ def test_nested_retry_result_uploaded_after_its_artifacts(tmp_path):
     prefix = "prefix/retries/fruits_chunk_000_extra1/fruits/"
     assert container.order == [prefix + "candidates/retried/actions.npy",
                                prefix + "candidates/retried/result.json", prefix + "session.json"]
+
+
+def test_cli_bounds_large_array_upload_requests(tmp_path, monkeypatch):
+    session = tmp_path / "session"
+    session.mkdir()
+    (session / "experiment.json").write_text("{}")
+    sas = tmp_path / "test_sas.txt"
+    sas.write_text("https://example.blob.core.windows.net/test?sig=TEST")
+    container = Container()
+
+    def connect(url, **kwargs):
+        assert url == sas.read_text()
+        assert kwargs["max_single_put_size"] == 4 * 1024 * 1024
+        assert kwargs["max_block_size"] == 4 * 1024 * 1024
+        return nullcontext(container)
+
+    monkeypatch.setattr(sync_instruction_results.ContainerClient, "from_container_url", connect)
+    monkeypatch.setattr(sync_instruction_results.os, "umask", lambda _: None)
+    monkeypatch.setattr(sync_instruction_results.signal, "signal", lambda *_: None)
+    monkeypatch.setattr(sys, "argv", [
+        "sync_instruction_results.py", "--session", str(session),
+        "--sas-file", str(sas), "--state-dir", str(tmp_path / "state"), "--once",
+    ])
+    assert sync_instruction_results.main() == 0
+    assert len(container.files) == 1

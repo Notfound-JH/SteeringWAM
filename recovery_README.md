@@ -45,6 +45,8 @@ recorded feedback, `audit_study.py` verifies real action/prediction alignment an
 outcomes, and `verify_archive.py` independently reads selected Azure artifacts
 back and checks SHA256. Exact conditions and change boundaries are preserved in
 each episode's `subgoal_intents.jsonl` and the study's `chunk_metrics.csv`.
+Azure uploads use4MiB blocks for larger artifacts, preserving complete arrays
+and SHA256 metadata while avoiding a single large request for predicted futures.
 
 ## Research contract: task-progress-first recovery (2026-10-15)
 

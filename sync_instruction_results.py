@@ -200,7 +200,9 @@ def main():
                 if parsed.scheme != "https" or not parsed.netloc or not parsed.query:
                     raise ValueError("An HTTPS container SAS URL is required")
                 with ContainerClient.from_container_url(sas, logging_enable=False, retry_total=3,
-                                                       connection_timeout=15, read_timeout=120) as container:
+                                                       connection_timeout=15, read_timeout=120,
+                                                       max_single_put_size=4 * 1024 * 1024,
+                                                       max_block_size=4 * 1024 * 1024) as container:
                     backup = Backup(session, remote, state_dir, container)
                     status = backup.run_once()
                 summary = {key: status[key] for key in ("status", "uploaded_files", "completed_candidates", "failed_candidates_backed_up", "errors")}

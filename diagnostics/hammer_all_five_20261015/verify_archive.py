@@ -28,6 +28,11 @@ for trial in results["episodes"]:
         "recovery/trajectory.hdf5", "recovery/episode_wrist.mp4",
         "recovery/segments/000_wam/predicted_actions.npy",
     ]
+    retried_futures = {4: [32], 5: range(32, 37)}.get(int(trial["trial"]), [])
+    groups[run].extend(
+        f"recovery/segments/{chunk:03d}_wam/predicted_future.npy"
+        for chunk in retried_futures
+    )
 sas = (Path.home() / ".blob-sync/temp_sas_url.txt").read_text().strip()
 checks = []
 location = "container"
