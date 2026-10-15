@@ -207,3 +207,92 @@ def test_new_evaluation_and_condition_change_metadata_are_projected(episode):
     assert data["attempts"][0]["evaluation"] == evaluation
     assert data["attempts"][0]["assessment"] is None
     assert data["attempts"][0]["executed_steps"] == 1
+
+
+def test_offline_review_embeds_video_and_preserves_unknown_outcome(episode):
+    from rollout_dashboard.offline import render_episode
+
+    run, _ = episode
+    document = render_episode(run)
+    assert "data:video/mp4;base64," in document
+    assert "&lt;script&gt;bad()&lt;/script&gt;" in document
+    assert "<script>bad()</script>" not in document
+    assert "Not recorded" in document
+    assert "No recorded correction attempts" in document
+    assert "connect-src 'none'" in document
+    assert "/api/recovery/" not in document
+    assert "/media/" not in document
+
+
+def test_offline_review_rejects_corruption_before_writing(episode, tmp_path):
+    from rollout_dashboard.offline import export_episode
+
+    run, _ = episode
+    (run / "recovery/events.jsonl").write_text("{}\n")
+    output = tmp_path / "review.html"
+    with pytest.raises(ValueError, match="Event log"):
+        export_episode(run, output)
+    assert not output.exists()
+
+
+def test_offline_review_never_overwrites_existing_files(episode, tmp_path):
+    from rollout_dashboard.offline import export_episode
+
+    run, _ = episode
+    output = tmp_path / "review.html"
+    output.write_text("keep")
+    with pytest.raises(FileExistsError):
+        export_episode(run, output)
+    assert output.read_text() == "keep"
+
+
+def test_offline_media_rejects_external_and_escaping_paths(episode, tmp_path):
+    from rollout_dashboard.offline import _embedded_media
+
+    run, _ = episode
+    outside = tmp_path / "outside.mp4"
+    outside.write_bytes(b"private")
+    (run / "recovery/escape.mp4").symlink_to(outside)
+    for url in (
+        "https://example.com/video.mp4",
+        "/media/another/recovery/video.mp4",
+        "/media/episode/%2e%2e/outside.mp4",
+        "/media/episode/recovery/escape.mp4",
+    ):
+        with pytest.raises(ValueError):
+            _embedded_media(run, url)
+
+
+def test_offline_attempt_images_and_failure_labels_preserve_source(episode, tmp_path):
+    from PIL import Image
+    from rollout_dashboard.offline import export_episode
+
+    run, manifest = episode
+    Image.new("RGB", (800, 600), "blue").save(run / "recovery/frame.png")
+    path = run / "recovery/events.jsonl"
+    events = [json.loads(line) for line in path.read_text().splitlines()]
+    proposal = run / "recovery/proposal.json"
+    proposal.write_text(json.dumps({
+        "correction_mode": "action", "control_code": "<script>untrusted()</script>",
+    }))
+    events.extend([
+        {"event_type": "recovery_proposal", "episode_step": 1, "attempt": 1,
+         "recorded_at": 1, "proposal": {"path": str(proposal)}},
+        {**events[-1], "episode_step": 2, "action_source": "agent_correction"},
+        {"event_type": "recovery_assessment", "episode_step": 2, "attempt": 1,
+         "recorded_at": 2, "assessment": {"local_recovery_success": False, "evidence": "failed"}},
+    ])
+    raw = "\n".join(json.dumps(event) for event in events).encode()
+    path.write_bytes(raw)
+    manifest.update(step=2, events={"sha256": hashlib.sha256(raw).hexdigest()})
+    (run / "recovery/manifest.json").write_text(json.dumps(manifest))
+    before = {p: p.read_bytes() for p in run.rglob("*") if p.is_file()}
+    output = tmp_path / "offline.html"
+    export_episode(run, output)
+    document = output.read_text()
+    assert "Attempt 1 / action" in document
+    assert document.count("data:image/jpeg;base64,") == 2
+    assert "&quot;local_recovery_success&quot;: false" in document
+    assert "&lt;script&gt;untrusted()&lt;/script&gt;" in document
+    assert "over_shoulder_left_camera image not recorded" in document
+    assert all(p.read_bytes() == raw for p, raw in before.items())

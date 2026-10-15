@@ -74,7 +74,39 @@ tunnel rather than creating a different address:
 The address requires an active host process and an unexpired tunnel. No
 anonymous/public access grant was added.
 
-The page reads finalized episodes from `diagnostics/*/recovery/manifest.json`.
+**Availability update (2026-10-15):** the standalone tunnel account exhausted
+its 5 GB bandwidth allowance. Authenticated requests return HTTP 429, although
+the localhost page/API/video remain healthy. `devtunnel limits` reports a reset
+on 2026-11-12. Restarting or creating another tunnel on that account does not
+restore the user-level allowance. Do not expose the unauthenticated dashboard
+publicly or publish the existing container-wide write-capable Azure SAS.
+
+### Offline review when forwarding is unavailable
+
+Export a finalized episode into one self-contained HTML file:
+
+```bash
+./RoboLab/.venv/bin/python -m rollout_dashboard.offline \
+  diagnostics/recovery_blue_hammer_v2_20261015T0824 \
+  --output diagnostics/recovery_blue_hammer_v2_20261015T0824/offline_review.html
+```
+
+Download the file through the remote file explorer and open the downloaded copy
+in Chrome or Edge. No localhost forwarding, external assets, credentials or
+HTTP server are needed. Existing output files are never overwritten.
+
+The offline snapshot embeds the original actual MP4, execution phases, all
+recorded correction proposals/code, evaluation windows, assessments, and
+compressed wrist/left-shoulder before/after images. It preserves failed, unknown,
+mock and Agent-only labels rather than upgrading them to verified success.
+It is **not** a live dashboard or a replacement for the full archive: predicted
+futures, all per-step observations and raw trajectories stay in the source
+episode. The export validates the finalized event-log checksum and does not
+rewrite source recordings. Treat the resulting HTML as private experiment data.
+
+### Online dashboard capabilities
+
+The online page reads finalized episodes from `diagnostics/*/recovery/manifest.json`.
 It provides:
 
 - Full actual video, phase timeline and step-by-step camera/robot-state inspection.
