@@ -3,6 +3,68 @@
 For trajectory ingestion, field meanings, time-step alignment and real examples,
 see [Recovery trajectory data contract](recovery_DATA_FORMAT.md).
 
+## Research contract: task-progress-first recovery (2026-10-15)
+
+The objective is **completion of the long-horizon task**, not the accumulation of
+locally successful corrections. The following are the updated design requirements.
+They are **not yet the behavior of the V2 runtime** described below: V2 still runs
+16 WAM steps after every correction before accepting a local assessment.
+
+### Condition priority and unknown decision points
+
+The working hypothesis is that Condition primarily influences task-level choices
+at important decision points: which object to approach, which subgoal to pursue,
+and when to transition between stages. Those points are task-dependent and are
+not assumed to occur only in the first chunk. This is a hypothesis to investigate,
+not a result established by the existing hammer episodes.
+
+At WAM chunk boundaries, first compare actual behavior with the overall goal and
+the expected task stage. Wrong target selection, incorrect stage/order, or an
+off-track task plan should prioritize **Condition over Action**. Do not substitute
+increasingly detailed gripper-language instructions for this task-level diagnosis.
+Action remains appropriate when the target and task stage are correct but physical
+execution prevents progress. Its proposal must explain why changing Condition
+alone does not address the observed problem. Priority is a decision rule, not a
+requirement to waste a Condition trial on every clearly physical failure.
+
+### Separate correction and recovery-judgment roles
+
+- The **correction Agent** diagnoses the WAM failure against the task goal,
+  identifies the recovery objective, and proposes Condition, Action, or Joint.
+- The **recovery-judgment Agent** evaluates the actual response. A correction
+  proposal is not its own success verdict. Judge inputs must include the overall
+  task, expected/observed stage, target object, relevant history, correction intent,
+  and before/after actual observations.
+- Record the two roles and their actual model/caller identities when available.
+  Separate role names alone do not establish independent model evaluation.
+
+| Mode | Judgment boundary | Required question |
+|---|---|---|
+| Condition | After the next executed WAM chunk under the revised condition | Did actual WAM behavior return to the correct target and task progression? |
+| Action | Immediately after the bounded controller program, before any further WAM action | What physical effect actually occurred, and does it enable the intended next task stage? |
+| Joint | Preserve both applicable boundaries; explicitly record the stage order | What was the Action effect, and what was the subsequent/preceding Condition-driven WAM effect? |
+
+In particular, do not execute an extra WAM chunk before recording the Action
+effect: otherwise a later WAM release can be confused with failed controller
+execution. Predictions and command compliance are supporting signals, not proof
+of the actual effect.
+
+### Evaluate task progress, not only local motion
+
+Keep these outcomes separate: correction execution/effect, task-progress
+alignment or restoration, readiness for WAM continuation, and final native task
+success. Reaching a Cartesian target, issuing close commands, or holding the wrong
+object cannot by itself establish recovery. Conversely, a valid recovery can
+restore a prerequisite for the next stage without completing the whole task.
+Evidence that is insufficient should remain uncertain, not become success.
+
+A positive recovery judgment permits continuation; it is not final task success.
+Continue monitoring subsequent WAM chunks for renewed task-progress deviation.
+Preserve failures, the no-reset rule, frozen WAM parameters, and the configured
+attempt/horizon/fallback policy. Do not relabel historical V1/V2 assessments as
+task-progress judgments or independent-judge results. A runtime implementation
+of this contract needs an explicitly versioned protocol and aligned verification.
+
 ## Read-only experiment dashboard
 
 Start the existing dashboard server without launching a model or simulator:
