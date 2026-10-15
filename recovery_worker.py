@@ -160,6 +160,8 @@ class RecoverySession:
             "initialization": args.recovery_initialization,
             "agent": {"interface": "local_socket", "execution": "literal_controller_DSL_no_exec"},
         }
+        if args.task == "ToolsPickingAllHammersTask":
+            self.state.update(self._events())
         recorder = env.recorder_manager
         recorder.clear(env_ids=[0])
         recorder.set_hdf5_file(str(self.directory / "trajectory.hdf5"))
@@ -229,6 +231,27 @@ class RecoverySession:
             "native_truncated": bool(truncated[0]),
             "episode_step": int(self.env.episode_length_buf[0]),
         }
+        if self.args.task == "ToolsPickingAllHammersTask":
+            success_cfg = self.env.termination_manager.get_term_cfg("success")
+            objects = success_cfg.params["object"]
+            expected = {"husky_hammer", "blue_hammer", "red_hammer", "wood_hammer"}
+            if set(objects) != expected or success_cfg.params["logical"] != "all":
+                raise ValueError("Four-hammer progress requires the unchanged all-hammers checker")
+            per_object = {
+                name: bool(success_cfg.func(
+                    self.env, **{**success_cfg.params, "object": [name]}
+                )[0])
+                for name in objects
+            }
+            if all(per_object.values()) != result["native_success"]:
+                raise ValueError("Per-hammer completion disagrees with native all-hammers success")
+            result["hammer_task_progress"] = {
+                "criterion": "native_success_predicate_per_object",
+                "per_object": per_object,
+                "completed_count": sum(per_object.values()),
+                "required_count": len(objects),
+                "remaining_objects": [name for name, complete in per_object.items() if not complete],
+            }
         if self.args.verify_blue_placement:
             result["placement_verification"] = getattr(self.env, "_blue_placement_sample", None)
         return result

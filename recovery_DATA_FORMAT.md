@@ -7,6 +7,17 @@ V2 实验使用 `wam-recovery-v2`，其模式理由、条件变更和评估窗�
 显式开启任务进程策略的新实验使用 `wam-recovery-v3`，见下方说明。
 容器格式不变，不代表各协议的评估语义相同。
 
+### 四锤完整任务的逐物体进程
+
+新采集的 `ToolsPickingAllHammersTask` 在每个实际执行响应的 `events`、
+chunk 结果及最终 manifest 中增加 `hammer_task_progress`：
+`per_object`、`completed_count`、`required_count=4`、`remaining_objects`。
+每把锤子复用原生 success 函数及其原有参数，只把对象列表缩为该单个对象；
+四者全部通过必须与原生任务成功一致，否则明确报错。
+该记录不修改成功条件，不会在一把完成后结束完整任务。
+这是当前时刻的判据快照，不是累计锁存：已放置的锤子再次不满足判据时会退回未完成。
+历史 episode 没有这些字段时不能补造逐物体成功结果。
+
 ### V3：任务进程与独立阶段判断
 
 - `task_progress_review` 在普通 WAM chunk 的实际执行端点记录任务对象、
