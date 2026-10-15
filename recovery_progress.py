@@ -160,6 +160,7 @@ class ProgressRecoverySession(RecoverySession):
             observation_before=before,
         )
         if compiled is not None:
+            np.save(directory / "compiled_cartesian_targets.npy", compiled)
             result = self._execute_cartesian_targets(compiled, directory)
         else:
             result = self._query_wam(

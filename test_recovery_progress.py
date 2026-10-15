@@ -2,6 +2,7 @@ import copy
 import json
 
 import h5py
+import numpy as np
 import pytest
 
 from instruction_sampling_worker import artifact
@@ -109,6 +110,19 @@ def test_failed_joint_action_does_not_execute_condition(worker):
     assess(worker, False)
     assert worker.step == 3 and worker.state["status"] == "ready_recovery"
     assert verify_contract(worker)["recovery_stages"] == 1
+
+
+def test_controller_directory_contains_compiled_artifact_before_execution(worker):
+    execute = worker._execute_cartesian_targets
+
+    def check_directory(commands, directory):
+        np.testing.assert_array_equal(np.load(directory / "compiled_cartesian_targets.npy"), commands)
+        return execute(commands, directory)
+
+    worker._execute_cartesian_targets = check_directory
+    worker.recover(proposal(worker))
+    assess(worker)
+    assert verify_contract(worker)["progress_contract_verified"]
 
 
 def test_chunk_progress_review_cannot_be_skipped(worker):

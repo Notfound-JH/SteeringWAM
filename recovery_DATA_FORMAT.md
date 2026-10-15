@@ -22,7 +22,8 @@ V2 实验使用 `wam-recovery-v2`，其模式理由、条件变更和评估窗�
   本次尝试结束，不执行其 Condition 阶段。一次 Joint 仍只消耗一次预算。
 - 每个阶段的 `result.json`、`evaluation.json`、`assessment.json` 保存在
   `recovery_attempts/NN/<stage>/`；Cartesian 编译结果仍在尝试根目录，
-  实际 IK 命令移至 `action_effect/executed_joint_actions.npy`。
+  Action 阶段目录也保存一份相同的编译结果供原控制器引用；实际 IK 命令位于
+  `action_effect/executed_joint_actions.npy`。
 - 判断包含 `agent_role=recovery_judge`、与提案不同的实际 `agent_id`、
   `correction_effect`、`task_progress`、`recovery_success`、
   `continuation_reason`、`evidence` 和准确的评估端点。

@@ -369,6 +369,7 @@ def verify_progress_contract(manifest: dict, events: list[dict], actual: list[di
                 )
                 requested = len(compiled)
                 np.testing.assert_array_equal(np.load(path.parent / "compiled_cartesian_targets.npy"), compiled)
+                np.testing.assert_array_equal(np.load(path.parent / stage / "compiled_cartesian_targets.npy"), compiled)
                 np.testing.assert_array_equal([e["cartesian_intent"] for e in responses], compiled[:len(responses)])
                 np.testing.assert_array_equal(
                     np.load(path.parent / stage / "executed_joint_actions.npy"),
