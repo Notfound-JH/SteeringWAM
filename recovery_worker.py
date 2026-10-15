@@ -109,7 +109,7 @@ class RecoverySession:
         self.control_programs = 0
         self.agent_control = args.agent_control
         self.actual_video_frames: list[Path] = []
-        self.limits = SafetyLimits()
+        self.limits = SafetyLimits(max_attempts=args.recovery_max_attempts)
         self.client = Cosmos3Client.__new__(Cosmos3Client)
         self.client._image_h, self.client._image_w, self.client._eval_episode_idx = 360, 640, 0
         self.transport = None
@@ -136,6 +136,10 @@ class RecoverySession:
             "local_recovery_success": None,
             "recovery_evaluation_steps": None if self.agent_control else RECOVERY_EVALUATION_STEPS,
             "recovery_evaluation": None,
+            "budget_exhaustion_policy": "continue_wam" if args.continue_wam_after_budget else "stop",
+            "budget_fallback": False,
+            "wam_after_budget_steps": 0,
+            "max_episode_steps": int(env.max_episode_length),
             "native_success": False,
             "native_terminated": False,
             "native_truncated": False,
@@ -368,6 +372,8 @@ class RecoverySession:
             self._check_step()
             if source == "wam_continuation":
                 self.continuation_steps += 1
+            elif source == "wam_after_budget":
+                self.state["wam_after_budget_steps"] += 1
             self.state["last_action_source"] = source
             executed.append(actual)
             final_events = self._events(terminated, truncated)
@@ -542,6 +548,8 @@ class RecoverySession:
     def _before_step(self, source: str, **intent: Any) -> None:
         if self.state["native_terminated"] or self.state["native_truncated"]:
             raise ValueError("Cannot step a terminated environment")
+        if self.step >= self.state.get("max_episode_steps", float("inf")):
+            raise ValueError("Configured episode step limit exhausted")
         self._check_step()
         self._event("action_authorized", action_source=source, **intent)
 
@@ -566,7 +574,10 @@ class RecoverySession:
         condition = decision.get("condition")
         subgoal = decision.get("subgoal")
         execute_steps = decision.get("execute_steps", self.limits.max_wam_execute_steps)
-        source = "wam_continuation" if self.state["local_recovery_success"] else "wam"
+        source = (
+            "wam_after_budget" if self.state.get("budget_fallback")
+            else "wam_continuation" if self.state["local_recovery_success"] else "wam"
+        )
         result = self._query_wam(
             condition, subgoal, execute_steps, source,
             change_kind=decision.get("condition_change_kind"),
@@ -718,6 +729,12 @@ class RecoverySession:
             self._event("control_handed_back_to_wam", observation=self.state["latest_observation"])
         elif self.attempts < self.limits.max_attempts:
             self.state["status"] = "ready_recovery"
+        elif self.state.get("budget_exhaustion_policy") == "continue_wam":
+            self.state.update(status="ready_wam", budget_fallback=True)
+            self._event(
+                "control_returned_to_wam_after_budget", attempt=self.attempts,
+                local_recovery_success=False, observation=self.state["latest_observation"],
+            )
         else:
             self.state["status"] = "recovery_failed"
         self._event("recovery_assessment", attempt=self.attempts, assessment=assessment)

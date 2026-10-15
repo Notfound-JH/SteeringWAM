@@ -296,3 +296,29 @@ def test_offline_attempt_images_and_failure_labels_preserve_source(episode, tmp_
     assert "&lt;script&gt;untrusted()&lt;/script&gt;" in document
     assert "over_shoulder_left_camera image not recorded" in document
     assert all(p.read_bytes() == raw for p, raw in before.items())
+
+
+def test_failed_budget_handoff_is_distinct_from_successful_continuation(episode):
+    run, manifest = episode
+    path = run / "recovery/events.jsonl"
+    events = [json.loads(line) for line in path.read_text().splitlines()]
+    events.extend([
+        {"event_type": "control_returned_to_wam_after_budget", "episode_step": 1,
+         "attempt": 5, "recorded_at": 1, "local_recovery_success": False},
+        {**events[-1], "episode_step": 2, "action_source": "wam_after_budget"},
+    ])
+    raw = "\n".join(json.dumps(e) for e in events).encode()
+    path.write_bytes(raw)
+    manifest.update(
+        step=2, events={"sha256": hashlib.sha256(raw).hexdigest()},
+        safety_limits={"max_attempts": 5}, max_episode_steps=600,
+        budget_exhaustion_policy="continue_wam", budget_fallback=True,
+        local_recovery_success=False,
+    )
+    (run / "recovery/manifest.json").write_text(json.dumps(manifest))
+    data = load_episode(run)
+    assert data["attempt_limit"] == 5 and data["max_episode_steps"] == 600
+    assert data["budget_fallback"] and data["budget_exhaustion_policy"] == "continue_wam"
+    assert data["timeline"][0]["type"] == "budget_handoff"
+    assert data["observations"][-1]["source"] == "wam_after_budget"
+    assert data["local_recovery_success"] is False and data["verified"] is False

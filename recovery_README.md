@@ -166,6 +166,30 @@ Focused API tests:
 ./RoboLab/.venv/bin/python -m pytest test_recovery_dashboard.py -q
 ```
 
+## Per-run attempt budget, failed-budget handoff and horizon
+
+Legacy defaults remain three attempts, stop after the last failed attempt, and
+the task's original native horizon. For five attempts, WAM fallback after budget
+exhaustion, and a 600-control-step task:
+
+```bash
+RECOVERY_MAX_ATTEMPTS=5 CONTINUE_WAM_AFTER_BUDGET=1 RECOVERY_MAX_STEPS=600 \
+  MODEL_GPU=5 SIM_GPU=4 \
+  bash launch_recovery_experiment.sh diagnostics/NEW_HAMMER_RUN ToolsPickingHammerTask
+```
+
+These map to `--recovery-max-attempts`, `--continue-wam-after-budget`, and
+`--recovery-max-steps` on the simulator worker launcher. The horizon is applied
+to the native environment configuration before construction, not a shortened
+video or a post-hoc label. Native task success may end the run earlier.
+
+After the fifth negative assessment the worker returns to `ready_wam`, retains
+`local_recovery_success=false`, and emits `control_returned_to_wam_after_budget`.
+Subsequent ordinary `recovery_client.py wam` calls run with source
+`wam_after_budget`; no sixth correction is allowed. The external driver must
+continue issuing WAM chunks until native termination. This does not claim
+successful Recovery, even if WAM later reaches native task success.
+
 ## Verified first episode: 2026-10-11
 
 The real Isaac Sim episode

@@ -110,6 +110,7 @@ def load_episode(directory: Path) -> dict:
         "agent_control_proposal": "proposal",
         "recovery_assessment": "assessment",
         "control_handed_back_to_wam": "handoff",
+        "control_returned_to_wam_after_budget": "budget_handoff",
         "condition_changed": "condition_change",
     }
     attempts = []
@@ -124,7 +125,10 @@ def load_episode(directory: Path) -> dict:
             continue
         end = next((
             i for i in range(index + 1, len(events))
-            if events[i]["event_type"] in {"recovery_proposal", "agent_control_proposal", "control_handed_back_to_wam"}
+            if events[i]["event_type"] in {
+                "recovery_proposal", "agent_control_proposal", "control_handed_back_to_wam",
+                "control_returned_to_wam_after_budget",
+            }
         ), len(events))
         responses = [
             item for item in events[index + 1:end]
@@ -215,6 +219,9 @@ def load_episode(directory: Path) -> dict:
         "agent_input_mode": experiment.get("agent_input_mode"),
         "agent_model_version": experiment.get("agent_model_version"),
         "attempt_limit": None if result["experiment_mode"] == "agent_control" else manifest["safety_limits"]["max_attempts"],
+        "budget_exhaustion_policy": manifest.get("budget_exhaustion_policy", "stop"),
+        "budget_fallback": manifest.get("budget_fallback", False),
+        "max_episode_steps": manifest.get("max_episode_steps"),
         "failure": manifest.get("failure"),
         "video": media(manifest["episode_video"]),
         "observations": observations, "phases": phases, "timeline": timeline,

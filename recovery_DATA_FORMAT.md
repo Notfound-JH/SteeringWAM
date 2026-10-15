@@ -226,6 +226,7 @@ WAM 输入拼图布局：上方是 360×640 wrist，下方是左右各 180×320
 | `recovery_attempt_completed` | 本次尝试全部实际结果与观测 |
 | `recovery_assessment` | 局部恢复布尔评估与文字证据 |
 | `control_handed_back_to_wam` | 真正交还 WAM 的边界 |
+| `control_returned_to_wam_after_budget` | 预算耗尽且最后一次评估失败后返回 WAM；不是恢复成功 |
 | `agent_control_proposal/completed` | Agent-only 控制程序，使用 `program_index` |
 | `command_failed` | 接口或执行错误，不丢弃 |
 | `session_finalized` | episode 封存结局 |
@@ -237,8 +238,17 @@ WAM 输入拼图布局：上方是 360×640 wrist，下方是左右各 180×320
 - `agent_condition`：纠错期间，**WAM** 在修改条件下生成并执行的动作。
 - `recovery_evaluation`：V2 三种模式统一的 WAM 评估窗口；是否改条件需读取
   `condition_change`，不能仅凭这个 source 判断。它不是 Agent 的 Cartesian 动作。
-- `wam_continuation`：交还控制权后的 WAM。
+- `wam_continuation`：局部恢复评估成功后交还控制权的 WAM。
+- `wam_after_budget`：纠错预算耗尽、评估仍失败后的 WAM；不能作为成功恢复的监督标签。
 - `agent_control`：独立 Agent-only 基线，不能冒充 Recovery。
+
+可选运行策略在新记录中保存为 `budget_exhaustion_policy`（`stop` 或
+`continue_wam`）、`max_episode_steps`、`budget_fallback` 和
+`wam_after_budget_steps`。尝试预算仍由 `safety_limits.max_attempts` 给出，
+按整个 episode 计数，不会在 WAM 重新接管时重置。预算后续跑即使最终完成
+原生任务，也不会把此前失败的局部评估改成成功；`acceptance_success`
+仍要求成功恢复后的 `wam_continuation` 链条。旧记录缺少这些运行策略字段时，
+校验器返回 `runtime_policy_verified=null`，不追溯修改旧标签。
 
 WAM 真正收到的 prompt 是：
 

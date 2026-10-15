@@ -7,8 +7,18 @@ RUN="${1:?Usage: bash launch_recovery_experiment.sh NEW_RUN_DIR [TASK]}"
 TASK="${2:-RubiksCubeTask}"
 AGENT_CONTROL="${AGENT_CONTROL:-0}"
 VERIFY_BLUE_PLACEMENT="${VERIFY_BLUE_PLACEMENT:-0}"
+RECOVERY_MAX_ATTEMPTS="${RECOVERY_MAX_ATTEMPTS:-3}"
+RECOVERY_MAX_STEPS="${RECOVERY_MAX_STEPS:-}"
+CONTINUE_WAM_AFTER_BUDGET="${CONTINUE_WAM_AFTER_BUDGET:-0}"
 [[ "$AGENT_CONTROL" == 0 || "$AGENT_CONTROL" == 1 ]] || { echo "AGENT_CONTROL must be 0 or 1." >&2; exit 2; }
 [[ "$VERIFY_BLUE_PLACEMENT" == 0 || "$VERIFY_BLUE_PLACEMENT" == 1 ]] || { echo "VERIFY_BLUE_PLACEMENT must be 0 or 1." >&2; exit 2; }
+[[ "$RECOVERY_MAX_ATTEMPTS" =~ ^[1-5]$ ]] || { echo "RECOVERY_MAX_ATTEMPTS must be in 1..5." >&2; exit 2; }
+[[ -z "$RECOVERY_MAX_STEPS" || "$RECOVERY_MAX_STEPS" =~ ^[1-9][0-9]*$ ]] || { echo "RECOVERY_MAX_STEPS must be positive." >&2; exit 2; }
+[[ "$CONTINUE_WAM_AFTER_BUDGET" == 0 || "$CONTINUE_WAM_AFTER_BUDGET" == 1 ]] || { echo "CONTINUE_WAM_AFTER_BUDGET must be 0 or 1." >&2; exit 2; }
+if [[ "$AGENT_CONTROL" == 1 && "$CONTINUE_WAM_AFTER_BUDGET" == 1 ]]; then
+    echo "Budget fallback requires WAM, not Agent-only mode." >&2
+    exit 2
+fi
 if [[ "$VERIFY_BLUE_PLACEMENT" == 1 && ( "$AGENT_CONTROL" != 1 || "$TASK" != ToolsPickingHammerTask ) ]]; then
     echo "VERIFY_BLUE_PLACEMENT requires Agent-only ToolsPickingHammerTask." >&2
     exit 2
@@ -49,11 +59,11 @@ else
     done
     [[ "$ready" == 1 ]] || { echo "Policy startup timed out." >&2; exit 1; }
 fi
-"$PY" - "$RUN" "$TASK" "$SOCKET" "${RECOVERY_GENESIS:-}" "${RECOVERY_GENESIS_SHA256:-}" "$AGENT_CONTROL" <<'PY'
+"$PY" - "$RUN" "$TASK" "$SOCKET" "${RECOVERY_GENESIS:-}" "${RECOVERY_GENESIS_SHA256:-}" "$AGENT_CONTROL" "$RECOVERY_MAX_ATTEMPTS" "$RECOVERY_MAX_STEPS" "$CONTINUE_WAM_AFTER_BUDGET" <<'PY'
 import json
 from pathlib import Path
 import sys
-run, task, socket, genesis, genesis_sha256, agent_control = sys.argv[1:]
+run, task, socket, genesis, genesis_sha256, agent_control, attempts, max_steps, fallback = sys.argv[1:]
 (Path(run) / "experiment.json").write_text(json.dumps({
     "format": "wam-agent-recovery-v1", "task": task, "socket": socket,
     "seed": 3407, "model": None if agent_control == "1" else "Cosmos3-Edge-Policy-DROID",
@@ -61,6 +71,9 @@ run, task, socket, genesis, genesis_sha256, agent_control = sys.argv[1:]
     "agent": "external visual Coding Agent via recovery_client",
     "mock_execution": False, "reset_during_recovery": False,
     "initial_genesis": genesis or None, "initial_genesis_sha256": genesis_sha256 or None,
+    "recovery_max_attempts": int(attempts),
+    "requested_max_episode_steps": int(max_steps) if max_steps else None,
+    "budget_exhaustion_policy": "continue_wam" if fallback == "1" else "stop",
 }, indent=2) + "\n")
 PY
 if [[ "${SYNC_BLOB:-1}" == 1 ]]; then
@@ -73,7 +86,13 @@ CUDA_VISIBLE_DEVICES="$(nvidia-smi -i "$SIM_GPU" --query-gpu=uuid --format=csv,n
 export CUDA_DEVICE_ORDER=PCI_BUS_ID LD_LIBRARY_PATH="$ROOT/packages/ffmpeg/lib"
 export PATH="$ROOT/packages/ffmpeg/bin:$PATH"
 export OMNI_KIT_ACCEPT_EULA=YES OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 PYTHONUNBUFFERED=1
-GENESIS_ARGS=()
+GENESIS_ARGS=(--recovery-max-attempts "$RECOVERY_MAX_ATTEMPTS")
+if [[ -n "$RECOVERY_MAX_STEPS" ]]; then
+    GENESIS_ARGS+=(--recovery-max-steps "$RECOVERY_MAX_STEPS")
+fi
+if [[ "$CONTINUE_WAM_AFTER_BUDGET" == 1 ]]; then
+    GENESIS_ARGS+=(--continue-wam-after-budget)
+fi
 if [[ "$AGENT_CONTROL" == 1 ]]; then
     GENESIS_ARGS+=(--agent-control)
 fi

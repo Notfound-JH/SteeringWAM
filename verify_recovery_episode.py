@@ -282,6 +282,57 @@ def verify_comparison_contract(manifest: dict, events: list[dict], actual: list[
     }
 
 
+def verify_runtime_policy(manifest: dict, events: list[dict], actual: list[dict]) -> dict:
+    if "budget_exhaustion_policy" not in manifest:
+        return {"runtime_policy_verified": None}
+    policy = manifest["budget_exhaustion_policy"]
+    if policy not in {"stop", "continue_wam"}:
+        raise ValueError("Invalid budget exhaustion policy")
+    horizon = manifest["max_episode_steps"]
+    if type(horizon) is not int or horizon < 1 or not 0 < len(actual) <= horizon:
+        raise ValueError("Execution exceeds the configured native horizon")
+    if manifest["step"] != len(actual):
+        raise ValueError("Manifest step differs from actual execution")
+    for event in actual:
+        if event["events"]["native_truncated"] and event["episode_step"] != horizon:
+            raise ValueError("Native timeout differs from the configured horizon")
+    if len(actual) == horizon and not (
+        actual[-1]["events"]["native_terminated"] or actual[-1]["events"]["native_truncated"]
+    ):
+        raise ValueError("Configured horizon did not terminate the environment")
+    limit = manifest["safety_limits"]["max_attempts"]
+    if not 1 <= limit <= 5 or not 0 <= manifest["attempts"] <= limit:
+        raise ValueError("Invalid or exceeded recovery attempt budget")
+    handoffs = [e for e in events if e["event_type"] == "control_returned_to_wam_after_budget"]
+    assessments = [e for e in events if e["event_type"] == "recovery_assessment"]
+    exhausted_failure = any(
+        e["attempt"] == limit and e["assessment"]["local_recovery_success"] is False
+        for e in assessments
+    )
+    expected_fallback = policy == "continue_wam" and exhausted_failure
+    if len(handoffs) != int(expected_fallback) or manifest["budget_fallback"] != expected_fallback:
+        raise ValueError("Budget fallback label or handoff disagrees with assessments")
+    fallback_actions = [e for e in actual if e["action_source"] == "wam_after_budget"]
+    if len(fallback_actions) != manifest["wam_after_budget_steps"]:
+        raise ValueError("Budget fallback action count mismatch")
+    if handoffs:
+        handoff = handoffs[0]
+        assessment = next(e for e in assessments if e["attempt"] == limit)
+        if (
+            handoff["attempt"] != limit
+            or handoff["episode_step"] != assessment["episode_step"]
+            or handoff["local_recovery_success"] is not False
+            or manifest["local_recovery_success"] is not False
+        ):
+            raise ValueError("Failed budget handoff was mislabeled or moved")
+        after = [e for e in actual if e["episode_step"] > handoff["episode_step"]]
+        if after != fallback_actions or manifest["attempts"] != limit:
+            raise ValueError("Non-WAM execution after the budget handoff")
+    elif fallback_actions:
+        raise ValueError("Budget fallback actions have no failed-budget handoff")
+    return {"runtime_policy_verified": True}
+
+
 def verify(directory: Path) -> dict:
     manifest = json.loads((directory / "manifest.json").read_text())
     events = [json.loads(line) for line in (directory / "events.jsonl").read_text().splitlines()]
@@ -342,6 +393,7 @@ def verify(directory: Path) -> dict:
     if agent_success != manifest.get("agent_control_success", False):
         raise ValueError("Agent baseline success label disagrees with execution")
     comparison = verify_comparison_contract(manifest, events, actual)
+    runtime_policy = verify_runtime_policy(manifest, events, actual)
     stable_placement = False
     if manifest.get("success_criterion") == "native_and_stable_blue_placement":
         count = 0
@@ -364,11 +416,12 @@ def verify(directory: Path) -> dict:
         if bool(manifest["native_success"]) != stable_placement:
             raise ValueError("Strict completion label disagrees with placement history")
     return {
-        **comparison,
+        **comparison, **runtime_policy,
         "recording_verified": True,
         "actual_steps": len(actual),
         "agent_steps": sum(event["action_source"] == "agent_correction" for event in actual),
         "wam_continuation_steps": sum(event["action_source"] == "wam_continuation" for event in actual),
+        "wam_after_budget_steps": sum(event["action_source"] == "wam_after_budget" for event in actual),
         "attempts": manifest["correction_attempts_preserved"],
         "native_success": manifest["native_success"],
         "acceptance_success": accepted,

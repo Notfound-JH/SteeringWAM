@@ -21,6 +21,9 @@ parser.add_argument("--agent-control", action="store_true", help="Run an explici
 parser.add_argument("--verify-blue-placement", action="store_true", help="Require a fully outside, released, stationary blue hammer for 15 steps in addition to the original native goal.")
 parser.add_argument("--recovery-genesis", type=Path, help="Initialize a recovery episode from a historical scene before any WAM action.")
 parser.add_argument("--recovery-genesis-sha256", help="Required SHA-256 of the historical recovery genesis.")
+parser.add_argument("--recovery-max-attempts", type=int, choices=range(1, 6), default=3)
+parser.add_argument("--recovery-max-steps", type=int, help="Override the native recovery episode horizon in control steps.")
+parser.add_argument("--continue-wam-after-budget", action="store_true", help="Return to WAM after the last failed correction without relabeling it successful.")
 parser.add_argument("--task", help="Capture a registered RoboLab task instead of the small cube scene.")
 parser.add_argument("--rollout-chunks", type=int, default=0, help="Run this many sequential policy chunks; zero only captures cameras.")
 parser.add_argument("--execute-steps", type=int, default=16)
@@ -33,6 +36,12 @@ parser.add_argument("--render-width", type=int, default=640)
 parser.add_argument("--render-height", type=int, default=480)
 parser.add_argument("--rendering-mode", choices=("performance", "balanced", "quality"), default="balanced")
 args = parser.parse_args()
+if args.recovery_max_steps is not None and args.recovery_max_steps < 1:
+    parser.error("--recovery-max-steps must be positive")
+if (args.recovery_max_attempts != 3 or args.recovery_max_steps is not None or args.continue_wam_after_budget) and not args.recovery_worker_socket:
+    parser.error("Recovery budget and horizon options require --recovery-worker-socket")
+if args.continue_wam_after_budget and args.agent_control:
+    parser.error("--continue-wam-after-budget is not an Agent-only option")
 if args.agent_control and not args.recovery_worker_socket:
     parser.error("--agent-control requires --recovery-worker-socket")
 if args.verify_blue_placement and (not args.agent_control or args.task != "ToolsPickingHammerTask"):
@@ -225,14 +234,24 @@ try:
         task_envs = get_envs(task=[args.task])
         if len(task_envs) != 1:
             raise RuntimeError(f"Expected one registered task, got {task_envs}")
+        scene_config = task_envs[0]
+        if args.recovery_max_steps is not None:
+            from robolab.core.environments.config import parse_env_cfg
+
+            scene_config = parse_env_cfg(
+                scene_config, device="cpu", use_fabric=True, num_envs=1, seed=args.seed,
+            )
+            scene_config.episode_length_s = args.recovery_max_steps * scene_config.sim.dt * scene_config.decimation
         env, env_cfg = create_env(
-            task_envs[0], device="cpu", use_fabric=True, num_envs=1,
+            scene_config, device="cpu", use_fabric=True, num_envs=1,
             seed=args.seed, rendering_mode=args.rendering_mode,
             events={"reset": EventTermCfg(func=reset_scene_to_default, mode="reset",
                                          params={"reset_joint_targets": True})},
         )
         if args.recovery_worker_socket:
             env.cfg.reset_early_termination = False
+            if args.recovery_max_steps is not None and env.max_episode_length != args.recovery_max_steps:
+                raise RuntimeError("Native episode horizon does not match the requested control-step limit")
         if args.verify_blue_placement:
             from isaaclab.managers import TerminationTermCfg
             from blue_placement_verification import strict_blue_placement_success

@@ -14,7 +14,7 @@ from recovery_protocol import (
     SafetyLimits, validate_condition_change,
 )
 from recovery_worker import RecoverySession
-from verify_recovery_episode import verify, verify_comparison_contract
+from verify_recovery_episode import verify, verify_comparison_contract, verify_runtime_policy
 
 
 def events(worker):
@@ -40,6 +40,8 @@ def worker(tmp_path):
         "experiment_mode": "wam_recovery", "local_recovery_success": None,
         "recovery_evaluation_steps": RECOVERY_EVALUATION_STEPS, "recovery_evaluation": None,
         "native_success": False, "native_terminated": False, "native_truncated": False,
+        "budget_exhaustion_policy": "stop", "budget_fallback": False,
+        "wam_after_budget_steps": 0, "max_episode_steps": 600,
     }
     robot = {"ee_pos": [0.45, 0.0, 0.35], "ee_quat": [1, 0, 0, 0], "gripper_pos": [0]}
     w._robot_state = lambda: copy.deepcopy(robot)
@@ -88,6 +90,8 @@ def worker(tmp_path):
                     status="task_success" if w.stop_success else "task_failed",
                 )
             w.state["last_action_source"] = source
+            if source == "wam_after_budget":
+                w.state["wam_after_budget_steps"] += 1
             w._event(
                 "actual_execution_response", action_source=source, actual_action=action.tolist(),
                 robot_state=w._robot_state(), observation=w._snapshot("actual"),
@@ -222,6 +226,97 @@ def test_retries_keep_episode_wide_three_attempt_budget(worker):
     with pytest.raises(ValueError, match="not allowed"):
         worker.recover(proposal(worker))
     assert verify_contract(worker)["complete_evaluation_windows"] == 3
+
+
+def exhaust_five_attempts(worker):
+    worker.limits = SafetyLimits(max_attempts=5)
+    worker.state.update(
+        safety_limits=worker.limits.to_dict(), budget_exhaustion_policy="continue_wam",
+    )
+    for attempt in range(5):
+        worker.recover(proposal(worker))
+        assess(worker, False)
+        assert worker.state["status"] == ("ready_recovery" if attempt < 4 else "ready_wam")
+
+
+def test_five_failed_attempts_return_to_wam_until_exact_600_step_timeout(worker):
+    exhaust_five_attempts(worker)
+    assert worker.state["local_recovery_success"] is False
+    assert worker.state["budget_fallback"] is True
+    with pytest.raises(ValueError, match="not allowed"):
+        worker.recover(proposal(worker))
+    with pytest.raises(ValueError, match="limit exhausted"):
+        worker.mark_failure({})
+    start = worker.step
+    worker.stop_at = 600
+    while worker.state["status"] == "ready_wam":
+        worker.run_wam(wam_decision(worker))
+    assert worker.step == 600
+    assert worker.state["native_truncated"] and not worker.state["native_success"]
+    assert worker.state["wam_after_budget_steps"] == 600 - start
+    assert worker.state["last_action_source"] == "wam_after_budget"
+    with pytest.raises(ValueError, match="not allowed"):
+        worker.run_wam(wam_decision(worker))
+    es = events(worker)
+    actual = [e for e in es if e["event_type"] == "actual_execution_response"]
+    assert verify_runtime_policy(worker.state, es, actual)["runtime_policy_verified"]
+    assert verify_contract(worker)["complete_evaluation_windows"] == 5
+
+
+@pytest.mark.parametrize("tamper", ["label", "count", "handoff", "source", "horizon"])
+def test_runtime_verifier_rejects_invalid_budget_fallback(worker, tamper):
+    exhaust_five_attempts(worker)
+    worker.run_wam(wam_decision(worker))
+    es, manifest = events(worker), copy.deepcopy(worker.state)
+    if tamper == "label":
+        manifest["local_recovery_success"] = True
+    elif tamper == "count":
+        manifest["wam_after_budget_steps"] = 0
+    elif tamper == "handoff":
+        es = [e for e in es if e["event_type"] != "control_returned_to_wam_after_budget"]
+    elif tamper == "source":
+        next(e for e in es if e.get("action_source") == "wam_after_budget")["action_source"] = "wam_continuation"
+        for e in es:
+            if e["event_type"] == "actual_execution_response" and e["action_source"] == "wam_after_budget":
+                e["action_source"] = "wam_continuation"
+                break
+    else:
+        manifest["max_episode_steps"] = worker.step - 1
+    actual = [e for e in es if e["event_type"] == "actual_execution_response"]
+    with pytest.raises(ValueError):
+        verify_runtime_policy(manifest, es, actual)
+
+
+def test_success_on_fifth_attempt_is_still_a_successful_recovery(worker):
+    worker.limits = SafetyLimits(max_attempts=5)
+    worker.state.update(safety_limits=worker.limits.to_dict(), budget_exhaustion_policy="continue_wam")
+    for index in range(5):
+        worker.recover(proposal(worker))
+        assess(worker, index == 4)
+    worker.run_wam(wam_decision(worker))
+    assert not worker.state["budget_fallback"]
+    assert worker.state["local_recovery_success"]
+    assert worker.state["last_action_source"] == "wam_continuation"
+
+
+def test_wam_success_after_failed_budget_is_not_recovery_acceptance(worker):
+    exhaust_five_attempts(worker)
+    worker.stop_at, worker.stop_success = worker.step + 3, True
+    worker.run_wam(wam_decision(worker))
+    actions = [e["actual_action"] for e in events(worker) if e["event_type"] == "actual_execution_response"]
+    with h5py.File(worker.directory / "trajectory.hdf5", "w") as handle:
+        handle.create_dataset("data/demo_0/actions", data=actions)
+    video = worker.directory / "episode_wrist.mp4"
+    video.write_bytes(b"unit-test-video")
+    manifest = {
+        **worker.state, "trajectory": artifact(worker.directory / "trajectory.hdf5"),
+        "events": artifact(worker.events_path), "episode_video": artifact(video),
+        "mock_execution": False, "acceptance_success": False, "correction_attempts_preserved": 5,
+    }
+    (worker.directory / "manifest.json").write_text(json.dumps(manifest))
+    result = verify(worker.directory)
+    assert result["native_success"] and not result["acceptance_success"]
+    assert result["wam_after_budget_steps"] == 3 and result["runtime_policy_verified"]
 
 
 def test_condition_changes_require_kind_and_evidence_after_window(worker):

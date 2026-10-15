@@ -1,9 +1,9 @@
 "use strict";
 
 const $ = (id) => document.getElementById(id);
-const sourceNames = { initial: "初始状态", wam: "WAM 执行", agent_correction: "Agent 修正", agent_condition: "Condition 修正", recovery_evaluation: "统一 WAM 评估窗口", agent_control: "Agent 直接控制", wam_continuation: "WAM 续跑" };
-const sourceClasses = { initial: "wam", wam: "wam", agent_correction: "correction", agent_condition: "correction", recovery_evaluation: "correction", agent_control: "correction", wam_continuation: "continuation" };
-const eventNames = { failure: "发现失败", proposal: "Agent 介入", assessment: "局部评估", handoff: "交还 WAM", success: "任务成功", condition_change: "条件变更" };
+const sourceNames = { initial: "初始状态", wam: "WAM 执行", agent_correction: "Agent 修正", agent_condition: "Condition 修正", recovery_evaluation: "统一 WAM 评估窗口", agent_control: "Agent 直接控制", wam_continuation: "恢复成功后 WAM 续跑", wam_after_budget: "预算耗尽后 WAM（恢复未成功）" };
+const sourceClasses = { initial: "wam", wam: "wam", agent_correction: "correction", agent_condition: "correction", recovery_evaluation: "correction", agent_control: "correction", wam_continuation: "continuation", wam_after_budget: "wam" };
+const eventNames = { failure: "发现失败", proposal: "Agent 介入", assessment: "局部评估", handoff: "交还 WAM", budget_handoff: "预算耗尽 → WAM", success: "任务成功", condition_change: "条件变更" };
 const conditionKinds = { initial: "首次条件", unchanged: "条件不变", recovery_rewrite: "纠错改写", subgoal_progression: "子目标推进" };
 const cameraNames = { wrist_cam: "手腕相机", over_shoulder_left_camera: "左肩视角", over_shoulder_right_camera: "右肩视角", head_camera: "头部视角" };
 let episode = null;
@@ -185,9 +185,12 @@ function render() {
   if (agentOnly && episode.task === "ToolsPickingHammerTask" && !strictPlacement) $("outcome-detail").textContent += " · 未验证稳定放置";
   const agentSteps = episode.observations.filter((item) => ["agent_correction", "agent_condition", "agent_control"].includes(item.source)).length;
   const continuation = episode.observations.filter((item) => item.source === "wam_continuation").length;
+  const afterBudget = episode.observations.filter((item) => item.source === "wam_after_budget").length;
   $("step-count").textContent = episode.steps;
-  $("phase-counts").textContent = `Agent ${agentSteps} 步 · WAM 续跑 ${continuation} 步`;
+  $("phase-counts").textContent = `Agent ${agentSteps} 步 · 恢复后 WAM ${continuation} 步 · 预算后 WAM ${afterBudget} 步`;
   $("attempt-count").textContent = agentOnly ? `${episode.attempts.length} 个控制程序` : `${episode.attempts.length} / ${episode.attempt_limit}`;
+  $("budget-policy").textContent = agentOnly ? "Agent-only 控制程序，不计 Recovery 尝试。" :
+    `预算耗尽：${episode.budget_exhaustion_policy === "continue_wam" ? "返回 WAM，不标作恢复成功" : "停止纠错"} · 总上限 ${episode.max_episode_steps ?? "沿用原任务"} 步`;
   const tracking = episode.attempts.flatMap((attempt) => attempt.tracking);
   $("tracking-error").textContent = tracking.length ? `${fixed(tracking.at(-1).error_mm, 2)} mm` : "—";
   $("execution-kind").textContent = episode.mock_execution === false ? "真实仿真 · 记录回放" : "MOCK / 未确认执行类型";

@@ -51,6 +51,7 @@ def render_episode(directory: Path) -> str:
         "id", "task", "steps", "experiment_mode", "protocol_version", "success_criterion",
         "native_success", "acceptance_success", "agent_control_success", "mock_execution",
         "agent_input_mode", "agent_model_version",
+        "budget_exhaustion_policy", "budget_fallback", "max_episode_steps",
     )}
     sections = []
     for attempt in data["attempts"]:
