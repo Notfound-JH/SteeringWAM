@@ -30,12 +30,14 @@ for trial in results["episodes"]:
     ]
 sas = (Path.home() / ".blob-sync/temp_sas_url.txt").read_text().strip()
 checks = []
+location = "container"
 try:
     with ContainerClient.from_container_url(
         sas, logging_enable=False, retry_total=3, connection_timeout=15, read_timeout=120,
     ) as container:
         for directory, relatives in groups.items():
             for relative in relatives:
+                location = f"{directory.name}/{relative}"
                 path = directory / relative
                 local = hashlib.sha256(path.read_bytes()).hexdigest()
                 downloaded = hashlib.sha256()
@@ -51,9 +53,10 @@ try:
                     "local_sha256": local, "downloaded_sha256": downloaded.hexdigest(),
                     "match": True,
                 })
+            print(json.dumps({"verified_directory": directory.name, "verified_files": len(checks)}), flush=True)
 except AzureError as error:
     raise RuntimeError(
-        f"Azure readback failed: {type(error).__name__}, HTTP {getattr(error, 'status_code', None)}"
+        f"Azure readback failed for {location}: {type(error).__name__}, HTTP {getattr(error, 'status_code', None)}"
     ) from None
 report = {
     "independent_readback_verified": True, "verified_files": len(checks),
