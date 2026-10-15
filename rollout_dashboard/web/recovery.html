@@ -11,7 +11,7 @@
 <body>
   <header class="topbar">
     <a href="/recovery" class="brand"><span class="brand-mark">W</span><strong>RECOVERY<span> LAB</span></strong></a>
-    <nav aria-label="页面导航"><a href="#playback">实验回放</a><a href="#correction">Agent 修正</a><a href="#predictions">WAM 预测</a></nav>
+    <nav aria-label="页面导航"><a href="#playback">实验回放</a><a href="#execution-map">执行时间轴</a><a href="#correction">Agent 修正</a><a href="#predictions">WAM 预测</a></nav>
     <span class="readonly"><span></span>只读 · 不控制机器人</span>
   </header>
   <main>
@@ -38,9 +38,7 @@
             <label for="video-quality" class="small-label">播放画质（帧率、时长不变）</label>
             <select id="video-quality"><option value="preview">流畅预览 · 默认低码率</option><option value="original">原始录像 · 高清 / 较慢</option></select>
             <p id="video-quality-note" class="muted"></p>
-            <div id="phase-track" class="phase-track" aria-label="按阶段跳转"></div>
-            <div class="legend"><span><i class="dot wam"></i>WAM 执行</span><span><i class="dot correction"></i>Agent 修正</span><span><i class="dot continuation"></i>WAM 续跑</span></div>
-            <div id="timeline" class="timeline"></div>
+            <a class="axis-link" href="#execution-map">↓ 查看 WAM 指令、Agent 动作与错误节点</a>
           </div>
           <aside class="inspector">
             <div class="inspector-title"><h3>实际状态</h3><span id="current-source" class="badge"></span></div>
@@ -58,8 +56,34 @@
         </div>
       </section>
 
+      <section class="panel execution-map" id="execution-map">
+        <div class="section-heading"><div><p class="eyebrow">02 / EXECUTION TIMELINE</p><h2>谁在执行，依据什么，在哪里失败。</h2><p class="muted">横轴按实际控制步对齐，不是等待推理的墙钟时间。点击动作块或错误节点，可同步定位视频。</p></div><span id="axis-step" class="badge"></span></div>
+        <div class="axis-legend"><span><i class="dot wam"></i>WAM 推理动作（含评估、续跑）</span><span><i class="dot correction"></i>Agent 控制器动作</span><span><i class="dot failure-dot"></i>真实失败 / 执行异常</span><span>细分块 = 一次推理；C 编号 = 对应输入指令</span></div>
+        <div class="axis-selection"><strong id="axis-selection-title"></strong><p id="axis-selection-text"></p><button id="axis-detail" type="button" class="button" hidden>查看对应详情</button></div>
+        <div class="axis-scroll" tabindex="0" role="region" aria-label="执行时间轴，可横向滚动">
+          <div id="axis-canvas" class="axis-canvas">
+            <div class="axis-plot">
+              <div class="axis-rows">
+                <div id="axis-ruler" class="axis-ruler" aria-label="实际控制步刻度"></div>
+                <div class="axis-lane"><span class="lane-label">WAM 推理</span><div id="wam-lane" class="lane-bands"></div></div>
+                <div class="axis-lane"><span class="lane-label">Agent 动作</span><div id="agent-lane" class="lane-bands"></div></div>
+                <div class="axis-lane"><span class="lane-label">WAM 指令</span><div id="condition-lane" class="lane-bands"></div></div>
+                <div id="axis-playhead" class="axis-playhead" aria-hidden="true"></div>
+              </div>
+              <div id="failure-rail" class="failure-rail" aria-label="失败发生的控制步"></div>
+            </div>
+            <svg id="failure-connectors" class="failure-connectors" aria-hidden="true"></svg>
+            <div id="failure-cards" class="failure-cards"></div>
+          </div>
+        </div>
+        <p id="axis-empty-note" class="axis-note" hidden></p>
+        <div class="instruction-heading"><h3>WAM 实际输入指令</h3><p class="muted">区间只包含实际执行的 WAM 动作，不把 Agent 动作或未执行的预测步混入其中。保留记录原文。</p></div>
+        <div id="condition-cards" class="condition-cards"></div>
+        <details class="event-log"><summary>展开全部事件节点（含评估、条件变更与控制权交接）</summary><div id="timeline" class="timeline"></div></details>
+      </section>
+
       <section class="panel" id="correction">
-        <div class="section-heading"><div><p class="eyebrow">02 / CORRECTION EXPERIENCE</p><h2>不止修正意图，更看实际响应。</h2></div><label class="attempt-picker">尝试 <select id="attempt-select"></select></label></div>
+        <div class="section-heading"><div><p class="eyebrow">03 / CORRECTION EXPERIENCE</p><h2>不止修正意图，更看实际响应。</h2></div><label class="attempt-picker">尝试 <select id="attempt-select"></select></label></div>
         <div id="failure-evidence" class="failure-note"></div>
         <div id="attempt-empty" class="message" hidden>此实验没有执行修正尝试。</div>
         <div id="attempt-content">
@@ -87,7 +111,7 @@
       </section>
 
       <section class="panel" id="predictions">
-        <div class="section-heading"><div><p class="eyebrow">03 / WAM PREDICTIONS</p><h2>预测不是实际执行。</h2><p class="muted">逐个 Action Chunk 查看输入条件、预测未来与实际执行长度。</p></div><label>选择 Chunk <select id="segment-select"></select></label></div>
+        <div class="section-heading"><div><p class="eyebrow">04 / WAM PREDICTIONS</p><h2>预测不是实际执行。</h2><p class="muted">逐个 Action Chunk 查看输入条件、预测未来与实际执行长度。</p></div><label>选择 Chunk <select id="segment-select"></select></label></div>
         <div id="prediction-empty" class="message" hidden>没有已完成的 WAM prediction 记录。</div>
         <div id="prediction-content">
           <div class="prediction-grid"><figure><img id="prediction-input" loading="lazy" alt="WAM 推理时的实际多相机输入预览"><figcaption>ACTUAL INPUT · 模型调用时的真实观测预览</figcaption></figure><figure><video id="prediction-video" controls preload="none" playsinline aria-label="模型预测未来，非实际观测"></video><figcaption class="prediction-warning">PREDICTED FUTURE · 不能作为实际成功证据</figcaption></figure></div>

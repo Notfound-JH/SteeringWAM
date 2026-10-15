@@ -112,15 +112,26 @@ def load_episode(directory: Path) -> dict:
         "control_handed_back_to_wam": "handoff",
         "control_returned_to_wam_after_budget": "budget_handoff",
         "condition_changed": "condition_change",
+        "command_failed": "command_error",
     }
     attempts = []
+    failure_id = None
     for index, event in enumerate(events):
         kind = event["event_type"]
         if kind in names:
-            timeline.append({
+            entry = {
+                "id": f"event-{index}",
                 "type": names[kind], "step": event["episode_step"],
                 "attempt": event.get("attempt"), "recorded_at": event["recorded_at"],
-            })
+            }
+            if kind == "failure_detected":
+                failure_id = entry["id"]
+                entry["failure"] = event["failure"]
+            elif kind == "command_failed":
+                entry.update(error=event["error"], operation=event.get("operation"))
+            timeline.append(entry)
+        if kind in {"control_handed_back_to_wam", "control_returned_to_wam_after_budget"}:
+            failure_id = None
         if kind not in {"recovery_proposal", "agent_control_proposal"}:
             continue
         end = next((
@@ -143,7 +154,14 @@ def load_episode(directory: Path) -> dict:
             and item["attempt"] == event.get("attempt")
         ), None)
         tracking = []
+        action_ranges = []
         for response in responses:
+            if response["action_source"] in {"agent_correction", "agent_control"}:
+                step = response["episode_step"]
+                if action_ranges and action_ranges[-1]["end"] == step - 1:
+                    action_ranges[-1]["end"] = step
+                else:
+                    action_ranges.append({"start": step, "end": step})
             if "cartesian_intent" in response:
                 target = response["cartesian_intent"][:3]
                 measured = response["robot_state"]["ee_pos"]
@@ -154,6 +172,7 @@ def load_episode(directory: Path) -> dict:
         attempts.append({
             "number": event.get("attempt", event.get("program_index")), "start": event["episode_step"],
             "end": responses[-1]["episode_step"] if responses else event["episode_step"],
+            "failure_id": failure_id, "action_ranges": action_ranges,
             "proposal": read_json(reference_path(event["proposal"])),
             "assessment": assessment, "tracking": tracking, "executed_steps": len(responses),
             "evaluation": next((
@@ -172,6 +191,9 @@ def load_episode(directory: Path) -> dict:
         segments.append({
             "id": path.parent.name, "source": segment["source"],
             "start": request["start_step"], "executed_steps": segment["executed_steps"],
+            "end": request["start_step"] + segment["executed_steps"],
+            "condition": request.get("condition"), "subgoal": request.get("subgoal"),
+            "attempt": request.get("attempt"),
             "predicted_steps": segment["prediction_length"], "prompt": segment["prompt"],
             "inference_seconds": segment["inference_seconds"],
             "input": media({"path": str(path.parent / "input.png")}),

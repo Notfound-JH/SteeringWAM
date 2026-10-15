@@ -322,3 +322,76 @@ def test_failed_budget_handoff_is_distinct_from_successful_continuation(episode)
     assert data["timeline"][0]["type"] == "budget_handoff"
     assert data["observations"][-1]["source"] == "wam_after_budget"
     assert data["local_recovery_success"] is False and data["verified"] is False
+
+
+def test_timeline_links_each_failure_to_its_own_attempts_and_separates_wam_actions(episode):
+    run, manifest = episode
+    recovery = run / "recovery"
+    path = recovery / "events.jsonl"
+    events = [json.loads(line) for line in path.read_text().splitlines()]
+    actual = events[-1]
+    first = {"failure_type": "missed_grasp", "evidence": "open fingers", "subgoal": "grasp"}
+    second = {"failure_type": "lost_grasp", "evidence": "object fell", "subgoal": "retain"}
+    for number, mode in [(1, "action"), (2, "condition")]:
+        (recovery / f"proposal-{number}.json").write_text(json.dumps({
+            "correction_mode": mode, "diagnosis": f"diagnosis {number}",
+            "mode_reason": f"reason {number}",
+        }))
+
+    def proposal(number, step):
+        return {"event_type": "recovery_proposal", "episode_step": step,
+                "attempt": number, "recorded_at": step,
+                "proposal": {"path": str(recovery / f"proposal-{number}.json")}}
+
+    events.extend([
+        {"event_type": "failure_detected", "episode_step": 1, "recorded_at": 1, "failure": first},
+        proposal(1, 1),
+        {**actual, "episode_step": 2, "action_source": "agent_correction"},
+        {**actual, "episode_step": 3, "action_source": "recovery_evaluation"},
+        {"event_type": "control_handed_back_to_wam", "episode_step": 3, "recorded_at": 3},
+        {"event_type": "recovery_assessment", "episode_step": 3, "recorded_at": 3,
+         "attempt": 1, "assessment": {"local_recovery_success": True, "evidence": "pinched"}},
+        {"event_type": "failure_detected", "episode_step": 3, "recorded_at": 3, "failure": second},
+        proposal(2, 3),
+        {**actual, "episode_step": 4, "action_source": "agent_condition"},
+        {"event_type": "command_failed", "episode_step": 4, "recorded_at": 4,
+         "operation": "recover", "error": "<script>untrusted error</script>"},
+    ])
+    raw = "\n".join(json.dumps(event) for event in events).encode()
+    path.write_bytes(raw)
+    manifest.update(step=4, failure=second, events={"sha256": hashlib.sha256(raw).hexdigest()})
+    (recovery / "manifest.json").write_text(json.dumps(manifest))
+    data = load_episode(run)
+    failures = [event for event in data["timeline"] if event["type"] == "failure"]
+    assert [event["step"] for event in failures] == [1, 3]
+    assert [event["failure"] for event in failures] == [first, second]
+    assert [attempt["failure_id"] for attempt in data["attempts"]] == [event["id"] for event in failures]
+    assert data["attempts"][0]["action_ranges"] == [{"start": 2, "end": 2}]
+    assert data["attempts"][1]["action_ranges"] == []
+    assert [attempt["proposal"]["mode_reason"] for attempt in data["attempts"]] == ["reason 1", "reason 2"]
+    error = data["timeline"][-1]
+    assert error["type"] == "command_error" and error["step"] == 4
+    assert error["error"] == "<script>untrusted error</script>"
+
+
+@pytest.mark.parametrize("source", ["wam", "recovery_evaluation", "agent_condition", "wam_after_budget"])
+def test_wam_axis_uses_executed_prefix_and_original_instruction(episode, source):
+    run, _ = episode
+    segment = run / "recovery/segments/000"
+    segment.mkdir(parents=True)
+    (segment / "input.png").write_bytes(b"unit-test-image")
+    prompt = "Overall task: place\nCurrent subgoal: grasp the blue handle"
+    (segment / "request.json").write_text(json.dumps({
+        "start_step": 0, "condition": "grasp the blue handle", "subgoal": "grasp",
+        "attempt": 1 if source != "wam" else None,
+    }))
+    (segment / "result.json").write_text(json.dumps({
+        "source": source, "executed_steps": 1, "prediction_length": 32,
+        "prompt": prompt, "inference_seconds": 0.1,
+        "predicted_future": {"video": {"path": str(run / "recovery/episode_wrist.mp4")}},
+    }))
+    item = load_episode(run)["segments"][0]
+    assert item["start"] == 0 and item["end"] == 1
+    assert item["executed_steps"] == 1 and item["predicted_steps"] == 32
+    assert item["condition"] == "grasp the blue handle" and item["prompt"] == prompt
+    assert item["subgoal"] == "grasp" and item["source"] == source

@@ -142,7 +142,18 @@ training data and are excluded from the existing Azure backup's hidden paths.
 The online page reads finalized episodes from `diagnostics/*/recovery/manifest.json`.
 It provides:
 
-- Full actual video, phase timeline and step-by-step camera/robot-state inspection.
+- Full actual video and a step-aligned execution timeline with separate WAM,
+  Agent-controller and WAM-instruction lanes. Every WAM block represents only
+  its executed action prefix, not the full predicted chunk; instruction cards
+  show the original condition, full model prompt and all associated step ranges.
+  Recovery evaluation and legacy condition-only actions are WAM-generated,
+  not Agent-controller steps.
+- Every recorded failure/command error has its own step marker and a straight
+  arrow to a description box. Failure boxes link the corresponding attempts,
+  original Agent mode-selection reasons, diagnoses and assessments; later failures
+  do not overwrite earlier ones. Failed assessments are not invented failure triggers.
+  Clicking blocks/markers seeks the actual video, and the playhead follows playback.
+  Narrow windows can scroll the axis horizontally. The event list remains expandable.
 - Failure evidence, every recorded correction attempt, its original bounded code,
   before/after observations and measured Cartesian tracking error.
 - Separate WAM input, predicted future, condition and actual execution length.
