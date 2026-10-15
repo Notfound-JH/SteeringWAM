@@ -120,10 +120,14 @@ rewrite source recordings. Treat the resulting HTML as private experiment data.
 
 ### Online dashboard capabilities
 
-The page opens as a compact static execution overview. Video, per-attempt detail,
-predictions and downloads are collapsed by default. No media is requested until
-the corresponding viewer is opened. Long evidence, Agent reasons and conditions
-show excerpts; expanding them reveals the complete original text.
+The page uses a viewport-height workspace with one visible tab at a time, not a
+vertical stack of sections. The default tab shows only the static execution axis
+and error callouts. Instructions/events, video, per-attempt detail, predictions
+and downloads have separate tabs. Expanded details scroll within their own tab,
+not the whole page. No media is requested until its viewer is selected.
+Long evidence and Agent reasons show excerpts; expanding them reveals the
+complete original text. Versioned asset URLs prevent mixing old cached scripts
+with this layout.
 
 When opened, playback defaults to a low-bitrate, maximum-640px-wide H.264 preview with MP4
 metadata at the front (`faststart`). Frame timing is preserved; the quality

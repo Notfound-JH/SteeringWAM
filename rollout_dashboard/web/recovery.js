@@ -91,6 +91,23 @@ function axisBand(parent, start, end, label, title, className) {
   parent.append(band);
   return band;
 }
+function showView(id) {
+  document.querySelectorAll(".dashboard-view").forEach((view) => { view.hidden = view.id !== id; });
+  document.querySelectorAll("#view-tabs button").forEach((tab) => {
+    const selected = tab.dataset.view === id;
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+  });
+  if (!episode) return;
+  if (id !== "playback") $("episode-video").pause();
+  if (id !== "predictions") $("prediction-video").pause();
+  if (id === "playback") {
+    if (!$("episode-video").hasAttribute("src")) setVideoQuality();
+    updateCamera();
+  } else if (id === "correction") renderAttempt();
+  else if (id === "predictions") renderSegment();
+  else if (id === "execution-map") requestAnimationFrame(drawFailureConnections);
+}
 function drawFailureConnections() {
   const svg = $("failure-connectors");
   const bounds = $("axis-canvas").getBoundingClientRect();
@@ -172,7 +189,7 @@ function renderAxis() {
   }
   const errors = episode.timeline.filter((event) => ["failure", "command_error"].includes(event.type));
   failureLinks = [];
-  $("axis-canvas").style.minWidth = `${Math.max(860, errors.length * 360)}px`;
+  $("axis-canvas").style.minWidth = errors.length > 2 ? `${errors.length * 260}px` : "0";
   $("failure-cards").style.gridTemplateColumns = `repeat(${Math.max(1, errors.length)}, minmax(0, 1fr))`;
   $("failure-cards").hidden = !errors.length;
   errors.forEach((event, index) => {
@@ -223,7 +240,7 @@ function renderAxis() {
   $("axis-empty-note").textContent = notes.join(" ");
 }
 function updateCamera() {
-  if (!episode || activeStep < 0 || !$("playback").open) return;
+  if (!episode || activeStep < 0 || $("playback").hidden) return;
   const url = episode.observations[activeStep].frames[$("camera-select").value];
   if (!url) {
     $("observation-image").hidden = true;
@@ -320,7 +337,7 @@ function renderSegment() {
   $("segment-stats").textContent = `${sourceNames[selectedSegment.source] || selectedSegment.source} · 起点 ${selectedSegment.start} · 预测 ${selectedSegment.predicted_steps} 步 / 实际 ${selectedSegment.executed_steps} 步 · 推理 ${fixed(selectedSegment.inference_seconds, 1)} s`;
 }
 function render() {
-  for (const id of ["playback", "correction", "predictions"]) $(id).open = false;
+  showView("execution-map");
   for (const id of ["episode-video", "prediction-video"]) {
     const video = $(id);
     video.pause();
@@ -348,6 +365,10 @@ function render() {
     `预算耗尽：${episode.budget_exhaustion_policy === "continue_wam" ? "返回 WAM，不标作恢复成功" : "停止纠错"} · 总上限 ${episode.max_episode_steps ?? "沿用原任务"} 步`;
   const tracking = episode.attempts.flatMap((attempt) => attempt.tracking);
   $("tracking-error").textContent = tracking.length ? `${fixed(tracking.at(-1).error_mm, 2)} mm` : "—";
+  document.querySelectorAll(".metric").forEach((metric) => {
+    metric.title = metric.querySelector("small").textContent;
+    metric.setAttribute("aria-description", metric.title);
+  });
   $("execution-kind").textContent = episode.mock_execution === false ? "真实仿真 · 记录回放" : "MOCK / 未确认执行类型";
   if (agentOnly) $("execution-kind").textContent += " · Agent-only 基线，非 WAM Recovery";
   $("execution-kind").className = `badge ${episode.mock_execution === false ? "" : "amber"}`;
@@ -427,33 +448,24 @@ $("attempt-select").addEventListener("change", renderAttempt);
 $("segment-select").addEventListener("change", renderSegment);
 new ResizeObserver(drawFailureConnections).observe($("axis-canvas"));
 $("step-slider").addEventListener("input", (event) => setStep(Number(event.target.value), true));
-$("playback").addEventListener("toggle", () => {
-  if (!episode) return;
-  if ($("playback").open) {
-    if (!$("episode-video").hasAttribute("src")) setVideoQuality();
-    updateCamera();
-  } else $("episode-video").pause();
-});
-$("correction").addEventListener("toggle", () => {
-  if (episode && $("correction").open) renderAttempt();
-});
-$("predictions").addEventListener("toggle", () => {
-  if (episode && $("predictions").open) renderSegment();
-  else $("prediction-video").pause();
-});
 $("segment-jump").addEventListener("click", () => {
   if (selectedSegment) {
     setStep(selectedSegment.start, true);
-    $("playback").open = true;
-    $("playback").scrollIntoView();
+    showView("playback");
   }
 });
-for (const link of document.querySelectorAll("nav a")) {
-  link.addEventListener("click", () => {
-    const target = document.querySelector(link.getAttribute("href"));
-    if (target instanceof HTMLDetailsElement) target.open = true;
+const viewTabs = [...document.querySelectorAll("#view-tabs button")];
+viewTabs.forEach((tab, index) => {
+  tab.addEventListener("click", () => showView(tab.dataset.view));
+  tab.addEventListener("keydown", (event) => {
+    const offsets = { ArrowRight: 1, ArrowLeft: -1, Home: -index, End: viewTabs.length - 1 - index };
+    if (!(event.key in offsets)) return;
+    event.preventDefault();
+    const target = viewTabs[(index + offsets[event.key] + viewTabs.length) % viewTabs.length];
+    target.focus();
+    showView(target.dataset.view);
   });
-}
+});
 for (const video of document.querySelectorAll("video")) {
   video.addEventListener("error", () => message("视频无法加载；若流畅预览生成失败，可切换原始录像。请检查媒体文件与浏览器编码支持。", true));
 }
