@@ -41,7 +41,7 @@ function previewURL(url) {
 function setVideoQuality(preservePosition = false) {
   if (!episode) return;
   const video = $("episode-video");
-  const time = preservePosition ? video.currentTime : 0;
+  const time = preservePosition ? video.currentTime : Math.max(0, activeStep) * episode.dt;
   const resume = preservePosition && !video.paused;
   const preview = $("video-quality").value === "preview";
   video.pause();
@@ -58,14 +58,14 @@ function setVideoQuality(preservePosition = false) {
 function setStep(step, seek = false) {
   if (!episode) return;
   step = Math.max(0, Math.min(episode.steps, Math.round(step)));
-  if (seek) $("episode-video").currentTime = step * episode.dt;
+  if (seek && $("episode-video").hasAttribute("src")) $("episode-video").currentTime = step * episode.dt;
   if (step === activeStep) return;
   activeStep = step;
   const observation = episode.observations[step];
   $("step-slider").value = step;
   $("current-step").textContent = `${step} / ${episode.steps}`;
   $("current-source").textContent = sourceNames[observation.source] || observation.source;
-  if ($("episode-video").paused || seek) updateCamera();
+  updateCamera();
   $("ee-position").replaceChildren(...["X", "Y", "Z"].map((axis, index) => {
     const cell = node("div", undefined, "coordinate");
     cell.append(node("span", axis), document.createTextNode(fixed(observation.robot.ee_pos?.[index])));
@@ -77,57 +77,19 @@ function setStep(step, seek = false) {
     measured_arm_joint_vel: observation.robot.measured_arm_joint_vel,
     actual_environment_command: observation.action,
   }, null, 2);
-  updateAxisStep(step);
 }
-function focusAttempt(index) {
-  $("attempt-select").value = index;
-  renderAttempt();
-  $("correction").scrollIntoView({ block: "start" });
-}
-function updateAxisStep(step) {
-  $("axis-step").textContent = `STEP ${step} / ${episode.steps}`;
-  $("axis-playhead").style.left = `${step / Math.max(1, episode.steps) * 100}%`;
-  for (const band of document.querySelectorAll(".axis-band")) {
-    band.setAttribute("aria-current", String(step >= Number(band.dataset.start) && step <= Number(band.dataset.end)));
-  }
-  const index = episode.segments.findIndex((segment) => step > segment.start && step <= segment.end);
-  const attemptIndex = episode.attempts.findIndex((attempt) => attempt.action_ranges.some((range) => step >= range.start && step <= range.end));
-  $("axis-detail").hidden = index < 0 && attemptIndex < 0;
-  if (index >= 0) {
-    const segment = episode.segments[index];
-    $("axis-selection-title").textContent = `WAM · Chunk ${index + 1} · 实际动作 ${segment.start + 1}–${segment.end} · ${sourceNames[segment.source] || segment.source}`;
-    $("axis-selection-text").textContent = `输入指令：${segment.condition ?? segment.prompt}`;
-    $("axis-detail").textContent = "查看完整 Prompt 与预测";
-    $("axis-detail").onclick = () => {
-      $("segment-select").value = index;
-      renderSegment();
-      $("predictions").scrollIntoView({ block: "start" });
-    };
-  } else if (attemptIndex >= 0) {
-    const attempt = episode.attempts[attemptIndex];
-    $("axis-selection-title").textContent = `Agent · #${attempt.number} ${attempt.proposal.correction_mode.toUpperCase()} · 受限控制器实际动作`;
-    $("axis-selection-text").textContent = `纠错理由：${attempt.proposal.mode_reason || attempt.proposal.diagnosis || "历史记录未保存理由。"}\n这些步不是 WAM 推理输出；对应的 WAM 评估另列在蓝色轨道。`;
-    $("axis-detail").textContent = "查看 Agent 提案与实际响应";
-    $("axis-detail").onclick = () => focusAttempt(attemptIndex);
-  } else {
-    $("axis-selection-title").textContent = step === 0 ? "初始观测 · 尚未执行动作" : `${sourceNames[episode.observations[step].source] || episode.observations[step].source} · STEP ${step}`;
-    $("axis-selection-text").textContent = step === 0
-      ? "动作区间 1–N 表示执行第 1 到第 N 个命令；Step N 的错误节点表示在执行完第 N 步之后发现问题。"
-      : "此步缺少对应的已归档推理块或控制提案，不能还原其输入指令 / 理由。";
-  }
-}
-function axisBand(parent, start, end, label, title, className, onClick) {
-  const button = node("button", label, `axis-band ${className}`);
-  button.type = "button";
-  button.dataset.start = start;
-  button.dataset.end = end;
-  button.style.left = `${(start - 1) / Math.max(1, episode.steps) * 100}%`;
-  button.style.width = `${(end - start + 1) / Math.max(1, episode.steps) * 100}%`;
-  button.title = title;
-  button.setAttribute("aria-label", title);
-  button.addEventListener("click", () => { setStep(start, true); if (onClick) onClick(); });
-  parent.append(button);
-  return button;
+function axisBand(parent, start, end, label, title, className) {
+  const band = node("span", label, `axis-band ${className}`);
+  band.tabIndex = 0;
+  band.dataset.start = start;
+  band.dataset.end = end;
+  band.style.left = `${(start - 1) / Math.max(1, episode.steps) * 100}%`;
+  band.style.width = `${(end - start + 1) / Math.max(1, episode.steps) * 100}%`;
+  band.title = title;
+  band.setAttribute("role", "img");
+  band.setAttribute("aria-label", title);
+  parent.append(band);
+  return band;
 }
 function drawFailureConnections() {
   const svg = $("failure-connectors");
@@ -190,23 +152,21 @@ function renderAxis() {
   });
   for (const condition of conditions.values()) {
     const { segment } = condition;
-    const card = node("article", undefined, "condition-card");
+    const card = node("details", undefined, "condition-card");
     card.style.setProperty("--condition-color", condition.color);
-    card.append(node("h4", `${condition.label} · ${segment.condition == null ? "完整模型 Prompt" : "输入 Condition"}`));
-    card.append(node("p", `WAM STEPS ${condition.ranges.map((range) => `${range.start}–${range.end}`).join(" · ")}`, "condition-ranges"));
+    const heading = node("summary");
+    heading.append(node("strong", condition.label), node("span",
+      ` WAM ${condition.ranges.map((range) => `${range.start}–${range.end}`).join(" · ")}`, "condition-ranges"));
+    heading.append(node("span", segment.condition ?? segment.prompt, "excerpt-preview"));
+    card.append(heading);
     card.append(node("p", segment.condition ?? segment.prompt));
     for (const change of condition.changes) card.append(node("p",
       `${conditionKinds[change.kind] || change.kind}${change.reason ? `：${change.reason}` : ""}`, "muted"));
-    const details = node("details");
-    details.append(node("summary", "完整模型 Prompt（记录原文）"), node("pre", segment.prompt));
-    card.append(details);
+    card.append(node("p", "完整模型 Prompt（记录原文）", "muted"), node("pre", segment.prompt));
     $("condition-cards").append(card);
     for (const range of condition.ranges) {
       const band = axisBand($("condition-lane"), range.start, range.end, condition.label,
-        `${condition.label} · WAM ${range.start}–${range.end}\n${segment.prompt}`, "condition-band", () => {
-          document.querySelectorAll(".condition-card").forEach((item) => item.classList.remove("selected"));
-          card.classList.add("selected");
-        });
+        `${condition.label} · WAM ${range.start}–${range.end}\n${segment.prompt}`, "condition-band");
       band.style.setProperty("--condition-color", condition.color);
     }
   }
@@ -218,43 +178,36 @@ function renderAxis() {
   errors.forEach((event, index) => {
     const card = node("article", undefined, "failure-card");
     card.dataset.eventId = event.id;
-    const marker = node("button", undefined, "failure-marker");
-    marker.type = "button";
+    const marker = node("span", undefined, "failure-marker");
     marker.style.left = `${event.step / total * 100}%`;
     marker.setAttribute("aria-label", `${eventNames[event.type]} · Step ${event.step}`);
+    marker.setAttribute("role", "img");
     marker.append(node("i"), node("span", `E${index + 1} · ${event.step}`));
-    const select = () => {
-      setStep(event.step, true);
-      document.querySelectorAll(".failure-card").forEach((item) => item.classList.remove("selected"));
-      card.classList.add("selected");
-    };
-    marker.addEventListener("click", select);
     $("failure-rail").append(marker);
-    const title = node("button", `E${index + 1} · STEP ${event.step} · ${eventNames[event.type]}`, "failure-title");
-    title.type = "button";
-    title.addEventListener("click", select);
+    const title = node("strong", `E${index + 1} · STEP ${event.step} · ${eventNames[event.type]}`, "failure-title");
     card.append(title, node("h3", event.failure?.failure_type || event.operation || "执行异常"));
     const evidence = event.failure?.evidence ?? event.error;
-    card.append(node("p", typeof evidence === "string" ? evidence : JSON.stringify(evidence)));
-    if (event.failure?.subgoal) card.append(node("p", `当时子目标：${event.failure.subgoal}`, "muted"));
-    const linked = episode.attempts.map((attempt, attemptIndex) => ({ attempt, attemptIndex })).filter(({ attempt }) => attempt.failure_id === event.id);
+    const evidenceText = typeof evidence === "string" ? evidence : JSON.stringify(evidence);
+    const evidenceDetails = node("details", undefined, "failure-evidence-detail");
+    const evidenceHeading = node("summary", "错误证据（展开原文）");
+    evidenceHeading.append(node("span", evidenceText, "excerpt-preview"));
+    evidenceDetails.append(evidenceHeading, node("p", evidenceText));
+    if (event.failure?.subgoal) evidenceDetails.append(node("p", `当时子目标：${event.failure.subgoal}`, "muted"));
+    card.append(evidenceDetails);
+    const linked = episode.attempts.filter((attempt) => attempt.failure_id === event.id);
     if (!linked.length) card.append(node("p", "没有关联的 Agent 纠错提案。", "muted"));
-    for (const { attempt, attemptIndex } of linked) {
-      const item = node("div", undefined, "linked-attempt");
+    for (const attempt of linked) {
+      const item = node("details", undefined, "linked-attempt");
       const outcome = attempt.assessment?.local_recovery_success;
       const result = outcome === true ? "局部成功（Agent 评估）" : outcome === false ? "局部失败" : "未评估";
-      const button = node("button", `#${attempt.number} ${attempt.proposal.correction_mode.toUpperCase()} · ${result}`);
-      button.type = "button";
-      button.addEventListener("click", () => { setStep(attempt.start, true); focusAttempt(attemptIndex); });
-      item.append(button, node("p", `STEP ${attempt.start} 介入 · 执行 / 评估至 ${attempt.end}`, "muted"));
-      item.append(node("p", `Agent 模式选择理由：${attempt.proposal.mode_reason || "历史记录未保存独立的模式选择理由。"}`, "attempt-reason"));
-      const details = node("details");
-      details.append(node("summary", "诊断、恢复目标与实际结果"));
+      const reason = `Agent 理由：${attempt.proposal.mode_reason || "历史记录未保存独立的模式选择理由。"}`;
+      const heading = node("summary", `#${attempt.number} ${attempt.proposal.correction_mode.toUpperCase()} · ${result} · ${attempt.start}→${attempt.end}`);
+      heading.append(node("span", reason, "excerpt-preview"));
+      item.append(heading, node("p", reason, "attempt-reason"));
       for (const [label, text] of [
         ["诊断", attempt.proposal.diagnosis], ["恢复目标", attempt.proposal.recovery_goal],
         ["评估证据", attempt.assessment?.evidence],
-      ]) details.append(node("p", `${label}：${text || "未记录"}`));
-      item.append(details);
+      ]) item.append(node("p", `${label}：${text || "未记录"}`));
       card.append(item);
     }
     $("failure-cards").append(card);
@@ -270,7 +223,7 @@ function renderAxis() {
   $("axis-empty-note").textContent = notes.join(" ");
 }
 function updateCamera() {
-  if (!episode || activeStep < 0) return;
+  if (!episode || activeStep < 0 || !$("playback").open) return;
   const url = episode.observations[activeStep].frames[$("camera-select").value];
   if (!url) {
     $("observation-image").hidden = true;
@@ -367,6 +320,14 @@ function renderSegment() {
   $("segment-stats").textContent = `${sourceNames[selectedSegment.source] || selectedSegment.source} · 起点 ${selectedSegment.start} · 预测 ${selectedSegment.predicted_steps} 步 / 实际 ${selectedSegment.executed_steps} 步 · 推理 ${fixed(selectedSegment.inference_seconds, 1)} s`;
 }
 function render() {
+  for (const id of ["playback", "correction", "predictions"]) $(id).open = false;
+  for (const id of ["episode-video", "prediction-video"]) {
+    const video = $(id);
+    video.pause();
+    video.onloadedmetadata = null;
+    video.removeAttribute("src");
+    video.load();
+  }
   const agentOnly = episode.experiment_mode === "agent_control";
   const strictPlacement = episode.success_criterion === "native_and_stable_blue_placement";
   $("task-title").textContent = episode.task;
@@ -395,18 +356,15 @@ function render() {
   $("agent-provenance").textContent = `${inputMode} · Agent 模型版本：${episode.agent_model_version || "未记录精确版本"}`;
   $("agent-provenance").className = assisted ? "failure-note" : "muted";
   $("video-duration").textContent = `${fixed(1 / episode.dt, 0)} FPS · ${fixed(episode.duration, 2)} s`;
-  setVideoQuality();
   $("step-slider").max = episode.steps;
   $("camera-select").replaceChildren(...Object.keys(episode.observations[0].frames).map((camera) => {
     const option = node("option", cameraNames[camera] || camera); option.value = camera; return option;
   }));
   if (episode.observations[0].frames.over_shoulder_left_camera) $("camera-select").value = "over_shoulder_left_camera";
   $("timeline").replaceChildren(...episode.timeline.map((event) => {
-    const button = node("button", eventNames[event.type] || event.type, event.type);
-    button.type = "button";
-    button.append(node("small", `STEP ${event.step} · ${fixed(event.step * episode.dt, 2)} s`));
-    button.addEventListener("click", () => setStep(event.step, true));
-    return button;
+    const item = node("span", eventNames[event.type] || event.type, `event-tag ${event.type}`);
+    item.append(node("small", `STEP ${event.step} · ${fixed(event.step * episode.dt, 2)} s`));
+    return item;
   }));
   $("attempt-select").replaceChildren(...episode.attempts.map((attempt, index) => {
     const option = node("option", `#${attempt.number} · ${attempt.proposal.correction_mode.toUpperCase()}`); option.value = index; return option;
@@ -423,8 +381,6 @@ function render() {
   renderAxis();
   activeStep = -1;
   setStep(0);
-  renderAttempt();
-  renderSegment();
   $("content").hidden = false;
   requestAnimationFrame(drawFailureConnections);
 }
@@ -471,19 +427,33 @@ $("attempt-select").addEventListener("change", renderAttempt);
 $("segment-select").addEventListener("change", renderSegment);
 new ResizeObserver(drawFailureConnections).observe($("axis-canvas"));
 $("step-slider").addEventListener("input", (event) => setStep(Number(event.target.value), true));
-$("episode-video").addEventListener("timeupdate", () => {
-  if (episode) setStep(Math.floor(($("episode-video").currentTime + 0.00001) / episode.dt));
-});
-for (const event of ["pause", "seeked"]) {
-  $("episode-video").addEventListener(event, () => {
-    if (!episode) return;
-    setStep(Math.floor(($("episode-video").currentTime + 0.00001) / episode.dt));
+$("playback").addEventListener("toggle", () => {
+  if (!episode) return;
+  if ($("playback").open) {
+    if (!$("episode-video").hasAttribute("src")) setVideoQuality();
     updateCamera();
+  } else $("episode-video").pause();
+});
+$("correction").addEventListener("toggle", () => {
+  if (episode && $("correction").open) renderAttempt();
+});
+$("predictions").addEventListener("toggle", () => {
+  if (episode && $("predictions").open) renderSegment();
+  else $("prediction-video").pause();
+});
+$("segment-jump").addEventListener("click", () => {
+  if (selectedSegment) {
+    setStep(selectedSegment.start, true);
+    $("playback").open = true;
+    $("playback").scrollIntoView();
+  }
+});
+for (const link of document.querySelectorAll("nav a")) {
+  link.addEventListener("click", () => {
+    const target = document.querySelector(link.getAttribute("href"));
+    if (target instanceof HTMLDetailsElement) target.open = true;
   });
 }
-$("segment-jump").addEventListener("click", () => {
-  if (selectedSegment) { setStep(selectedSegment.start, true); $("playback").scrollIntoView(); }
-});
 for (const video of document.querySelectorAll("video")) {
   video.addEventListener("error", () => message("视频无法加载；若流畅预览生成失败，可切换原始录像。请检查媒体文件与浏览器编码支持。", true));
 }

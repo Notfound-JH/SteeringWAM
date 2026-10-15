@@ -120,17 +120,22 @@ rewrite source recordings. Treat the resulting HTML as private experiment data.
 
 ### Online dashboard capabilities
 
-Playback defaults to a low-bitrate, maximum-640px-wide H.264 preview with MP4
+The page opens as a compact static execution overview. Video, per-attempt detail,
+predictions and downloads are collapsed by default. No media is requested until
+the corresponding viewer is opened. Long evidence, Agent reasons and conditions
+show excerpts; expanding them reveals the complete original text.
+
+When opened, playback defaults to a low-bitrate, maximum-640px-wide H.264 preview with MP4
 metadata at the front (`faststart`). Frame timing is preserved; the quality
 selector can switch to the untouched original at the same playback position.
 Original-video downloads and offline exports still use the original recording.
 New recordings also put their MP4 metadata at the front.
 
-Observation images use small JPEG previews. During playback, robot-state values
-continue updating but the adjacent image stays at its visibly labeled step;
-pause or seek to load the current image. The original image remains available
-through its link. Below-fold comparison images load lazily, and predicted videos
-do not preload and compete with the main video.
+Observation images use small JPEG previews. The optional state inspector updates
+only when its control-step slider or camera is selected; video playback does not
+update the timeline, descriptions or robot-state display. The original image
+remains available through its link. Comparison images load lazily, and predicted
+videos do not preload and compete with the main video.
 
 Disposable previews are generated only for finalized recovery episodes and
 cached under each run's `.dashboard_cache/`, outside the recorded `recovery/`
@@ -152,7 +157,8 @@ It provides:
   arrow to a description box. Failure boxes link the corresponding attempts,
   original Agent mode-selection reasons, diagnoses and assessments; later failures
   do not overwrite earlier ones. Failed assessments are not invented failure triggers.
-  Clicking blocks/markers seeks the actual video, and the playhead follows playback.
+  The axis is static: no moving playhead, automatic selection or video-seeking
+  behavior on its blocks/markers. Video is an independent optional viewer.
   Narrow windows can scroll the axis horizontally. The event list remains expandable.
 - Failure evidence, every recorded correction attempt, its original bounded code,
   before/after observations and measured Cartesian tracking error.
