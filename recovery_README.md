@@ -139,6 +139,11 @@ settings fixed too. Matching seeds does not guarantee bitwise GPU determinism.
 One run per instruction gives descriptive trajectories, not statistical failure
 probabilities or proof that every difference is caused by language alone.
 
+The [fixed-seed hammer comparison scripts](diagnostics/hammer_condition_comparison_20261015/)
+extract measured trajectories, audit seeds/videos, build the visually reviewed
+offline annotations, and verify selected Azure artifacts. They require the
+matching archived study data and never issue robot-control requests.
+
 ## Read-only experiment dashboard
 
 Start the existing dashboard server without launching a model or simulator:
