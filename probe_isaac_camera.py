@@ -24,6 +24,7 @@ parser.add_argument("--recovery-genesis-sha256", help="Required SHA-256 of the h
 parser.add_argument("--recovery-max-attempts", type=int, choices=range(1, 6), default=3)
 parser.add_argument("--recovery-max-steps", type=int, help="Override the native recovery episode horizon in control steps.")
 parser.add_argument("--continue-wam-after-budget", action="store_true", help="Return to WAM after the last failed correction without relabeling it successful.")
+parser.add_argument("--task-progress-recovery", action="store_true", help="Use V3 condition-priority recovery and separate stage judgments.")
 parser.add_argument("--task", help="Capture a registered RoboLab task instead of the small cube scene.")
 parser.add_argument("--rollout-chunks", type=int, default=0, help="Run this many sequential policy chunks; zero only captures cameras.")
 parser.add_argument("--execute-steps", type=int, default=16)
@@ -42,6 +43,8 @@ if (args.recovery_max_attempts != 3 or args.recovery_max_steps is not None or ar
     parser.error("Recovery budget and horizon options require --recovery-worker-socket")
 if args.continue_wam_after_budget and args.agent_control:
     parser.error("--continue-wam-after-budget is not an Agent-only option")
+if args.task_progress_recovery and (not args.recovery_worker_socket or args.agent_control):
+    parser.error("--task-progress-recovery requires a WAM recovery worker")
 if args.agent_control and not args.recovery_worker_socket:
     parser.error("--agent-control requires --recovery-worker-socket")
 if args.verify_blue_placement and (not args.agent_control or args.task != "ToolsPickingHammerTask"):

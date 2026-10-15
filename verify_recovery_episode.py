@@ -11,9 +11,9 @@ import h5py
 import numpy as np
 
 from recovery_protocol import (
-    LEGACY_PROTOCOL_VERSION, PROTOCOL_VERSION, RECOVERY_EVALUATION_STEPS,
+    LEGACY_PROTOCOL_VERSION, PROTOCOL_VERSION, PROGRESS_PROTOCOL_VERSION, RECOVERY_EVALUATION_STEPS,
     SafetyLimits, compile_program, validate_assessment, validate_condition_change,
-    validate_recovery_proposal,
+    validate_recovery_proposal, validate_progress_review,
 )
 from blue_placement_verification import STABLE_STEPS, placement_sample_passes
 
@@ -86,15 +86,7 @@ def verify_agent_programs(manifest: dict, events: list[dict], actual: list[dict]
         raise ValueError("Agent execution is not covered by bounded programs")
 
 
-def verify_comparison_contract(manifest: dict, events: list[dict], actual: list[dict]) -> dict:
-    if manifest.get("protocol_version", LEGACY_PROTOCOL_VERSION) == LEGACY_PROTOCOL_VERSION:
-        return {"comparison_contract_verified": None}
-    if manifest["protocol_version"] != PROTOCOL_VERSION:
-        raise ValueError("Unsupported recovery protocol version")
-    if manifest.get("experiment_mode") == "agent_control":
-        return {"comparison_contract_verified": None}
-    if manifest["recovery_evaluation_steps"] != RECOVERY_EVALUATION_STEPS:
-        raise ValueError("Unexpected recovery evaluation window")
+def verify_condition_history(manifest: dict, events: list[dict]) -> dict:
     previous = None
     conditions_before = {}
     expected_changes = []
@@ -135,7 +127,21 @@ def verify_comparison_contract(manifest: dict, events: list[dict], actual: list[
     ]
     if changes != expected_changes:
         raise ValueError("Missing or inconsistent condition-change events")
+    return conditions_before
 
+
+def verify_comparison_contract(manifest: dict, events: list[dict], actual: list[dict]) -> dict:
+    if manifest.get("protocol_version", LEGACY_PROTOCOL_VERSION) == LEGACY_PROTOCOL_VERSION:
+        return {"comparison_contract_verified": None}
+    if manifest["protocol_version"] == PROGRESS_PROTOCOL_VERSION:
+        return verify_progress_contract(manifest, events, actual)
+    if manifest["protocol_version"] != PROTOCOL_VERSION:
+        raise ValueError("Unsupported recovery protocol version")
+    if manifest.get("experiment_mode") == "agent_control":
+        return {"comparison_contract_verified": None}
+    if manifest["recovery_evaluation_steps"] != RECOVERY_EVALUATION_STEPS:
+        raise ValueError("Unexpected recovery evaluation window")
+    conditions_before = verify_condition_history(manifest, events)
     proposals = [e for e in events if e["event_type"] == "recovery_proposal"]
     if len(proposals) != manifest["attempts"]:
         raise ValueError("Recovery attempt count mismatch")
@@ -282,6 +288,160 @@ def verify_comparison_contract(manifest: dict, events: list[dict], actual: list[
     }
 
 
+def verify_progress_contract(manifest: dict, events: list[dict], actual: list[dict]) -> dict:
+    conditions = verify_condition_history(manifest, events)
+    limits = SafetyLimits(**manifest["safety_limits"])
+    proposals = [e for e in events if e["event_type"] == "recovery_proposal"]
+    if len(proposals) != manifest["attempts"] or manifest["recovery_evaluation_steps"] is not None:
+        raise ValueError("Invalid V3 attempt count or evaluation policy")
+    reviews = [e for e in events if e["event_type"] == "task_progress_review"]
+    reviewed = set()
+    for prediction in (e for e in events if e["event_type"] == "wam_prediction"):
+        if prediction["source"] == "recovery_evaluation":
+            continue
+        result = json.loads(Path(prediction["predicted_actions"]["path"]).with_name("result.json").read_text())
+        endpoint = prediction["episode_step"] + result["executed_steps"]
+        last = actual[endpoint - 1]
+        next_action = next((e["event_index"] for e in actual if e["episode_step"] > endpoint), len(events))
+        checks = [e for e in reviews if last["event_index"] < e["event_index"] < next_action]
+        terminal = last["events"]["native_terminated"] or last["events"]["native_truncated"]
+        if len(checks) != (0 if terminal else 1):
+            raise ValueError("Each nonterminal WAM chunk requires exactly one progress review")
+        for check in checks:
+            if check["episode_step"] != endpoint:
+                raise ValueError("Progress review is not at its WAM boundary")
+            if validate_progress_review(check["review"], check["review"]["request_id"]) != check["review"]:
+                raise ValueError("Invalid task-progress review")
+            reviewed.add(check["event_index"])
+    if reviewed != {e["event_index"] for e in reviews}:
+        raise ValueError("Unattributed task-progress review")
+    covered, judges, stage_count, complete_count = set(), set(), 0, 0
+    for number, event in enumerate(proposals, 1):
+        if event["attempt"] != number or event["episode_step"] < 1:
+            raise ValueError("Discontinuous V3 recovery attempts")
+        path = Path(event["proposal"]["path"])
+        if hashlib.sha256(path.read_bytes()).hexdigest() != event["proposal"]["sha256"]:
+            raise ValueError("V3 proposal checksum mismatch")
+        proposal = json.loads(path.read_text())
+        submitted = {k: v for k, v in proposal.items() if k != "program"} if "control_code" in proposal else proposal
+        robot = actual[event["episode_step"] - 1]["robot_state"]
+        before = conditions[event["event_index"]]
+        validated = validate_recovery_proposal(
+            submitted, proposal["request_id"], number - 1, robot["ee_pos"], limits,
+            protocol_version=PROGRESS_PROTOCOL_VERSION, recovery_condition=before,
+        )
+        if proposal != validated or event["condition_before"] != before:
+            raise ValueError("V3 proposal or pre-correction condition mismatch")
+        for key in ("correction_mode", "agent_role", "agent_id", "task_progress", "condition_reason", "mode_reason"):
+            if event[key] != proposal[key]:
+                raise ValueError("V3 proposal event differs from the saved decision")
+        starts = [e for e in events if e["event_type"] == "recovery_evaluation_started" and e["attempt"] == number]
+        ends = [e for e in events if e["event_type"] == "recovery_evaluation_completed" and e["attempt"] == number]
+        assessments = [e for e in events if e["event_type"] == "recovery_assessment" and e["attempt"] == number]
+        if not (1 <= len(starts) == len(ends) == len(assessments) <= 2):
+            raise ValueError("Missing or duplicated V3 stage/judgment")
+        expected_stages = ["condition_progress"] if proposal["correction_mode"] == "condition" else ["action_effect"]
+        first_terminal = actual[ends[0]["episode_step"] - 1]["events"]
+        if (proposal["correction_mode"] == "joint" and assessments[0]["assessment"]["recovery_success"]
+                and not first_terminal["native_terminated"] and not first_terminal["native_truncated"]):
+            expected_stages.append("condition_progress")
+        if [e["stage"] for e in starts] != expected_stages:
+            raise ValueError("Joint stages must preserve the immediate Action judgment boundary")
+        previous = event
+        for start, end, judgment in zip(starts, ends, assessments):
+            stage = start["stage"]
+            if not previous["event_index"] < start["event_index"] < end["event_index"] < judgment["event_index"]:
+                raise ValueError("Invalid V3 stage ordering")
+            if start["episode_step"] != previous["episode_step"]:
+                raise ValueError("Unattributed action before a recovery stage")
+            responses = [e for e in actual if start["event_index"] < e["event_index"] < end["event_index"]]
+            if not responses:
+                raise ValueError("Recovery judgment has no actual response")
+            source = "agent_correction" if stage == "action_effect" else "recovery_evaluation"
+            if any(e["action_source"] != source for e in responses):
+                raise ValueError("Mixed Action/WAM response in a V3 recovery stage")
+            predictions = [e for e in events if e["event_type"] == "wam_prediction"
+                           and start["event_index"] < e["event_index"] < end["event_index"]]
+            condition = before if stage == "action_effect" else proposal["condition"]
+            if stage == "action_effect":
+                compiled = compile_program(
+                    proposal["program"], robot["ee_pos"], robot["ee_quat"], robot["gripper_pos"], limits
+                )
+                requested = len(compiled)
+                np.testing.assert_array_equal(np.load(path.parent / "compiled_cartesian_targets.npy"), compiled)
+                np.testing.assert_array_equal([e["cartesian_intent"] for e in responses], compiled[:len(responses)])
+                np.testing.assert_array_equal(
+                    np.load(path.parent / stage / "executed_joint_actions.npy"),
+                    [e["actual_action"] for e in responses],
+                )
+                if predictions:
+                    raise ValueError("Action judgment was contaminated by a WAM prediction")
+            else:
+                requested = RECOVERY_EVALUATION_STEPS
+                if len(predictions) != 1 or (
+                    predictions[0]["source"] != source or predictions[0]["attempt"] != number
+                    or predictions[0]["condition_change"]["after"] != condition
+                    or predictions[0]["requested_execution_length"] != requested
+                ):
+                    raise ValueError("Condition judgment requires one correctly conditioned WAM chunk")
+            evaluation = end["evaluation"]
+            terminal = responses[-1]["events"]
+            interruption = (
+                None if len(responses) == requested else
+                "native_success" if terminal["native_success"] else
+                "native_horizon" if terminal["native_truncated"] else
+                "native_termination" if terminal["native_terminated"] else "execution_incomplete"
+            )
+            expected = {
+                "stage": stage, "start_step": start["episode_step"], "end_step": end["episode_step"],
+                "condition_before": before, "condition": condition,
+                "requested_steps": requested, "executed_steps": len(responses),
+                "complete": len(responses) == requested, "interrupted_by": interruption,
+                "observation_before": start["observation_before"],
+                "observation_after": responses[-1]["observation"],
+            }
+            if (
+                len(responses) > requested or interruption == "execution_incomplete"
+                or end["episode_step"] - start["episode_step"] != len(responses)
+                or any(evaluation.get(k) != v for k, v in expected.items() if k != "observation_after")
+                or start["observation_before"]["step"] != start["episode_step"]
+                or evaluation["observation_after"]["step"] != end["episode_step"]
+                or start["condition"] != condition or start["requested_steps"] != requested
+            ):
+                raise ValueError("V3 recovery stage disagrees with actual execution")
+            if any(end["event_index"] < e["event_index"] < judgment["event_index"] for e in actual):
+                raise ValueError("Actions occurred before the immediate recovery judgment")
+            a = judgment["assessment"]
+            normalized = validate_assessment(
+                a, a["request_id"], protocol_version=PROGRESS_PROTOCOL_VERSION,
+                stage=stage, corrector_id=proposal["agent_id"],
+            )
+            if (
+                any(a.get(k) != v for k, v in normalized.items())
+                or a["evaluation_end_step"] != end["episode_step"] or judgment["episode_step"] != end["episode_step"]
+                or a["evaluation_steps"] != len(responses) or a["label_source"] != "separate_recovery_judge"
+                or json.loads((path.parent / stage / "assessment.json").read_text()) != a
+            ):
+                raise ValueError("V3 judgment disagrees with the evaluated endpoint")
+            covered.update(e["event_index"] for e in responses)
+            judges.add(a["agent_id"])
+            stage_count += 1
+            complete_count += evaluation["complete"]
+            previous = judgment
+        completion = [e for e in events if e["event_type"] == "recovery_attempt_completed" and e["attempt"] == number]
+        if (len(completion) != 1 or completion[0]["event_index"] <= previous["event_index"]
+                or completion[0]["episode_step"] != previous["episode_step"]
+                or completion[0]["evaluations"] != [e["evaluation"] for e in ends]):
+            raise ValueError("V3 attempt completion does not preserve its stage judgments")
+    if covered != {e["event_index"] for e in actual if e["action_source"] in {"agent_correction", "recovery_evaluation"}}:
+        raise ValueError("Unattributed V3 recovery execution")
+    return {
+        "comparison_contract_verified": None, "progress_contract_verified": True,
+        "progress_reviews": len(reviews), "recovery_stages": stage_count,
+        "complete_recovery_stages": complete_count, "distinct_judge_contexts": len(judges),
+    }
+
+
 def verify_runtime_policy(manifest: dict, events: list[dict], actual: list[dict]) -> dict:
     if "budget_exhaustion_policy" not in manifest:
         return {"runtime_policy_verified": None}
@@ -305,6 +465,35 @@ def verify_runtime_policy(manifest: dict, events: list[dict], actual: list[dict]
         raise ValueError("Invalid or exceeded recovery attempt budget")
     handoffs = [e for e in events if e["event_type"] == "control_returned_to_wam_after_budget"]
     assessments = [e for e in events if e["event_type"] == "recovery_assessment"]
+    if manifest.get("protocol_version") == PROGRESS_PROTOCOL_VERSION:
+        triggers = []
+        attempts_so_far = 0
+        for event in events:
+            attempts_so_far += event["event_type"] == "recovery_proposal"
+            if attempts_so_far != limit or not event["episode_step"]:
+                continue
+            native = actual[event["episode_step"] - 1]["events"]
+            if native["native_terminated"] or native["native_truncated"]:
+                continue
+            if ((event["event_type"] == "recovery_assessment" and not event["assessment"]["recovery_success"])
+                    or (event["event_type"] == "task_progress_review" and event["review"]["needs_recovery"])):
+                triggers.append(event)
+        expected = policy == "continue_wam" and bool(triggers)
+        if len(handoffs) != int(expected) or manifest["budget_fallback"] != expected:
+            raise ValueError("V3 budget handoff disagrees with task-progress judgments")
+        fallback = [e for e in actual if e["action_source"] == "wam_after_budget"]
+        if len(fallback) != manifest["wam_after_budget_steps"]:
+            raise ValueError("V3 fallback action count mismatch")
+        if handoffs:
+            h, trigger = handoffs[0], triggers[0]
+            if (h["episode_step"] != trigger["episode_step"] or h["event_index"] <= trigger["event_index"]
+                    or h["reason"] != trigger["event_type"] or h["attempt"] != limit
+                    or h["task_progress_recovered"] is not False or manifest["task_progress_recovered"] is not False
+                    or [e for e in actual if e["event_index"] > h["event_index"]] != fallback):
+                raise ValueError("V3 failed-budget WAM continuation was mislabeled")
+        elif fallback:
+            raise ValueError("V3 fallback actions have no handoff")
+        return {"runtime_policy_verified": True}
     exhausted_failure = any(
         e["attempt"] == limit and e["assessment"]["local_recovery_success"] is False
         for e in assessments
@@ -381,6 +570,16 @@ def verify(directory: Path) -> dict:
         and manifest["native_success"]
         and not manifest["mock_execution"]
     )
+    if manifest.get("protocol_version") == PROGRESS_PROTOCOL_VERSION:
+        judgments = [e for e in events if e["event_type"] == "recovery_assessment"]
+        accepted = bool(
+            failure_indices and recovery_indices and judgments
+            and judgments[-1]["assessment"]["recovery_success"]
+            and not any(e["event_type"] == "failure_detected" and e["event_index"] > judgments[-1]["event_index"] for e in events)
+            and actual[-1]["action_source"] in {"wam_continuation", "recovery_evaluation"}
+            and actual[-1]["events"]["native_success"] and manifest["native_success"]
+            and manifest.get("task_progress_recovered") and not manifest["mock_execution"]
+        )
     if accepted != manifest["acceptance_success"]:
         raise ValueError("Acceptance label disagrees with actual event sequence")
     agent_only = manifest.get("experiment_mode") == "agent_control"

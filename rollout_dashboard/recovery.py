@@ -148,11 +148,16 @@ def load_episode(directory: Path) -> dict:
                 "agent_correction", "agent_condition", "recovery_evaluation", "agent_control",
             }
         ]
-        assessment = next((
+        assessments = [
             item["assessment"] for item in events[index + 1:]
             if item["event_type"] == "recovery_assessment"
             and item["attempt"] == event.get("attempt")
-        ), None)
+        ]
+        evaluations = [
+            item["evaluation"] for item in events[index + 1:]
+            if item["event_type"] == "recovery_evaluation_completed"
+            and item["attempt"] == event.get("attempt")
+        ]
         tracking = []
         action_ranges = []
         for response in responses:
@@ -174,12 +179,10 @@ def load_episode(directory: Path) -> dict:
             "end": responses[-1]["episode_step"] if responses else event["episode_step"],
             "failure_id": failure_id, "action_ranges": action_ranges,
             "proposal": read_json(reference_path(event["proposal"])),
-            "assessment": assessment, "tracking": tracking, "executed_steps": len(responses),
-            "evaluation": next((
-                item["evaluation"] for item in events[index + 1:]
-                if item["event_type"] == "recovery_evaluation_completed"
-                and item["attempt"] == event.get("attempt")
-            ), None),
+            "assessment": assessments[-1] if assessments else None,
+            "assessments": assessments, "evaluations": evaluations,
+            "tracking": tracking, "executed_steps": len(responses),
+            "evaluation": evaluations[-1] if evaluations else None,
         })
     if manifest.get("native_success") is True:
         timeline.append({"type": "success", "step": manifest["step"]})

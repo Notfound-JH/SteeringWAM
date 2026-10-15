@@ -11,6 +11,7 @@ import numpy as np
 
 
 PROTOCOL_VERSION = "wam-recovery-v2"
+PROGRESS_PROTOCOL_VERSION = "wam-recovery-v3"
 LEGACY_PROTOCOL_VERSION = "wam-recovery-v1"
 RECOVERY_EVALUATION_STEPS = 16
 CONDITION_CHANGE_KINDS = {"recovery_rewrite", "subgoal_progression"}
@@ -64,29 +65,113 @@ def normalize_quaternion(value: Any, name: str = "quaternion") -> np.ndarray:
     return quaternion / norm
 
 
-def validate_failure_decision(value: Any, request_id: str) -> dict[str, Any]:
+def _choice(value: Any, choices: set[str], name: str) -> str:
+    if not isinstance(value, str) or value not in choices:
+        raise ValueError(f"{name} must be one of {sorted(choices)}")
+    return value
+
+
+def validate_task_progress(value: Any) -> dict[str, str]:
     if not isinstance(value, dict):
-        raise ValueError("Failure decision must be an object")
-    if value.get("protocol_version") != PROTOCOL_VERSION:
-        raise ValueError(f"protocol_version must be {PROTOCOL_VERSION!r}")
+        raise ValueError("task_progress must be an object")
+    return {
+        **{key: _nonempty(value.get(key), key) for key in
+           ("target_object", "expected_stage", "observed_stage", "evidence")},
+        **{key: _choice(value.get(key), {"correct", "wrong", "uncertain"}, key)
+           for key in ("target_alignment", "stage_alignment")},
+        "progress": _choice(value.get("progress"),
+                            {"advancing", "stalled", "regressing", "uncertain"}, "progress"),
+    }
+
+
+def _actor(value: dict, role: str) -> dict[str, str]:
+    if value.get("agent_role") != role:
+        raise ValueError(f"agent_role must be {role!r}")
+    return {"agent_role": role, "agent_id": _nonempty(value.get("agent_id"), "agent_id")}
+
+
+def validate_progress_review(value: Any, request_id: str) -> dict[str, Any]:
+    if not isinstance(value, dict) or value.get("protocol_version") != PROGRESS_PROTOCOL_VERSION:
+        raise ValueError("Progress review requires wam-recovery-v3")
     if value.get("request_id") != request_id:
         raise ValueError("Stale or incorrect request_id")
-    return {
-        "protocol_version": PROTOCOL_VERSION,
+    if type(value.get("needs_recovery")) is not bool:
+        raise ValueError("needs_recovery must be a boolean")
+    progress = validate_task_progress(value.get("task_progress"))
+    if not value["needs_recovery"] and "wrong" in (
+        progress["target_alignment"], progress["stage_alignment"]
+    ):
+        raise ValueError("Known target/stage deviation requires a recovery decision")
+    result = {
+        "protocol_version": PROGRESS_PROTOCOL_VERSION, "request_id": request_id,
+        **_actor(value, "correction_agent"), "task_progress": progress,
+        "needs_recovery": value["needs_recovery"],
+        "evidence": _nonempty(value.get("evidence"), "evidence"),
+        "subgoal": _nonempty(value.get("subgoal"), "subgoal"),
+    }
+    if value["needs_recovery"]:
+        result["failure_type"] = _nonempty(value.get("failure_type"), "failure_type")
+    return result
+
+
+def validate_failure_decision(
+    value: Any, request_id: str, *, protocol_version: str = PROTOCOL_VERSION,
+) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise ValueError("Failure decision must be an object")
+    if value.get("protocol_version") != protocol_version:
+        raise ValueError(f"protocol_version must be {protocol_version!r}")
+    if value.get("request_id") != request_id:
+        raise ValueError("Stale or incorrect request_id")
+    result = {
+        "protocol_version": protocol_version,
         "request_id": request_id,
         "failure_type": _nonempty(value.get("failure_type"), "failure_type"),
         "evidence": _nonempty(value.get("evidence"), "evidence"),
         "subgoal": _nonempty(value.get("subgoal"), "subgoal"),
     }
+    if protocol_version == PROGRESS_PROTOCOL_VERSION:
+        result.update(**_actor(value, "correction_agent"),
+                      task_progress=validate_task_progress(value.get("task_progress")))
+    return result
 
 
-def validate_assessment(value: Any, request_id: str) -> dict[str, Any]:
+def validate_assessment(
+    value: Any, request_id: str, *, protocol_version: str = PROTOCOL_VERSION,
+    stage: str | None = None, corrector_id: str | None = None,
+) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError("Assessment must be an object")
-    if value.get("protocol_version") != PROTOCOL_VERSION:
-        raise ValueError(f"protocol_version must be {PROTOCOL_VERSION!r}")
+    if value.get("protocol_version") != protocol_version:
+        raise ValueError(f"protocol_version must be {protocol_version!r}")
     if value.get("request_id") != request_id:
         raise ValueError("Stale or incorrect request_id")
+    if protocol_version == PROGRESS_PROTOCOL_VERSION:
+        identity = _actor(value, "recovery_judge")
+        if not corrector_id or identity["agent_id"] == corrector_id:
+            raise ValueError("Recovery judgment requires a different agent context from the corrector")
+        if stage not in {"action_effect", "condition_progress"} or value.get("stage") != stage:
+            raise ValueError("Assessment must identify the current recovery stage")
+        effect = _choice(value.get("correction_effect"),
+                         {"achieved", "partial", "failed", "uncertain"}, "correction_effect")
+        progress = validate_task_progress(value.get("task_progress"))
+        if type(value.get("recovery_success")) is not bool:
+            raise ValueError("recovery_success must be a boolean")
+        if value["recovery_success"] and (
+            effect not in {"achieved", "partial"}
+            or progress["target_alignment"] != "correct"
+            or progress["stage_alignment"] != "correct"
+            or progress["progress"] in {"regressing", "uncertain"}
+        ):
+            raise ValueError("Recovery success requires observed effect and aligned task progress")
+        return {
+            "protocol_version": protocol_version, "request_id": request_id, **identity,
+            "stage": stage, "correction_effect": effect, "task_progress": progress,
+            "local_recovery_success": effect == "achieved",
+            "recovery_success": value["recovery_success"],
+            "evidence": _nonempty(value.get("evidence"), "evidence"),
+            "continuation_reason": _nonempty(value.get("continuation_reason"), "continuation_reason"),
+        }
     if type(value.get("local_recovery_success")) is not bool:
         raise ValueError("local_recovery_success must be a boolean")
     return {
@@ -109,7 +194,7 @@ def validate_recovery_proposal(
 ) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError("Recovery proposal must be an object")
-    if protocol_version not in {PROTOCOL_VERSION, LEGACY_PROTOCOL_VERSION}:
+    if protocol_version not in {PROTOCOL_VERSION, LEGACY_PROTOCOL_VERSION, PROGRESS_PROTOCOL_VERSION}:
         raise ValueError("Unsupported recovery protocol version")
     if value.get("protocol_version") != protocol_version:
         raise ValueError(f"protocol_version must be {protocol_version!r}")
@@ -129,6 +214,16 @@ def validate_recovery_proposal(
     }
     if recovery_condition is not None or "mode_reason" in value:
         proposal["mode_reason"] = _nonempty(value.get("mode_reason"), "mode_reason")
+    if protocol_version == PROGRESS_PROTOCOL_VERSION:
+        progress = validate_task_progress(value.get("task_progress"))
+        proposal.update(
+            **_actor(value, "correction_agent"), task_progress=progress,
+            condition_reason=_nonempty(value.get("condition_reason"), "condition_reason"),
+        )
+        if mode in {"action", "joint"} and (
+            progress["target_alignment"] != "correct" or progress["stage_alignment"] != "correct"
+        ):
+            raise ValueError("Condition takes priority when target or task stage is wrong/uncertain")
 
     if mode in {"condition", "joint"}:
         proposal["condition"] = _nonempty(value.get("condition"), "condition")

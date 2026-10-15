@@ -6,9 +6,10 @@ see [Recovery trajectory data contract](recovery_DATA_FORMAT.md).
 ## Research contract: task-progress-first recovery (2026-10-15)
 
 The objective is **completion of the long-horizon task**, not the accumulation of
-locally successful corrections. The following are the updated design requirements.
-They are **not yet the behavior of the V2 runtime** described below: V2 still runs
-16 WAM steps after every correction before accepting a local assessment.
+locally successful corrections. These requirements are implemented by the opt-in
+`wam-recovery-v3` runtime (`TASK_PROGRESS_RECOVERY=1`). The default V2 runtime
+remains unchanged: it runs 16 WAM steps after every correction before accepting
+a local assessment. Historical episodes retain their original semantics.
 
 ### Condition priority and unknown decision points
 
@@ -62,8 +63,61 @@ A positive recovery judgment permits continuation; it is not final task success.
 Continue monitoring subsequent WAM chunks for renewed task-progress deviation.
 Preserve failures, the no-reset rule, frozen WAM parameters, and the configured
 attempt/horizon/fallback policy. Do not relabel historical V1/V2 assessments as
-task-progress judgments or independent-judge results. A runtime implementation
-of this contract needs an explicitly versioned protocol and aligned verification.
+task-progress judgments or independent-judge results.
+
+### Running V3
+
+```bash
+MODEL_GPU=5 SIM_GPU=4 TASK_PROGRESS_RECOVERY=1 \
+RECOVERY_MAX_ATTEMPTS=5 CONTINUE_WAM_AFTER_BUDGET=1 RECOVERY_MAX_STEPS=600 \
+bash launch_recovery_experiment.sh diagnostics/NEW_HAMMER_RUN ToolsPickingHammerTask
+```
+
+Add the existing `RECOVERY_GENESIS` and `RECOVERY_GENESIS_SHA256` variables when
+reproducing a saved initialization. Initialization does not permit later resets.
+
+Use `recovery_client.py --socket SOCKET --output RESPONSE.json OPERATION ...`:
+
+1. `wam --condition "..." --subgoal "..." --chunks 1` executes one chunk and
+   stops at `awaiting_progress_check`. `review_progress REVIEW.json` records the
+   correction Agent's structured task-stage diagnosis. A negative diagnosis
+   enters recovery; a positive diagnosis permits the next chunk.
+2. `recover PROPOSAL.json` consumes one attempt. A Condition attempt executes
+   one 16-step WAM chunk; Action executes only the bounded controller program.
+   Each stops at `awaiting_assessment`.
+3. Give a **separate read-only Agent context** the current `context` response,
+   before/after images, task goal, intent, measured state and relevant history.
+   Save that context's actual ID and output; send its judgment with
+   `assess ASSESSMENT.json`. The runtime checks distinct caller IDs/roles, but
+   those fields alone are not proof that an independent model was invoked.
+4. Joint currently uses **Action → judgment → Condition/WAM → judgment**.
+   Only aligned target/stage diagnoses can select Action or this Joint order.
+   Wrong/uncertain target or stage must first use Condition. A positive Joint
+   Action judgment enters `ready_condition_evaluation`; explicitly call
+   `evaluate_condition`, then obtain the second judgment. A failed Action stage
+   ends that attempt without contaminating its effect with WAM actions.
+5. Positive `recovery_success` permits WAM continuation, not final success.
+   Ordinary chunks still require progress review. Failed fifth attempts, or a
+   new failure after a successful fifth attempt, use `wam_after_budget` when
+   fallback is enabled. No sixth attempt or unbudgeted recovery rewrite is
+   allowed. Native termination interrupts execution without padding/reset.
+
+V3 decisions use `agent_role` (`correction_agent` or `recovery_judge`), `agent_id`,
+and `task_progress`: `target_object`, `expected_stage`, `observed_stage`,
+`target_alignment`/`stage_alignment` (`correct`, `wrong`, `uncertain`),
+`progress` (`advancing`, `stalled`, `regressing`, `uncertain`) and `evidence`.
+Reviews add boolean `needs_recovery`; negative reviews add `failure_type`.
+Proposals retain V2 intent/code fields and add `condition_reason`.
+Judgments identify `stage` (`action_effect` or `condition_progress`), separate
+`correction_effect` (`achieved`, `partial`, `failed`, `uncertain`) from boolean
+`recovery_success`, and require `continuation_reason` and `evidence`.
+Uncertain effect/alignment/progress cannot authorize successful recovery.
+
+In V3, native success during the Condition-driven WAM chunk can satisfy the
+full chain after its positive independent judgment; no redundant WAM actions are
+executed after a native terminal goal. Controller-only completion and successful
+WAM fallback after failed recovery are not labeled accepted recovery chains.
+Use `verify_recovery_episode.py RUN/recovery` to verify the versioned contract.
 
 ## Read-only experiment dashboard
 

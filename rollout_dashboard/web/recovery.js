@@ -215,7 +215,7 @@ function renderAxis() {
     if (!linked.length) card.append(node("p", "没有关联的 Agent 纠错提案。", "muted"));
     for (const attempt of linked) {
       const item = node("details", undefined, "linked-attempt");
-      const outcome = attempt.assessment?.local_recovery_success;
+      const outcome = attempt.assessment?.recovery_success ?? attempt.assessment?.local_recovery_success;
       const result = outcome === true ? "局部成功（Agent 评估）" : outcome === false ? "局部失败" : "未评估";
       const reason = `Agent 理由：${attempt.proposal.mode_reason || "历史记录未保存独立的模式选择理由。"}`;
       const heading = node("summary", `#${attempt.number} ${attempt.proposal.correction_mode.toUpperCase()} · ${result} · ${attempt.start}→${attempt.end}`);
@@ -295,7 +295,14 @@ function renderAttempt() {
     episode.experiment_mode === "agent_control" ? "Agent-only 固定动作接口，不参与三模式选择。" : "旧记录未保存独立的模式选择理由。"
   );
   const evaluation = attempt.evaluation;
-  $("evaluation-window").textContent = evaluation
+  const progressProtocol = episode.protocol_version === "wam-recovery-v3";
+  $("evaluation-window").textContent = progressProtocol
+    ? (attempt.evaluations || []).map((stage) => {
+        const judgment = (attempt.assessments || []).find((item) => item.stage === stage.stage);
+        const boundary = stage.stage === "action_effect" ? "Action 后立即判断" : "Condition 后下一轮 WAM 判断";
+        return `${boundary}：Step ${stage.start_step + 1}–${stage.end_step} · ${stage.executed_steps}/${stage.requested_steps} 步 · ${judgment ? `${judgment.recovery_success ? "允许继续" : "未恢复进程"}：${judgment.evidence}` : "待独立判断"}`;
+      }).join("\n")
+    : evaluation
     ? `WAM 评估：${evaluation.executed_steps}/${evaluation.requested_steps} 步 · ${evaluation.complete ? "窗口完整" : `窗口未完成 (${evaluation.interrupted_by})`} · ${proposal.correction_mode === "action" ? "沿用纠错前条件" : "使用纠错后条件"}`
     : episode.experiment_mode === "agent_control" ? "非 Recovery 评估窗口。"
       : episode.protocol_version === "wam-recovery-v2" ? "没有完成评估窗口记录，不可视作已通过评估。" : "旧协议：没有统一评估窗口，不与新协议直接混算。";
@@ -303,8 +310,10 @@ function renderAttempt() {
     proposal.control_code || (proposal.program ? JSON.stringify(proposal.program, null, 2) : ""),
     proposal.condition ? `Condition: ${proposal.condition}\nWAM execute steps: ${proposal.wam_execute_steps}` : "",
   ].filter(Boolean).join("\n\n");
-  const success = attempt.assessment?.local_recovery_success;
-  $("local-outcome").textContent = episode.experiment_mode === "agent_control" ? "控制程序 · 非 Recovery" : success === true ? "局部恢复成功" : success === false ? "局部恢复失败" : "未评估";
+  const success = attempt.assessment?.recovery_success ?? attempt.assessment?.local_recovery_success;
+  $("local-outcome").textContent = episode.experiment_mode === "agent_control" ? "控制程序 · 非 Recovery"
+    : progressProtocol ? (success === true ? "进程恢复 · 允许 WAM 继续" : success === false ? "进程未恢复" : "待独立判断")
+      : success === true ? "局部恢复成功" : success === false ? "局部恢复失败" : "未评估";
   $("local-outcome").className = `badge ${success === true ? "" : "amber"}`;
   const camera = "over_shoulder_left_camera";
   const before = episode.observations[attempt.start].frames;

@@ -3,8 +3,39 @@
 本文描述**已经实际落盘的数据**，不是拟议格式。数据来自真实 Isaac Sim
 步进，不是物理机器人，也不是 Mock。原始格式标识为
 `wam-agent-recovery-v1`。已采集历史轨迹的工具协议为 `wam-recovery-v1`；
-新增实验使用 `wam-recovery-v2`，其模式理由、条件变更和评估窗口见第 10 节。
-容器格式不变，不代表两个协议的局部评估语义相同。
+V2 实验使用 `wam-recovery-v2`，其模式理由、条件变更和评估窗口见第 10 节。
+显式开启任务进程策略的新实验使用 `wam-recovery-v3`，见下方说明。
+容器格式不变，不代表各协议的评估语义相同。
+
+### V3：任务进程与独立阶段判断
+
+- `task_progress_review` 在普通 WAM chunk 的实际执行端点记录任务对象、
+  预期/观察阶段、目标与阶段是否对齐、进程变化及证据。未判断不能执行下一
+  chunk；原生终止后不再要求下一轮进程检查。
+- `recovery_proposal` 增加 `agent_role=correction_agent`、`agent_id`、
+  `task_progress` 和 `condition_reason`。目标/阶段错误或不确定时，先做
+  Condition；Action 与当前 Action-first Joint 仅用于目标/阶段已对齐的情况。
+- `recovery_evaluation_started/completed` 使用 `stage=action_effect` 或
+  `condition_progress`。Action 阶段**不含 WAM 动作**，立即交给独立判断；
+  Condition 阶段包含下一轮 16 步 WAM，原生终止允许更短的实际前缀。
+- Joint 明确使用 Action → 判断 → Condition/WAM → 判断；Action 判断未通过，
+  本次尝试结束，不执行其 Condition 阶段。一次 Joint 仍只消耗一次预算。
+- 每个阶段的 `result.json`、`evaluation.json`、`assessment.json` 保存在
+  `recovery_attempts/NN/<stage>/`；Cartesian 编译结果仍在尝试根目录，
+  实际 IK 命令移至 `action_effect/executed_joint_actions.npy`。
+- 判断包含 `agent_role=recovery_judge`、与提案不同的实际 `agent_id`、
+  `correction_effect`、`task_progress`、`recovery_success`、
+  `continuation_reason`、`evidence` 和准确的评估端点。
+  角色/ID 校验本身不证明实际调用了独立 Agent，实验需另存调用输入与输出。
+- V3 的 `local_recovery_success` 仅是 `correction_effect == "achieved"` 的
+  兼容字段；**是否允许 WAM 继续看 `recovery_success`**。Manifest 的
+  `task_progress_recovered` 表示当前恢复进程状态，后续 WAM 再失败会清除。
+  原生任务成功仍单独记录，不能由 Judge 文本推断。
+- `progress_contract_verified` 校验上述边界；`comparison_contract_verified=null`
+  表示不适用 V2 同长窗口比较，而非校验失败。V3 不与 V2 的局部成功率混算。
+- V3 可在 Condition 后的 WAM chunk 已达到原生目标、且判断通过时结束整链，
+  不强制原生终止后再执行独立 continuation chunk。纯控制器完成或失败预算
+  耗尽后的 WAM 自行成功不算 `acceptance_success`。
 
 ## 1. 推荐的接入入口
 

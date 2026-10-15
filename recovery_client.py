@@ -8,7 +8,7 @@ from pathlib import Path
 import socket
 
 from recovery_protocol import (
-    CONDITION_CHANGE_KINDS, PROTOCOL_VERSION, SafetyLimits, compile_program,
+    CONDITION_CHANGE_KINDS, PROTOCOL_VERSION, PROGRESS_PROTOCOL_VERSION, SafetyLimits, compile_program,
     validate_condition_change, validate_recovery_proposal,
 )
 
@@ -39,9 +39,10 @@ def main() -> None:
     wam.add_argument("--execute-steps", type=int, default=16)
     wam.add_argument("--condition-change-kind", choices=sorted(CONDITION_CHANGE_KINDS))
     wam.add_argument("--condition-change-reason")
-    for operation in ("mark_failure", "recover", "assess"):
+    for operation in ("mark_failure", "recover", "assess", "review_progress"):
         command = subparsers.add_parser(operation)
         command.add_argument("decision", type=Path)
+    subparsers.add_parser("evaluate_condition")
     control = subparsers.add_parser("control")
     control.add_argument("decision", type=Path, nargs="?")
     control.add_argument("--code", help="Literal bounded controller calls, never unrestricted Python")
@@ -79,7 +80,7 @@ def main() -> None:
         limits = SafetyLimits(**state["safety_limits"])
         proposal = validate_recovery_proposal(
             decision, state["request_id"], state["attempts"], robot["ee_pos"], limits,
-            recovery_condition=state["condition"],
+            recovery_condition=state["condition"], protocol_version=state["protocol_version"],
         )
         if "program" in proposal:
             compile_program(
@@ -92,6 +93,8 @@ def main() -> None:
         results = []
         for _ in range(args.chunks):
             state = request(args.socket, "status")
+            if state["protocol_version"] == PROGRESS_PROTOCOL_VERSION and args.chunks != 1:
+                raise ValueError("V3 requires a task-progress review after each WAM chunk; use --chunks 1")
             if state["status"] != "ready_wam":
                 if not results:
                     raise RuntimeError(f"WAM cannot execute from {state['status']}")
@@ -102,7 +105,7 @@ def main() -> None:
                 state.get("condition"), args.condition, kind=kind, reason=reason
             )
             reply = request(args.socket, "wam", {
-                "protocol_version": PROTOCOL_VERSION,
+                "protocol_version": state["protocol_version"],
                 "request_id": state["request_id"],
                 "condition": args.condition,
                 "subgoal": args.subgoal,
@@ -116,6 +119,11 @@ def main() -> None:
                 "native_success": reply["state"]["native_success"],
             }), flush=True)
         result = {"chunks": results, "state": results[-1]["state"]}
+    elif args.operation == "evaluate_condition":
+        state = request(args.socket, "status")
+        result = request(args.socket, "evaluate_condition", {
+            "protocol_version": state["protocol_version"], "request_id": state["request_id"],
+        })
     elif args.operation == "finalize":
         state = request(args.socket, "status")
         result = request(args.socket, "finalize", {

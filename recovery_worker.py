@@ -88,6 +88,8 @@ def _encode_video(frames: list[Path], destination: Path, fps: float) -> dict[str
 
 
 class RecoverySession:
+    protocol_version = PROTOCOL_VERSION
+
     def __init__(self, env, env_cfg, args, observation):
         import h5py  # noqa: F401 - validates the recorder dependency before execution
         from policies.cosmos3.client import Cosmos3Client
@@ -120,7 +122,7 @@ class RecoverySession:
             self.transport.connect()
         self.state = {
             "format": FORMAT,
-            "protocol_version": PROTOCOL_VERSION,
+            "protocol_version": self.protocol_version,
             "task": args.task,
             "native_goal": env_cfg.instruction,
             "status": "ready_agent" if self.agent_control else "ready_wam",
@@ -134,8 +136,13 @@ class RecoverySession:
             "attempts": 0,
             "failure": None,
             "local_recovery_success": None,
-            "recovery_evaluation_steps": None if self.agent_control else RECOVERY_EVALUATION_STEPS,
+            "recovery_evaluation_steps": (
+                RECOVERY_EVALUATION_STEPS
+                if not self.agent_control and self.protocol_version == PROTOCOL_VERSION else None
+            ),
             "recovery_evaluation": None,
+            **({"evaluation_policy": "task_progress", "task_progress_recovered": None}
+               if self.protocol_version != PROTOCOL_VERSION else {}),
             "budget_exhaustion_policy": "continue_wam" if args.continue_wam_after_budget else "stop",
             "budget_fallback": False,
             "wam_after_budget_steps": 0,
@@ -569,14 +576,16 @@ class RecoverySession:
             raise ValueError(f"WAM execution is not allowed from {self.state['status']}")
         if decision.get("request_id") != self.state["request_id"]:
             raise ValueError("Stale or incorrect request_id")
-        if decision.get("protocol_version") != PROTOCOL_VERSION:
-            raise ValueError(f"protocol_version must be {PROTOCOL_VERSION!r}")
+        if decision.get("protocol_version") != self.state["protocol_version"]:
+            raise ValueError(f"protocol_version must be {self.state['protocol_version']!r}")
         condition = decision.get("condition")
         subgoal = decision.get("subgoal")
         execute_steps = decision.get("execute_steps", self.limits.max_wam_execute_steps)
         source = (
             "wam_after_budget" if self.state.get("budget_fallback")
-            else "wam_continuation" if self.state["local_recovery_success"] else "wam"
+            else "wam_continuation" if self.state.get(
+                "task_progress_recovered", self.state["local_recovery_success"]
+            ) else "wam"
         )
         result = self._query_wam(
             condition, subgoal, execute_steps, source,
@@ -595,7 +604,9 @@ class RecoverySession:
             raise ValueError("Failure requires actual WAM execution first")
         if self.attempts >= self.limits.max_attempts:
             raise ValueError("Episode recovery attempt limit exhausted")
-        validated = validate_failure_decision(decision, self.state["request_id"])
+        validated = validate_failure_decision(
+            decision, self.state["request_id"], protocol_version=self.state["protocol_version"]
+        )
         self.state.update(
             status="ready_recovery", failure=validated, local_recovery_success=None,
             recovery_evaluation=None,
@@ -742,6 +753,14 @@ class RecoverySession:
         self._save_state()
         return self.status()
 
+    def _acceptance_success(self) -> bool:
+        return bool(
+            not self.agent_control and self.state["native_success"] and self.state["failure"]
+            and self.state["local_recovery_success"] and self.continuation_steps > 0
+            and self.state.get("last_action_source") == "wam_continuation"
+            and self.state["status"] == "task_success"
+        )
+
     def finalize(self, decision: dict[str, Any]) -> dict[str, Any]:
         if self.closed:
             raise ValueError("Session is already finalized")
@@ -775,6 +794,8 @@ class RecoverySession:
                 "blue_placement_verification.py": digest(
                     Path(__file__).with_name("blue_placement_verification.py")
                 ),
+                **({"recovery_progress.py": digest(Path(__file__).with_name("recovery_progress.py"))}
+                   if self.protocol_version != PROTOCOL_VERSION else {}),
             },
             "correction_attempts_preserved": self.attempts,
             "task_success_authority": (
@@ -783,15 +804,7 @@ class RecoverySession:
             ),
             "mock_execution": False,
             "wam_continuation_steps": self.continuation_steps,
-            "acceptance_success": bool(
-                not self.agent_control
-                and self.state["native_success"]
-                and self.state["failure"]
-                and self.state["local_recovery_success"]
-                and self.continuation_steps > 0
-                and self.state.get("last_action_source") == "wam_continuation"
-                and self.state["status"] == "task_success"
-            ),
+            "acceptance_success": self._acceptance_success(),
             "agent_control_success": bool(
                 self.agent_control and self.state["native_success"]
                 and self.state.get("last_action_source") == "agent_control"
@@ -810,7 +823,12 @@ class RecoverySession:
 
 
 def serve(env, env_cfg, args, observation) -> None:
-    session = RecoverySession(env, env_cfg, args, observation)
+    if args.task_progress_recovery:
+        from recovery_progress import ProgressRecoverySession
+
+        session = ProgressRecoverySession(env, env_cfg, args, observation)
+    else:
+        session = RecoverySession(env, env_cfg, args, observation)
     address = Path(args.recovery_worker_socket)
     if address.exists():
         raise ValueError("Recovery worker socket already exists")
@@ -824,6 +842,9 @@ def serve(env, env_cfg, args, observation) -> None:
         "assess": session.assess,
         "finalize": session.finalize,
     }
+    if args.task_progress_recovery:
+        handlers.update(review_progress=session.review_progress,
+                        evaluate_condition=session.evaluate_condition)
     try:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server:
             server.bind(str(address))
@@ -852,7 +873,7 @@ def serve(env, env_cfg, args, observation) -> None:
                             error_type=type(error).__name__, error=str(error),
                             traceback=traceback.format_exc(),
                         )
-                        if operation in {"wam", "recover", "control"}:
+                        if operation in {"wam", "recover", "control", "evaluate_condition"}:
                             session.state["status"] = "execution_unknown"
                             session._rotate_token()
                             session._save_state()
