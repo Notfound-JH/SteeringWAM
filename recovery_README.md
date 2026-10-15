@@ -3,6 +3,31 @@
 For trajectory ingestion, field meanings, time-step alignment and real examples,
 see [Recovery trajectory data contract](recovery_DATA_FORMAT.md).
 
+## Hammer task scope: all four hammers
+
+The user's complete hammer task is **take all four hammers out of the bin and
+place them on the table**. Use
+[`ToolsPickingAllHammersTask`](RoboLab/robolab/tasks/benchmark/tools_picking_all_hammers.py),
+whose overall instruction is `Take out all the hammers and put them on the table`.
+Its native success predicate requires **all** of `husky_hammer`, `blue_hammer`,
+`red_hammer`, and `wood_hammer` to satisfy the existing outside-bin, table-support,
+and gripper-detached checks.
+
+The current Condition is a subgoal, not a replacement for this overall task.
+There is no required blue-first order: choosing another unfinished hammer can
+advance the full task. Reviews should consider completed/remaining hammers and
+actual acquisition, extraction, and placement progress. Placing one hammer is
+partial progress; only all four passing the native predicate is task success.
+Do not reset the environment or replenish the episode's correction budget
+between hammers.
+
+`ToolsPickingHammerTask` is a **single-blue-hammer diagnostic**, not the full
+four-hammer task. In particular, the three `recovery_hammer_condition_*_seed3407_20261015`
+episodes used that single-object task and cannot be presented as full-task
+comparisons. Preserve their original prompts, native checker, and recordings.
+The 600-step override in examples below remains an experiment budget; hitting
+that limit without all four placements is a timeout, not completion.
+
 ## Research contract: task-progress-first recovery (2026-10-15)
 
 The objective is **completion of the long-horizon task**, not the accumulation of
@@ -70,7 +95,7 @@ task-progress judgments or independent-judge results.
 ```bash
 MODEL_GPU=5 SIM_GPU=4 TASK_PROGRESS_RECOVERY=1 \
 RECOVERY_MAX_ATTEMPTS=5 CONTINUE_WAM_AFTER_BUDGET=1 RECOVERY_MAX_STEPS=600 \
-bash launch_recovery_experiment.sh diagnostics/NEW_HAMMER_RUN ToolsPickingHammerTask
+bash launch_recovery_experiment.sh diagnostics/NEW_HAMMER_RUN ToolsPickingAllHammersTask
 ```
 
 Add the existing `RECOVERY_GENESIS` and `RECOVERY_GENESIS_SHA256` variables when
@@ -337,7 +362,7 @@ exhaustion, and a 600-control-step task:
 ```bash
 RECOVERY_MAX_ATTEMPTS=5 CONTINUE_WAM_AFTER_BUDGET=1 RECOVERY_MAX_STEPS=600 \
   MODEL_GPU=5 SIM_GPU=4 \
-  bash launch_recovery_experiment.sh diagnostics/NEW_HAMMER_RUN ToolsPickingHammerTask
+  bash launch_recovery_experiment.sh diagnostics/NEW_HAMMER_RUN ToolsPickingAllHammersTask
 ```
 
 These map to `--recovery-max-attempts`, `--continue-wam-after-budget`, and
