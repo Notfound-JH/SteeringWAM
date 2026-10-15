@@ -15,7 +15,7 @@ from recovery_protocol import validate_condition_change
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--run", type=Path, required=True)
-parser.add_argument("--target", choices=["wood_hammer", "husky_hammer", "blue_hammer", "red_hammer"], required=True)
+parser.add_argument("--target", choices=["wood_hammer", "husky_hammer", "blue_hammer", "red_hammer", "cordless_drill"], required=True)
 parser.add_argument("--condition", required=True)
 parser.add_argument("--until-step", type=int, required=True)
 parser.add_argument("--kind", choices=["subgoal_progression", "recovery_rewrite"])
@@ -45,7 +45,8 @@ while True:
     if state["step"] >= args.until_step:
         print(json.dumps({"checkpoint": True, "step": state["step"], "progress": state["hammer_task_progress"]}), flush=True)
         break
-    if state["hammer_task_progress"]["per_object"][args.target]:
+    progress = state["hammer_task_progress"]["per_object"]
+    if args.target in progress and progress[args.target]:
         print(json.dumps({"target_already_complete": args.target, "step": state["step"]}), flush=True)
         break
     changed = state.get("condition") is not None and state["condition"] != args.condition
@@ -55,7 +56,12 @@ while True:
     )
     decision = {
         "protocol_version": state["protocol_version"], "request_id": state["request_id"],
-        "condition": args.condition, "subgoal": f"Extract and place {args.target}; full goal is all four hammers",
+        "condition": args.condition,
+        "subgoal": (
+            "Return the incorrectly selected drill to its bin; all four hammers remain the full goal"
+            if args.target == "cordless_drill"
+            else f"Extract and place {args.target}; full goal is all four hammers"
+        ),
         "execute_steps": min(16, args.until_step - state["step"]),
         "condition_change_kind": change["kind"] if changed else None,
         "condition_change_reason": args.reason if changed else None,

@@ -83,10 +83,13 @@ for run in runs:
 
     observations = [initial["observation"]] + [e["observation"] for e in actual]
     objects = {name: [] for name in progress["per_object"]}
+    distractors = {}
     for observation in observations:
         with np.load(observation["scene"]["path"]) as scene:
             for name in objects:
                 objects[name].append(scene[f"rigid_object/{name}/root_pose"][0, :3])
+            for name in ("cordless_drill", "clamp", "spring_clamp", "clamp_01"):
+                distractors.setdefault(name, []).append(scene[f"rigid_object/{name}/root_pose"][0, :3])
     motion = {}
     for name, values in objects.items():
         xyz = np.array(values)
@@ -115,7 +118,11 @@ for run in runs:
         ee = np.array([e["robot_state"]["ee_pos"] for e in actual[start:end]])
         before_robot = actual[start - 1]["robot_state"] if start else initial["state"]
         ee = np.vstack((before_robot["ee_pos"], ee))
-        xyz = np.array(objects[intent["target"]][start:end + 1])
+        target_positions = (
+            objects[intent["target"]] if intent["target"] in objects
+            else distractors[intent["target"]]
+        )
+        xyz = np.array(target_positions[start:end + 1])
         ee_range = float(np.linalg.norm(np.ptp(ee, axis=0)))
         target_range = float(np.linalg.norm(np.ptp(xyz, axis=0)))
         close = int((executed[:, -1] > 0.5).sum())
@@ -166,6 +173,10 @@ for run in runs:
         "completed_hammers_final": progress["completed_count"],
         "max_simultaneously_completed_hammers": max(e["events"]["hammer_task_progress"]["completed_count"] for e in actual),
         "target_windows": target_windows, "object_measurements": motion,
+        "distractor_max_displacement_mm": {
+            name: float(np.linalg.norm(np.array(values) - values[0], axis=1).max() * 1000)
+            for name, values in distractors.items()
+        },
         "close_commands": sum(e["actual_action"][-1] > 0.5 for e in actual),
         "max_measured_closure": max(e["robot_state"]["gripper_pos"][0] for e in actual),
         "first_close_command_step": next((e["episode_step"] for e in actual if e["actual_action"][-1] > 0.5), None),
