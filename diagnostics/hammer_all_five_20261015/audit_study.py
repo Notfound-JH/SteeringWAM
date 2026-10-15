@@ -68,7 +68,7 @@ for run in runs:
         assert set(flags) == {"husky_hammer", "blue_hammer", "red_hammer", "wood_hammer"}
         assert progress["completed_count"] == sum(flags.values())
         assert progress["required_count"] == 4
-        assert progress["remaining_objects"] == [name for name, passed in flags.items() if not passed]
+        assert sorted(progress["remaining_objects"]) == sorted(name for name, passed in flags.items() if not passed)
         assert event["events"]["native_success"] == all(flags.values())
     assert manifest["hammer_task_progress"] == actual[-1]["events"]["hammer_task_progress"]
     with np.load(reference_path / "scene.npz") as ref, np.load(directory / "observations/00000_initial/scene.npz") as other:
@@ -204,7 +204,11 @@ for line in log.splitlines():
         seeds.append(int(match[2]))
 assert set(seeds) == {3407}
 assert len(seeds) == sum(s["chunks"] for s in summaries)
-assert request_counts == Counter(c["condition"] for c in all_chunks)
+expected_conditions = Counter(
+    c["condition"] if c["condition"].endswith((".", "!", "?")) else c["condition"] + "."
+    for c in all_chunks
+)
+assert request_counts == expected_conditions
 report = {
     "study_id": STUDY.name, "verified_real_episodes": len(summaries),
     "total_actual_actions": sum(s["actual_steps"] for s in summaries),
@@ -213,6 +217,7 @@ report = {
     "native_criterion": "all four objects pass unchanged native outside-bin/table-support/gripper-detached predicate",
     "same_initial_physics_states": True, "initial_image_differences": initial_audits,
     "language_condition_changes_are_interventions": True,
+    "model_prompt_formatting": "ActionPromptJsonFormatter._ensure_sentence appends terminal punctuation; raw requested conditions remain unchanged in the recorder.",
     "no_local_controller_actions": True, "privileged_state_assisted": True,
     "episodes": summaries,
 }

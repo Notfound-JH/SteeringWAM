@@ -28,6 +28,24 @@ comparisons. Preserve their original prompts, native checker, and recordings.
 The 600-step override in examples below remains an experiment budget; hitting
 that limit without all four placements is a timeout, not completion.
 
+### Five observed-subgoal trials (2026-10-15)
+
+The full-task study and exact executed instructions are in
+[`hammer_all_five_20261015`](diagnostics/hammer_all_five_20261015/comparison_report.md).
+Five episodes used the same genesis and seed3407, with600 actual WAM steps each.
+All five timed out with0/4 native placements; no extraction order was validated.
+The assistant changed language subgoals after inspecting RGB, robot state, and
+native per-object progress. These are language-intervened WAM executions, not
+no-intervention baselines or V3 independent-Judge recovery trials. No local
+controller actions or within-episode resets were used.
+
+The study's `drive_subgoal.py` executes one selected language subgoal up to a
+checkpoint; it does not autonomously replan. `review_checkpoint.py` prepares
+recorded feedback, `audit_study.py` verifies real action/prediction alignment and
+outcomes, and `verify_archive.py` independently reads selected Azure artifacts
+back and checks SHA256. Exact conditions and change boundaries are preserved in
+each episode's `subgoal_intents.jsonl` and the study's `chunk_metrics.csv`.
+
 ## Research contract: task-progress-first recovery (2026-10-15)
 
 The objective is **completion of the long-horizon task**, not the accumulation of
