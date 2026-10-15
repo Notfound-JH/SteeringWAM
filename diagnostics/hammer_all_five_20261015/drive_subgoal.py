@@ -15,7 +15,7 @@ from recovery_protocol import validate_condition_change
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--run", type=Path, required=True)
-parser.add_argument("--target", choices=["wood_hammer", "husky_hammer", "blue_hammer", "red_hammer", "cordless_drill"], required=True)
+parser.add_argument("--target", choices=["wood_hammer", "husky_hammer", "blue_hammer", "red_hammer", "cordless_drill", "clamp_01"], required=True)
 parser.add_argument("--condition", required=True)
 parser.add_argument("--until-step", type=int, required=True)
 parser.add_argument("--kind", choices=["subgoal_progression", "recovery_rewrite"])
@@ -60,6 +60,8 @@ while True:
         "subgoal": (
             "Return the incorrectly selected drill to its bin; all four hammers remain the full goal"
             if args.target == "cordless_drill"
+            else "Release the incorrectly contacted clamp in its bin; all four hammers remain the full goal"
+            if args.target == "clamp_01"
             else f"Extract and place {args.target}; full goal is all four hammers"
         ),
         "execute_steps": min(16, args.until_step - state["step"]),
