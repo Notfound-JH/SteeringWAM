@@ -8,7 +8,8 @@ from pathlib import Path
 import socket
 
 from recovery_protocol import (
-    PROTOCOL_VERSION, SafetyLimits, compile_program, validate_recovery_proposal,
+    CONDITION_CHANGE_KINDS, PROTOCOL_VERSION, SafetyLimits, compile_program,
+    validate_condition_change, validate_recovery_proposal,
 )
 
 
@@ -36,6 +37,8 @@ def main() -> None:
     wam.add_argument("--subgoal", required=True)
     wam.add_argument("--chunks", type=int, default=1)
     wam.add_argument("--execute-steps", type=int, default=16)
+    wam.add_argument("--condition-change-kind", choices=sorted(CONDITION_CHANGE_KINDS))
+    wam.add_argument("--condition-change-reason")
     for operation in ("mark_failure", "recover", "assess"):
         command = subparsers.add_parser(operation)
         command.add_argument("decision", type=Path)
@@ -67,6 +70,22 @@ def main() -> None:
             proposal["program"], robot["ee_pos"], robot["ee_quat"], robot["gripper_pos"], limits
         )
         result = request(args.socket, "control", decision)
+    elif args.operation == "recover":
+        context = request(args.socket, "context")
+        state, robot = context["state"], context["robot_state"]
+        if state["status"] != "ready_recovery":
+            raise RuntimeError(f"Recovery cannot execute from {state['status']}")
+        decision = json.loads(args.decision.read_text())
+        limits = SafetyLimits(**state["safety_limits"])
+        proposal = validate_recovery_proposal(
+            decision, state["request_id"], state["attempts"], robot["ee_pos"], limits,
+            recovery_condition=state["condition"],
+        )
+        if "program" in proposal:
+            compile_program(
+                proposal["program"], robot["ee_pos"], robot["ee_quat"], robot["gripper_pos"], limits
+            )
+        result = request(args.socket, "recover", decision)
     elif args.operation == "wam":
         if not 1 <= args.chunks <= 40:
             parser.error("chunks must be in [1, 40]")
@@ -77,12 +96,19 @@ def main() -> None:
                 if not results:
                     raise RuntimeError(f"WAM cannot execute from {state['status']}")
                 break
+            kind = args.condition_change_kind if not results else None
+            reason = args.condition_change_reason if not results else None
+            validate_condition_change(
+                state.get("condition"), args.condition, kind=kind, reason=reason
+            )
             reply = request(args.socket, "wam", {
                 "protocol_version": PROTOCOL_VERSION,
                 "request_id": state["request_id"],
                 "condition": args.condition,
                 "subgoal": args.subgoal,
                 "execute_steps": args.execute_steps,
+                "condition_change_kind": kind,
+                "condition_change_reason": reason,
             })
             results.append(reply)
             print(json.dumps({

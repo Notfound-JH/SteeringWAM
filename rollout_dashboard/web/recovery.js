@@ -1,9 +1,10 @@
 "use strict";
 
 const $ = (id) => document.getElementById(id);
-const sourceNames = { initial: "初始状态", wam: "WAM 执行", agent_correction: "Agent 修正", agent_condition: "Condition 修正", agent_control: "Agent 直接控制", wam_continuation: "WAM 续跑" };
-const sourceClasses = { initial: "wam", wam: "wam", agent_correction: "correction", agent_condition: "correction", agent_control: "correction", wam_continuation: "continuation" };
-const eventNames = { failure: "发现失败", proposal: "Agent 介入", assessment: "局部评估", handoff: "交还 WAM", success: "任务成功" };
+const sourceNames = { initial: "初始状态", wam: "WAM 执行", agent_correction: "Agent 修正", agent_condition: "Condition 修正", recovery_evaluation: "统一 WAM 评估窗口", agent_control: "Agent 直接控制", wam_continuation: "WAM 续跑" };
+const sourceClasses = { initial: "wam", wam: "wam", agent_correction: "correction", agent_condition: "correction", recovery_evaluation: "correction", agent_control: "correction", wam_continuation: "continuation" };
+const eventNames = { failure: "发现失败", proposal: "Agent 介入", assessment: "局部评估", handoff: "交还 WAM", success: "任务成功", condition_change: "条件变更" };
+const conditionKinds = { initial: "首次条件", unchanged: "条件不变", recovery_rewrite: "纠错改写", subgoal_progression: "子目标推进" };
 const cameraNames = { wrist_cam: "手腕相机", over_shoulder_left_camera: "左肩视角", over_shoulder_right_camera: "右肩视角", head_camera: "头部视角" };
 let episode = null;
 let activeStep = -1;
@@ -99,6 +100,14 @@ function renderAttempt() {
   $("correction-mode").textContent = proposal.correction_mode.toUpperCase();
   $("diagnosis").textContent = proposal.diagnosis;
   $("recovery-goal").textContent = proposal.recovery_goal;
+  $("mode-reason").textContent = proposal.mode_reason || (
+    episode.experiment_mode === "agent_control" ? "Agent-only 固定动作接口，不参与三模式选择。" : "旧记录未保存独立的模式选择理由。"
+  );
+  const evaluation = attempt.evaluation;
+  $("evaluation-window").textContent = evaluation
+    ? `WAM 评估：${evaluation.executed_steps}/${evaluation.requested_steps} 步 · ${evaluation.complete ? "窗口完整" : `窗口未完成 (${evaluation.interrupted_by})`} · ${proposal.correction_mode === "action" ? "沿用纠错前条件" : "使用纠错后条件"}`
+    : episode.experiment_mode === "agent_control" ? "非 Recovery 评估窗口。"
+      : episode.protocol_version === "wam-recovery-v2" ? "没有完成评估窗口记录，不可视作已通过评估。" : "旧协议：没有统一评估窗口，不与新协议直接混算。";
   $("control-code").textContent = [
     proposal.control_code || (proposal.program ? JSON.stringify(proposal.program, null, 2) : ""),
     proposal.condition ? `Condition: ${proposal.condition}\nWAM execute steps: ${proposal.wam_execute_steps}` : "",
@@ -129,7 +138,11 @@ function renderSegment() {
   if (!selectedSegment) return;
   $("prediction-input").src = selectedSegment.input;
   $("prediction-video").src = selectedSegment.prediction;
-  $("prompt").textContent = selectedSegment.prompt;
+  const change = selectedSegment.condition_change;
+  $("prompt").textContent = [
+    selectedSegment.prompt,
+    change ? `条件用途：${conditionKinds[change.kind] || change.kind}${change.reason ? `\n变更理由：${change.reason}` : ""}` : "旧记录未标注条件变更用途。",
+  ].join("\n\n");
   $("segment-stats").textContent = `${sourceNames[selectedSegment.source] || selectedSegment.source} · 起点 ${selectedSegment.start} · 预测 ${selectedSegment.predicted_steps} 步 / 实际 ${selectedSegment.executed_steps} 步 · 推理 ${fixed(selectedSegment.inference_seconds, 1)} s`;
 }
 function render() {

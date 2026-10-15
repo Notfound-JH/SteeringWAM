@@ -453,7 +453,7 @@ writing a proposal. All operations below use the same socket/environment:
 5. On local success, `wam ...`: resume WAM from the corrected state.
 6. `finalize --reason "..."`: export both successful and failed episodes.
 
-Each JSON includes `"protocol_version": "wam-recovery-v1"` and the current
+New sessions use `"protocol_version": "wam-recovery-v2"` and the current
 `"request_id"` returned by the previous tool. Failure JSON also contains
 `failure_type`, `evidence`, and `subgoal`. Assessment JSON contains boolean
 `local_recovery_success` and nonempty `evidence`.
@@ -463,11 +463,12 @@ do not submit this blindly):
 
 ```json
 {
-  "protocol_version": "wam-recovery-v1",
+  "protocol_version": "wam-recovery-v2",
   "request_id": "CURRENT_TOKEN",
   "diagnosis": "The fingers closed beside the cube; the cube remains on the table.",
   "recovery_goal": "Reopen and reach a pre-grasp pose so WAM can grasp.",
   "correction_mode": "action",
+  "mode_reason": "The instruction is still appropriate; only the open pre-grasp pose needs repair.",
   "control_code": "controller.gripper(value=0, steps=3)\ncontroller.move_ee(position=[0.45, 0.0, 0.35], steps=8)"
 }
 ```
@@ -476,10 +477,70 @@ Only literal keyword calls to `controller.move_ee`, `controller.gripper`, and
 `controller.hold` are parsed. Imports, assignments, loops, expressions, arbitrary
 calls and attribute traversal are rejected; code is never evaluated. JSON
 `program` operations are an equivalent alternative to `control_code`, not an
-additional program. Condition mode requires `condition` and optional
-`wam_execute_steps`; Joint combines these fields with a bounded action program.
-Joint executes the program then one corrected WAM chunk. Mode choice is the
-Agent's, not a fixed recovery recipe.
+additional program. Condition mode requires `condition`; Joint combines it with a bounded action
+program. Both must actually change the current condition. If supplied,
+`wam_execute_steps` must be 16. Mode choice is still the Agent's, not an
+automatic failure classifier.
+
+### V2: mode rationale, condition provenance, and fixed evaluation
+
+Every `recover` proposal requires a nonempty `mode_reason` explaining why direct
+action repair, a condition rewrite, or both are needed. This is distinct from
+the failure diagnosis and recovery goal. It is an Agent-provided explanation,
+not proof that the selected mode is optimal.
+
+All three modes now run **16 WAM steps before local assessment**:
+
+| Mode | Controller stage | WAM evaluation condition |
+|---|---|---|
+| Action | Bounded local program | Exactly the pre-correction condition |
+| Condition | None | Rewritten condition |
+| Joint | Bounded local program | Rewritten condition after action repair |
+
+The worker owns this window; external WAM calls and assessments cannot
+interrupt it or change its condition. New Action attempts therefore execute
+an additional WAM chunk compared with V1. All window steps have source
+`recovery_evaluation`, not Cartesian Agent action. Native termination/horizon
+can shorten or prevent the window; actual length and interruption reason are
+recorded, with no reset, padding, or fabricated local assessment. Completion
+of 16 steps only enables Agent assessment; it does not imply local success.
+Native success during evaluation still does not satisfy the separate
+full-chain acceptance rule without an explicit handoff and later continuation.
+
+`recovery_evaluation_started/completed` record the attempt, condition, step
+boundaries and requested/actual length. `recovery_attempt_completed` and session
+state also retain the evaluation object. Assessments identify the evaluated
+end step, window length and `label_source="agent_assessment"`.
+
+Outside the window, changing a previously supplied WAM condition requires
+both `--condition-change-kind` and `--condition-change-reason`:
+
+```bash
+$PY recovery_client.py --socket "$SOCKET" wam \
+  --condition "Keep holding the cube and carry it above the bowl." \
+  --subgoal "transport" \
+  --condition-change-kind subgoal_progression \
+  --condition-change-reason "The grasp stage is complete; begin transport."
+```
+
+Kinds are `subgoal_progression` (normal stage advancement) and
+`recovery_rewrite` (a corrective rewrite). Initial and unchanged conditions
+are automatically marked `initial` / `unchanged` and must not receive change
+arguments. For `--chunks N`, change metadata applies only to the first chunk.
+Every request/prediction records the condition provenance; each actual text
+change also emits `condition_changed` with before/after, reason, source and
+attempt ID (`null` outside a formal recovery). Ordinary WAM rewrites are not
+silently counted as formal `recover` attempts. Action's condition lock ends
+only after its fixed window; later subgoal changes are separately auditable.
+
+The verifier independently checks mode rationale, request/condition history,
+controller execution, each window and assessment alignment. It reports
+`comparison_contract_verified` and complete/incomplete window counts. Legacy
+V1 episodes remain readable and retain their original labels; their comparison
+contract is **unknown (`null`)**, not retroactively verified. Use V2 requests
+with a newly launched V2 worker; do not replay old tokens or edit archived
+proposals. Agent-only control retains its separate semantics and does not
+acquire a Recovery evaluation window or a required mode-selection rationale.
 
 Limits: 12 cm per translation segment, 30 cm total, 2 cm per target step, 16
 steps per operation, 48 control steps per attempt, 45 degrees per rotation
@@ -502,7 +563,7 @@ and `finalize` to preserve evidence. Never reset and call the result a recovery.
 - `observations/`: all real control-step camera frames, robot JSON and scene NPZ.
 - `segments/`: model input, condition, raw/processed predicted joint chunks,
   predicted future NPY/MP4, actual executed prefixes and results.
-- `recovery_attempts/`: diagnosis/goal/mode, original control code, normalized
+- `recovery_attempts/`: diagnosis/goal/mode/mode reason, original control code, normalized
   program, compiled Cartesian intents, and actual IK joint commands.
 - `trajectory.hdf5`: existing RoboLab trajectory format, including measured
   states. An environment action is a controller command, not measured motion.
@@ -520,7 +581,7 @@ The verifier exits nonzero if the full chain is absent, even with valid files.
 Unit tests use protocol fixtures only and are not real execution evidence:
 
 ```bash
-$PY -m pytest test_recovery_protocol.py -q
+$PY -m pytest test_recovery_protocol.py test_recovery_evaluation.py -q
 ```
 
 Azure backup reuses [sync_instruction_results.py](sync_instruction_results.py),

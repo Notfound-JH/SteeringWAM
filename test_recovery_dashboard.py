@@ -51,6 +51,8 @@ def test_read_only_routes_and_unverified_episode(episode):
         assert data["observations"][1]["step"] == 1
         assert data["attempts"] == []
         assert data["segments"] == []
+        assert data["condition_changes"] == []
+        assert data["comparison_contract_verified"] is None
         assert client.get(data["video"], headers={"Range": "bytes=0-3"}).status_code in {200, 206}
         assert client.get(data["downloads"]["manifest"]).headers["content-disposition"].startswith("attachment")
         assert client.get(f"/api/recovery/{run.name}/download/credentials").status_code == 404
@@ -168,3 +170,40 @@ def test_assessment_logged_after_handoff_is_attached_to_attempt(episode):
     attempt = load_episode(run)["attempts"][0]
     assert attempt["executed_steps"] == 1
     assert attempt["assessment"]["local_recovery_success"] is True
+
+
+def test_new_evaluation_and_condition_change_metadata_are_projected(episode):
+    run, manifest = episode
+    path = run / "recovery/events.jsonl"
+    events = [json.loads(line) for line in path.read_text().splitlines()]
+    proposal = run / "recovery/proposal.json"
+    proposal.write_text(json.dumps({
+        "correction_mode": "condition", "condition": "regrasp",
+        "mode_reason": "The target instruction is wrong; direct motion is unnecessary.",
+    }))
+    evaluation = {
+        "condition_before": "grasp", "condition": "regrasp", "start_step": 1,
+        "end_step": 2, "requested_steps": 16, "executed_steps": 1,
+        "complete": False, "interrupted_by": "native_horizon",
+    }
+    events.extend([
+        {"event_type": "recovery_proposal", "episode_step": 1, "attempt": 1,
+         "recorded_at": 1, "proposal": {"path": str(proposal)}},
+        {"event_type": "condition_changed", "episode_step": 1, "attempt": 1,
+         "recorded_at": 1, "source": "recovery_evaluation", "before": "grasp",
+         "after": "regrasp", "kind": "recovery_rewrite", "reason": "Wrong target"},
+        {**events[-1], "episode_step": 2, "action_source": "recovery_evaluation"},
+        {"event_type": "recovery_evaluation_completed", "episode_step": 2,
+         "attempt": 1, "evaluation": evaluation},
+    ])
+    raw = "\n".join(json.dumps(event) for event in events).encode()
+    path.write_bytes(raw)
+    manifest.update(step=2, events={"sha256": hashlib.sha256(raw).hexdigest()},
+                    protocol_version="wam-recovery-v2", recovery_evaluation_steps=16)
+    (run / "recovery/manifest.json").write_text(json.dumps(manifest))
+    data = load_episode(run)
+    assert data["recovery_evaluation_steps"] == 16
+    assert data["condition_changes"][0]["kind"] == "recovery_rewrite"
+    assert data["attempts"][0]["evaluation"] == evaluation
+    assert data["attempts"][0]["assessment"] is None
+    assert data["attempts"][0]["executed_steps"] == 1

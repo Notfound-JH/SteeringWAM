@@ -20,9 +20,11 @@ from instruction_sampling import digest, write_json
 from instruction_sampling_worker import artifact, flat_state
 from recovery_protocol import (
     PROTOCOL_VERSION,
+    RECOVERY_EVALUATION_STEPS,
     SafetyLimits,
     compile_program,
     validate_assessment,
+    validate_condition_change,
     validate_failure_decision,
     validate_recovery_proposal,
 )
@@ -131,6 +133,8 @@ class RecoverySession:
             "attempts": 0,
             "failure": None,
             "local_recovery_success": None,
+            "recovery_evaluation_steps": None if self.agent_control else RECOVERY_EVALUATION_STEPS,
+            "recovery_evaluation": None,
             "native_success": False,
             "native_terminated": False,
             "native_truncated": False,
@@ -269,7 +273,10 @@ class RecoverySession:
             "semantics": "model_prediction_not_actual_observation",
         }
 
-    def _query_wam(self, condition: str, subgoal: str, execute_steps: int, source: str) -> dict[str, Any]:
+    def _query_wam(
+        self, condition: str, subgoal: str, execute_steps: int, source: str,
+        *, change_kind: str | None = None, change_reason: str | None = None,
+    ) -> dict[str, Any]:
         if self.transport is None:
             raise ValueError("WAM is disabled in the agent-control baseline")
         if not isinstance(condition, str) or not condition.strip():
@@ -278,6 +285,11 @@ class RecoverySession:
             raise ValueError("subgoal must be nonempty")
         if type(execute_steps) is not int or not 1 <= execute_steps <= self.limits.max_wam_execute_steps:
             raise ValueError(f"execute_steps must be in [1, {self.limits.max_wam_execute_steps}]")
+        change = validate_condition_change(
+            self.state.get("condition"), condition, kind=change_kind, reason=change_reason
+        )
+        condition = change["after"]
+        attempt = self.attempts if source == "recovery_evaluation" else None
         directory = self.directory / "segments" / f"{self.segment_index:03d}_{source}"
         self.segment_index += 1
         directory.mkdir(parents=True, exist_ok=False)
@@ -297,6 +309,8 @@ class RecoverySession:
             "subgoal": subgoal,
             "source": source,
             "start_step": self.step,
+            "condition_change": change,
+            "attempt": attempt,
         })
         started = time.monotonic()
         reply = self.transport.request(request, timeout=240)
@@ -319,7 +333,11 @@ class RecoverySession:
             "prediction_length": len(processed),
             "requested_execution_length": execute_steps,
             "inference_seconds": time.monotonic() - started,
+            "condition_change": change,
+            "attempt": attempt,
         }
+        if change["changed"]:
+            self._event("condition_changed", source=source, attempt=attempt, **change)
         self._event("wam_prediction", **prediction)
         self.state.update(condition=condition, subgoal=subgoal)
         execution = self._execute_actions(processed[:execute_steps], source, directory)
@@ -542,11 +560,17 @@ class RecoverySession:
             raise ValueError(f"WAM execution is not allowed from {self.state['status']}")
         if decision.get("request_id") != self.state["request_id"]:
             raise ValueError("Stale or incorrect request_id")
+        if decision.get("protocol_version") != PROTOCOL_VERSION:
+            raise ValueError(f"protocol_version must be {PROTOCOL_VERSION!r}")
         condition = decision.get("condition")
         subgoal = decision.get("subgoal")
         execute_steps = decision.get("execute_steps", self.limits.max_wam_execute_steps)
         source = "wam_continuation" if self.state["local_recovery_success"] else "wam"
-        result = self._query_wam(condition, subgoal, execute_steps, source)
+        result = self._query_wam(
+            condition, subgoal, execute_steps, source,
+            change_kind=decision.get("condition_change_kind"),
+            change_reason=decision.get("condition_change_reason"),
+        )
         self._rotate_token()
         self.state["latest_observation"] = self._snapshot("wam_boundary")
         self._save_state()
@@ -560,7 +584,10 @@ class RecoverySession:
         if self.attempts >= self.limits.max_attempts:
             raise ValueError("Episode recovery attempt limit exhausted")
         validated = validate_failure_decision(decision, self.state["request_id"])
-        self.state.update(status="ready_recovery", failure=validated, local_recovery_success=None)
+        self.state.update(
+            status="ready_recovery", failure=validated, local_recovery_success=None,
+            recovery_evaluation=None,
+        )
         self._event(
             "failure_detected",
             failure=validated,
@@ -575,14 +602,22 @@ class RecoverySession:
         if self.state["status"] != "ready_recovery":
             raise ValueError(f"Recovery is not allowed from {self.state['status']}")
         robot = self._robot_state()
+        condition_before = self.state["condition"]
         proposal = validate_recovery_proposal(
             decision,
             self.state["request_id"],
             self.attempts,
             robot["ee_pos"],
             self.limits,
+            recovery_condition=condition_before,
         )
+        if proposal["correction_mode"] in {"action", "joint"}:
+            compiled = compile_program(
+                proposal["program"], robot["ee_pos"], robot["ee_quat"],
+                robot["gripper_pos"], self.limits,
+            )
         self.attempts += 1
+        self.state.update(status="recovering", recovery_evaluation=None)
         attempt_dir = self.directory / "recovery_attempts" / f"{self.attempts:02d}"
         attempt_dir.mkdir(parents=True, exist_ok=False)
         write_json(attempt_dir / "proposal.json", proposal)
@@ -595,16 +630,12 @@ class RecoverySession:
             diagnosis=proposal["diagnosis"],
             recovery_goal=proposal["recovery_goal"],
             correction_mode=proposal["correction_mode"],
+            mode_reason=proposal["mode_reason"],
+            condition_before=condition_before,
             proposal=artifact(attempt_dir / "proposal.json"),
         )
         results: list[dict[str, Any]] = []
         if proposal["correction_mode"] in {"action", "joint"}:
-            compiled = compile_program(
-                proposal["program"],
-                robot["ee_pos"],
-                robot["ee_quat"],
-                robot["gripper_pos"],
-            )
             compiled_path = attempt_dir / "compiled_actions.npy"
             np.save(compiled_path, compiled)
             cartesian_path = attempt_dir / "compiled_cartesian_targets.npy"
@@ -616,18 +647,44 @@ class RecoverySession:
                 compiled_cartesian_targets=artifact(cartesian_path),
             )
             results.append(self._execute_cartesian_targets(compiled, attempt_dir))
-        if (
-            proposal["correction_mode"] in {"condition", "joint"}
-            and not self.state["native_terminated"]
-            and not self.state["native_truncated"]
-        ):
-            results.append(self._query_wam(
-                proposal["condition"],
-                self.state["failure"]["subgoal"],
-                proposal["wam_execute_steps"],
-                "agent_condition",
-            ))
+        condition = proposal.get("condition", condition_before)
+        evaluation_start = self.step
+        self._event(
+            "recovery_evaluation_started", attempt=self.attempts,
+            condition_before=condition_before, condition=condition,
+            correction_mode=proposal["correction_mode"],
+            requested_steps=RECOVERY_EVALUATION_STEPS,
+        )
         if not self.state["native_terminated"] and not self.state["native_truncated"]:
+            self.state["status"] = "evaluating_recovery"
+            results.append(self._query_wam(
+                condition,
+                self.state["failure"]["subgoal"],
+                RECOVERY_EVALUATION_STEPS,
+                "recovery_evaluation",
+                change_kind="recovery_rewrite" if condition != condition_before else None,
+                change_reason=proposal["mode_reason"] if condition != condition_before else None,
+            ))
+        evaluation = {
+            "condition_before": condition_before,
+            "condition": condition,
+            "start_step": evaluation_start,
+            "end_step": self.step,
+            "requested_steps": RECOVERY_EVALUATION_STEPS,
+            "executed_steps": self.step - evaluation_start,
+            "complete": self.step - evaluation_start == RECOVERY_EVALUATION_STEPS,
+            "interrupted_by": (
+                None if self.step - evaluation_start == RECOVERY_EVALUATION_STEPS
+                else "native_success" if self.state["native_success"]
+                else "native_horizon" if self.state["native_truncated"]
+                else "native_termination" if self.state["native_terminated"] else None
+            ),
+        }
+        self.state["recovery_evaluation"] = evaluation
+        self._event("recovery_evaluation_completed", attempt=self.attempts, evaluation=evaluation)
+        if not self.state["native_terminated"] and not self.state["native_truncated"]:
+            if not evaluation["complete"]:
+                raise RuntimeError("Nonterminal recovery evaluation did not execute its full window")
             self.state["status"] = "awaiting_assessment"
         self.state["latest_observation"] = self._snapshot(f"recovery_attempt_{self.attempts}")
         self._rotate_token()
@@ -635,6 +692,7 @@ class RecoverySession:
             "recovery_attempt_completed",
             attempt=self.attempts,
             results=results,
+            evaluation=evaluation,
             observation=self.state["latest_observation"],
             events=self._events(),
         )
@@ -644,7 +702,15 @@ class RecoverySession:
     def assess(self, decision: dict[str, Any]) -> dict[str, Any]:
         if self.state["status"] != "awaiting_assessment":
             raise ValueError(f"Assessment is not allowed from {self.state['status']}")
+        evaluation = self.state["recovery_evaluation"]
+        if not evaluation or not evaluation["complete"] or evaluation["end_step"] != self.step:
+            raise ValueError("Assessment requires the completed, unchanged recovery evaluation window")
         assessment = validate_assessment(decision, self.state["request_id"])
+        assessment.update(
+            evaluation_steps=evaluation["executed_steps"],
+            evaluation_end_step=evaluation["end_step"],
+            label_source="agent_assessment",
+        )
         self.state["local_recovery_success"] = assessment["local_recovery_success"]
         if assessment["local_recovery_success"]:
             self.state["status"] = "ready_wam"

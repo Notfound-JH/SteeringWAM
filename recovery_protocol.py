@@ -10,7 +10,10 @@ from typing import Any
 import numpy as np
 
 
-PROTOCOL_VERSION = "wam-recovery-v1"
+PROTOCOL_VERSION = "wam-recovery-v2"
+LEGACY_PROTOCOL_VERSION = "wam-recovery-v1"
+RECOVERY_EVALUATION_STEPS = 16
+CONDITION_CHANGE_KINDS = {"recovery_rewrite", "subgoal_progression"}
 CORRECTION_MODES = {"condition", "action", "joint"}
 ALLOWED_OPERATIONS = {"move_ee", "hold", "gripper"}
 
@@ -100,11 +103,16 @@ def validate_recovery_proposal(
     attempt: int,
     current_position: Any,
     limits: SafetyLimits,
+    *,
+    protocol_version: str = PROTOCOL_VERSION,
+    recovery_condition: str | None = None,
 ) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError("Recovery proposal must be an object")
-    if value.get("protocol_version") != PROTOCOL_VERSION:
-        raise ValueError(f"protocol_version must be {PROTOCOL_VERSION!r}")
+    if protocol_version not in {PROTOCOL_VERSION, LEGACY_PROTOCOL_VERSION}:
+        raise ValueError("Unsupported recovery protocol version")
+    if value.get("protocol_version") != protocol_version:
+        raise ValueError(f"protocol_version must be {protocol_version!r}")
     if value.get("request_id") != request_id:
         raise ValueError("Stale or incorrect request_id")
     if attempt >= limits.max_attempts:
@@ -113,12 +121,14 @@ def validate_recovery_proposal(
     if mode not in CORRECTION_MODES:
         raise ValueError(f"correction_mode must be one of {sorted(CORRECTION_MODES)}")
     proposal: dict[str, Any] = {
-        "protocol_version": PROTOCOL_VERSION,
+        "protocol_version": protocol_version,
         "request_id": request_id,
         "diagnosis": _nonempty(value.get("diagnosis"), "diagnosis"),
         "recovery_goal": _nonempty(value.get("recovery_goal"), "recovery_goal"),
         "correction_mode": mode,
     }
+    if recovery_condition is not None or "mode_reason" in value:
+        proposal["mode_reason"] = _nonempty(value.get("mode_reason"), "mode_reason")
 
     if mode in {"condition", "joint"}:
         proposal["condition"] = _nonempty(value.get("condition"), "condition")
@@ -143,7 +153,29 @@ def validate_recovery_proposal(
         proposal["program"] = validate_program(program, current_position, limits)
     elif "program" in value or "control_code" in value:
         raise ValueError("Condition-only correction cannot include an action program")
+    if recovery_condition is not None:
+        if mode in {"condition", "joint"}:
+            if proposal["condition"] == recovery_condition:
+                raise ValueError("Condition correction must change the current condition")
+            if proposal["wam_execute_steps"] != RECOVERY_EVALUATION_STEPS:
+                raise ValueError(f"Recovery evaluation requires exactly {RECOVERY_EVALUATION_STEPS} WAM steps")
     return proposal
+
+
+def validate_condition_change(
+    before: str | None, after: Any, *, kind: Any = None, reason: Any = None,
+) -> dict[str, Any]:
+    after = _nonempty(after, "condition")
+    if before is None or before == after:
+        if kind is not None or reason is not None:
+            raise ValueError("Condition-change metadata requires a change to an existing condition")
+        kind = "initial" if before is None else "unchanged"
+    else:
+        if not isinstance(kind, str) or kind not in CONDITION_CHANGE_KINDS:
+            raise ValueError(f"condition_change_kind must be one of {sorted(CONDITION_CHANGE_KINDS)}")
+        reason = _nonempty(reason, "condition_change_reason")
+    return {"before": before, "after": after, "changed": before != after,
+            "kind": kind, "reason": reason}
 
 
 def parse_control_code(code: str) -> list[dict[str, Any]]:

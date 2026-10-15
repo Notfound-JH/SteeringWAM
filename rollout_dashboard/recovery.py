@@ -45,6 +45,8 @@ def summary(directory: Path) -> dict:
         "experiment_mode": manifest.get("experiment_mode", "wam_recovery"),
         "success_criterion": manifest.get("success_criterion", "native"),
         "agent_control_success": manifest.get("agent_control_success", False),
+        "protocol_version": manifest.get("protocol_version", "wam-recovery-v1"),
+        "recovery_evaluation_steps": manifest.get("recovery_evaluation_steps"),
     }
 
 
@@ -108,6 +110,7 @@ def load_episode(directory: Path) -> dict:
         "agent_control_proposal": "proposal",
         "recovery_assessment": "assessment",
         "control_handed_back_to_wam": "handoff",
+        "condition_changed": "condition_change",
     }
     attempts = []
     for index, event in enumerate(events):
@@ -126,7 +129,9 @@ def load_episode(directory: Path) -> dict:
         responses = [
             item for item in events[index + 1:end]
             if item["event_type"] == "actual_execution_response"
-            and item["action_source"] in {"agent_correction", "agent_condition", "agent_control"}
+            and item["action_source"] in {
+                "agent_correction", "agent_condition", "recovery_evaluation", "agent_control",
+            }
         ]
         assessment = next((
             item["assessment"] for item in events[index + 1:]
@@ -147,6 +152,11 @@ def load_episode(directory: Path) -> dict:
             "end": responses[-1]["episode_step"] if responses else event["episode_step"],
             "proposal": read_json(reference_path(event["proposal"])),
             "assessment": assessment, "tracking": tracking, "executed_steps": len(responses),
+            "evaluation": next((
+                item["evaluation"] for item in events[index + 1:]
+                if item["event_type"] == "recovery_evaluation_completed"
+                and item["attempt"] == event.get("attempt")
+            ), None),
         })
     if manifest.get("native_success") is True:
         timeline.append({"type": "success", "step": manifest["step"]})
@@ -162,6 +172,7 @@ def load_episode(directory: Path) -> dict:
             "inference_seconds": segment["inference_seconds"],
             "input": media({"path": str(path.parent / "input.png")}),
             "prediction": media(segment["predicted_future"]["video"]),
+            "condition_change": request.get("condition_change"),
         })
     downloads = {
         kind: f"/api/recovery/{quote(directory.name, safe='')}/download/{kind}"
@@ -196,6 +207,11 @@ def load_episode(directory: Path) -> dict:
             and manifest.get("mock_execution") is False
         ),
         "verification": verification, "mock_execution": manifest.get("mock_execution"),
+        "comparison_contract_verified": verification.get("comparison_contract_verified") if verification else None,
+        "condition_changes": [
+            {key: event[key] for key in ("episode_step", "source", "attempt", "before", "after", "kind", "reason")}
+            for event in events if event["event_type"] == "condition_changed"
+        ],
         "agent_input_mode": experiment.get("agent_input_mode"),
         "agent_model_version": experiment.get("agent_model_version"),
         "attempt_limit": None if result["experiment_mode"] == "agent_control" else manifest["safety_limits"]["max_attempts"],

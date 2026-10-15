@@ -2,7 +2,9 @@
 
 本文描述**已经实际落盘的数据**，不是拟议格式。数据来自真实 Isaac Sim
 步进，不是物理机器人，也不是 Mock。原始格式标识为
-`wam-agent-recovery-v1`，工具协议为 `wam-recovery-v1`。
+`wam-agent-recovery-v1`。已采集历史轨迹的工具协议为 `wam-recovery-v1`；
+新增实验使用 `wam-recovery-v2`，其模式理由、条件变更和评估窗口见第 10 节。
+容器格式不变，不代表两个协议的局部评估语义相同。
 
 ## 1. 推荐的接入入口
 
@@ -218,6 +220,8 @@ WAM 输入拼图布局：上方是 360×640 wrist，下方是左右各 180×320
 | `actual_execution_response` | 每个真实步的动作、实测状态、观测与终止标志 |
 | `failure_detected` | failure_type、evidence、失败状态、当前 subgoal |
 | `recovery_proposal` | diagnosis、recovery_goal、mode、proposal 文件引用 |
+| `condition_changed` | V2 条件的 before/after、用途、理由、source、attempt |
+| `recovery_evaluation_started/completed` | V2 固定 WAM 评估窗口的计划、真实长度和中断原因 |
 | `correction_program_compiled` | 限制过的逐步 Cartesian 意图 |
 | `recovery_attempt_completed` | 本次尝试全部实际结果与观测 |
 | `recovery_assessment` | 局部恢复布尔评估与文字证据 |
@@ -231,6 +235,8 @@ WAM 输入拼图布局：上方是 360×640 wrist，下方是左右各 180×320
 - `wam`：正常 WAM。
 - `agent_correction`：Recovery 的 Cartesian / IK 实际动作。
 - `agent_condition`：纠错期间，**WAM** 在修改条件下生成并执行的动作。
+- `recovery_evaluation`：V2 三种模式统一的 WAM 评估窗口；是否改条件需读取
+  `condition_change`，不能仅凭这个 source 判断。它不是 Agent 的 Cartesian 动作。
 - `wam_continuation`：交还控制权后的 WAM。
 - `agent_control`：独立 Agent-only 基线，不能冒充 Recovery。
 
@@ -348,6 +354,11 @@ episode。失败 episode 也同样接收。
   + 是否交还 WAM + WAM continuation + episode outcome
 ```
 
+以上将 proposal 放入输入，适用于学习“给定纠错意图后的执行响应”。
+如果训练的是**模式选择器**，`correction_mode`、`mode_reason`、
+`diagnosis`、`recovery_goal` 和新 condition 应作为输出监督，不能预先
+放进决策输入。只使用决策时已经可见的观测、已有条件及历史反馈。
+
 另外保留 step-level transition 便于动作/状态对齐与 tracking-error 学习。
 保留失败、未执行预测后缀的掩码、提前终止长度、未评估标签和所有纠错尝试。
 
@@ -362,3 +373,85 @@ episode。失败 episode 也同样接收。
 4. 同一历史 genesis 派生的多个实验及其 replay 高度相关；
    按 genesis/任务家族分组切分，避免随机逐步划分导致 train/test 泄漏。
 5. Hosted Agent 的精确模型版本未暴露时保留 unknown，不反推或猜测版本。
+
+## 10. V2 的可审计纠错比较约定
+
+本节是新代码的执行约定，不是对前述 12 条历史轨迹的重新标注。
+
+### 模式理由
+
+新 `recover` proposal 必须包含非空 `mode_reason`，解释为什么需要改
+action、condition 或两者。已有 `diagnosis` 解释故障，`recovery_goal`
+解释目标；三者不能混为一个标签。理由仍是 Agent 判断，不是最优模式的证明。
+Agent-only 的固定动作接口不参与三模式比较。
+
+### 条件变更用途
+
+每个 WAM 请求和 `wam_prediction` 都含：
+
+```json
+{
+  "condition_change": {
+    "before": "Grasp the block",
+    "after": "Keep holding the block and carry it above the bin",
+    "changed": true,
+    "kind": "subgoal_progression",
+    "reason": "The grasp stage is complete; begin transport."
+  },
+  "attempt": null
+}
+```
+
+- `initial` / `unchanged`：自动记录，reason 为 null。
+- `subgoal_progression`：正常子目标推进，必须给出理由。
+- `recovery_rewrite`：纠错改写，必须给出理由。正式 Condition/Joint
+  使用 proposal 的 `mode_reason` 作为理由，并关联 attempt。
+- `condition_changed` 事件只在文本变化时产生，首次条件也包括在内。
+  统计纠错次数时必须排除 `initial`，并区分用途；普通 `wam` 改写的
+  attempt 为 null，不会自动变成正式 Recovery attempt。
+
+### 统一窗口与 Action 条件锁
+
+三种模式都执行固定 **16 步 WAM** 后才允许局部评估：
+
+| 模式 | 先执行局部控制 | 评估窗口条件 |
+|---|---|---|
+| Action | 是 | 严格等于本次纠错前的条件 |
+| Condition | 否 | 改写后的条件 |
+| Joint | 是 | 动作修复之后使用改写后的条件 |
+
+新 Condition/Joint 必须真的改变条件；传入的 `wam_execute_steps` 如存在
+必须为 16。窗口由 worker 内部执行，不能通过外部 `wam` 请求插入另一条
+指令。Action 组只在比较窗口内锁定条件；评估后可以有明确标注的子目标变化。
+
+`recovery_evaluation_completed.evaluation` 示例：
+
+```json
+{
+  "condition_before": "Grasp the block",
+  "condition": "Grasp the block",
+  "start_step": 100,
+  "end_step": 116,
+  "requested_steps": 16,
+  "executed_steps": 16,
+  "complete": true,
+  "interrupted_by": null
+}
+```
+
+这仅是 schema 示例，不是一条新采集的真实轨迹。窗口实际动作对应
+101–116 步。环境提前终止时 `executed_steps` 可以为 0–15，
+`complete=false`，并保留 `native_success`、`native_horizon` 或
+`native_termination` 中断原因；不会补步、reset 或伪造局部评估。
+若恰好执行满 16 步时终止，窗口完整，但不会再接受 Agent 的评估请求。
+
+`recovery_attempt_completed` 和 session/manifest 也保留窗口对象。
+新 `recovery_assessment.assessment` 额外包含 `evaluation_steps`、
+`evaluation_end_step`、`label_source="agent_assessment"`，绑定统一的
+观察窗口。窗口完成、记录校验通过都不代表任务成功。
+
+校验器对 V2 输出 `comparison_contract_verified`、
+`complete_evaluation_windows`、`incomplete_evaluation_windows`。
+V1 的 `comparison_contract_verified=null`：缺少新约定不是负例，
+也不能把旧 Action/Joint 的不同观察窗口当作统一比较。训练和统计时按
+protocol_version 分组，并保留模式理由、条件用途与窗口完整性。
