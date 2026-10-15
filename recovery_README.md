@@ -30,10 +30,24 @@ For **VS Code Remote Tunnels** (including vscode.dev) or Remote SSH:
    bind address to `0.0.0.0` or expose the port publicly.
 
 For desktop VS Code versions with the integrated browser's remote proxy support,
-another option is **Browser: Open Integrated Browser** with
-`workbench.browser.enableRemoteProxy=true` and browser storage set to `workspace`
-or `ephemeral`, not `global`. Its remote indicator confirms the browser reaches
-the remote machine's localhost.
+use these workspace settings:
+
+```json
+{
+  "workbench.browser.enableRemoteProxy": true,
+  "workbench.browser.dataStorage": "workspace",
+  "workbench.browser.openLocalhostLinks": true
+}
+```
+
+Run **Browser: Open Integrated Browser** and enter
+`http://127.0.0.1:8767/recovery`. Open a new browser tab after changing the
+settings. The remote indicator in its address bar confirms it reaches the remote
+machine's localhost over the existing VS Code connection, without a separate
+forwarded port or the standalone public Dev Tunnel URL. Do not use an external
+browser or the older **Simple Browser** command for this route. Globally scoped
+browser storage and `file://` URLs are not remotely proxied. This still requires
+the existing VS Code remote connection to be healthy.
 
 The dashboard has no authentication and is not intended to be exposed directly
 to the public internet. Keep it bound to localhost.
