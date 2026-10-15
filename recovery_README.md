@@ -119,9 +119,7 @@ executed after a native terminal goal. Controller-only completion and successful
 WAM fallback after failed recovery are not labeled accepted recovery chains.
 Use `verify_recovery_episode.py RUN/recovery` to verify the versioned contract.
 
-## Read-only experiment dashboard
-
-### Pure-WAM instruction comparisons
+## Pure-WAM instruction comparisons
 
 For non-intervening instruction comparisons, the existing V2 recording worker can
 be used with only `wam`, `status`/`context`, and `finalize` operations. Do not call
@@ -140,6 +138,8 @@ Keep the simulator seed, historical genesis, goal checker, horizon and sampler
 settings fixed too. Matching seeds does not guarantee bitwise GPU determinism.
 One run per instruction gives descriptive trajectories, not statistical failure
 probabilities or proof that every difference is caused by language alone.
+
+## Read-only experiment dashboard
 
 Start the existing dashboard server without launching a model or simulator:
 
