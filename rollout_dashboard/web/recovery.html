@@ -35,6 +35,9 @@
           <div class="player-column">
             <video id="episode-video" controls preload="metadata" playsinline aria-label="完整实际执行视频"></video>
             <div class="player-caption"><span><i class="dot actual"></i>ACTUAL · 手腕相机完整录像</span><span id="video-duration"></span></div>
+            <label for="video-quality" class="small-label">播放画质（帧率、时长不变）</label>
+            <select id="video-quality"><option value="preview">流畅预览 · 默认低码率</option><option value="original">原始录像 · 高清 / 较慢</option></select>
+            <p id="video-quality-note" class="muted"></p>
             <div id="phase-track" class="phase-track" aria-label="按阶段跳转"></div>
             <div class="legend"><span><i class="dot wam"></i>WAM 执行</span><span><i class="dot correction"></i>Agent 修正</span><span><i class="dot continuation"></i>WAM 续跑</span></div>
             <div id="timeline" class="timeline"></div>
@@ -45,6 +48,8 @@
             <label for="camera-select" class="small-label">观测视角</label>
             <select id="camera-select"></select>
             <img id="observation-image" class="observation" alt="当前控制步的真实相机观测">
+            <p class="muted"><span id="observation-step"></span> · <a id="original-observation" target="_blank" rel="noopener">原始图像</a></p>
+            <p class="muted">播放时暂停加载观测图，暂停或定位后更新；状态数值仍随视频变化。</p>
             <div class="state-label">MEASURED EE POSITION · ROBOT ROOT</div>
             <div id="ee-position" class="coordinates"></div>
             <div class="state-row"><span>夹爪位置（0 开 / 1 闭）</span><strong id="gripper"></strong></div>
@@ -70,7 +75,7 @@
             <div class="response">
               <div class="card-label"><span>ACTUAL RESPONSE</span><span id="local-outcome" class="badge"></span></div>
               <h3>修正前后对比 <small>实际相机帧</small></h3>
-              <div class="comparison"><figure><img id="before-image" alt="修正前的真实观测"><figcaption id="before-caption"></figcaption></figure><figure><img id="after-image" alt="修正后的真实观测"><figcaption id="after-caption"></figcaption></figure></div>
+              <div class="comparison"><figure><img id="before-image" loading="lazy" alt="修正前的真实观测预览"><figcaption id="before-caption"></figcaption></figure><figure><img id="after-image" loading="lazy" alt="修正后的真实观测预览"><figcaption id="after-caption"></figcaption></figure></div>
               <table class="pose-table"><thead><tr><th>位置 / m</th><th>X</th><th>Y</th><th>Z</th></tr></thead><tbody id="pose-table"></tbody></table>
               <div class="chart-heading"><span>每步末端跟踪误差</span><span>mm · 目标 vs. 实测</span></div>
               <svg id="error-chart" viewBox="0 0 600 135" role="img" aria-label="修正过程中每一步的末端位置跟踪误差"></svg>
@@ -85,7 +90,7 @@
         <div class="section-heading"><div><p class="eyebrow">03 / WAM PREDICTIONS</p><h2>预测不是实际执行。</h2><p class="muted">逐个 Action Chunk 查看输入条件、预测未来与实际执行长度。</p></div><label>选择 Chunk <select id="segment-select"></select></label></div>
         <div id="prediction-empty" class="message" hidden>没有已完成的 WAM prediction 记录。</div>
         <div id="prediction-content">
-          <div class="prediction-grid"><figure><img id="prediction-input" alt="WAM 推理时的实际多相机输入"><figcaption>ACTUAL INPUT · 模型调用时的真实观测</figcaption></figure><figure><video id="prediction-video" controls preload="metadata" playsinline aria-label="模型预测未来，非实际观测"></video><figcaption class="prediction-warning">PREDICTED FUTURE · 不能作为实际成功证据</figcaption></figure></div>
+          <div class="prediction-grid"><figure><img id="prediction-input" loading="lazy" alt="WAM 推理时的实际多相机输入预览"><figcaption>ACTUAL INPUT · 模型调用时的真实观测预览</figcaption></figure><figure><video id="prediction-video" controls preload="none" playsinline aria-label="模型预测未来，非实际观测"></video><figcaption class="prediction-warning">PREDICTED FUTURE · 不能作为实际成功证据</figcaption></figure></div>
           <div class="segment-detail"><span id="segment-stats"></span><button id="segment-jump" class="button" type="button">跳转至实际执行</button></div><pre id="prompt" class="prompt"></pre>
         </div>
       </section>

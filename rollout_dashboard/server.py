@@ -14,8 +14,10 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 if __package__:
+    from .preview import media_preview
     from .recovery import DOWNLOADS, episode_file, load_episode, summary
 else:
+    from preview import media_preview
     from recovery import DOWNLOADS, episode_file, load_episode, summary
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -493,13 +495,22 @@ def create_app(diagnostics_dir: Path | None = None) -> FastAPI:
         return FileResponse(path, media_type="video/mp4", headers={"Cache-Control": "public, max-age=3600"})
 
     @app.get("/media/{run_id}/{asset_path:path}")
-    def media(run_id: str, asset_path: str):
+    def media(run_id: str, asset_path: str, preview: bool = False):
         run_dir = resolve_run(run_id)
         path = (run_dir / asset_path).resolve()
         if run_dir not in path.parents or path.suffix.lower() not in {".png", ".jpg", ".jpeg", ".mp4"}:
             raise HTTPException(404, "Asset not found")
         if not path.is_file():
             raise HTTPException(404, "Asset not found")
+        if preview:
+            if not (run_dir / "recovery/manifest.json").is_file():
+                raise HTTPException(404, "Previews require a finalized recovery episode")
+            try:
+                path = media_preview(run_dir, path)
+            except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as error:
+                logging.exception("Cannot generate media preview for %s", run_id)
+                raise HTTPException(500, "Preview generation failed; select original video quality") from error
+            return FileResponse(path, headers={"Cache-Control": "private, max-age=3600"})
         return FileResponse(path, headers={"Cache-Control": "no-store"})
 
     return app

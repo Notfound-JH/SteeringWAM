@@ -33,6 +33,28 @@ async function getJSON(url) {
   }
   return response.json();
 }
+function previewURL(url) {
+  const preview = new URL(url, window.location.href);
+  preview.searchParams.set("preview", "true");
+  return preview.pathname + preview.search;
+}
+function setVideoQuality(preservePosition = false) {
+  if (!episode) return;
+  const video = $("episode-video");
+  const time = preservePosition ? video.currentTime : 0;
+  const resume = preservePosition && !video.paused;
+  const preview = $("video-quality").value === "preview";
+  video.pause();
+  video.onloadedmetadata = () => {
+    video.currentTime = Math.min(time, video.duration);
+    if (resume) video.play().catch((error) => message(`播放未恢复：${error.message}`, true));
+  };
+  video.preload = preview ? "auto" : "metadata";
+  video.src = preview ? previewURL(episode.video) : episode.video;
+  $("video-quality-note").textContent = preview
+    ? "显示压缩浏览副本，最高 640px 宽；原始录像和训练数据未修改。"
+    : "显示原始录像，需要更多传输带宽。";
+}
 function setStep(step, seek = false) {
   if (!episode) return;
   step = Math.max(0, Math.min(episode.steps, Math.round(step)));
@@ -43,7 +65,7 @@ function setStep(step, seek = false) {
   $("step-slider").value = step;
   $("current-step").textContent = `${step} / ${episode.steps}`;
   $("current-source").textContent = sourceNames[observation.source] || observation.source;
-  updateCamera();
+  if ($("episode-video").paused || seek) updateCamera();
   $("ee-position").replaceChildren(...["X", "Y", "Z"].map((axis, index) => {
     const cell = node("div", undefined, "coordinate");
     cell.append(node("span", axis), document.createTextNode(fixed(observation.robot.ee_pos?.[index])));
@@ -61,11 +83,16 @@ function updateCamera() {
   const url = episode.observations[activeStep].frames[$("camera-select").value];
   if (!url) {
     $("observation-image").hidden = true;
+    $("original-observation").hidden = true;
+    $("observation-step").textContent = `图像 Step ${activeStep} · 缺失`;
     message("此控制步缺少所选相机的实际观测。", true);
     return;
   }
   $("observation-image").hidden = false;
-  $("observation-image").src = url;
+  $("original-observation").hidden = false;
+  $("observation-image").src = previewURL(url);
+  $("original-observation").href = url;
+  $("observation-step").textContent = `图像 Step ${activeStep} · 浏览预览`;
 }
 function drawChart(tracking) {
   const svg = $("error-chart");
@@ -118,8 +145,8 @@ function renderAttempt() {
   const camera = "over_shoulder_left_camera";
   const before = episode.observations[attempt.start].frames;
   const after = episode.observations[attempt.end].frames;
-  $("before-image").src = before[camera] || before.wrist_cam;
-  $("after-image").src = after[camera] || after.wrist_cam;
+  $("before-image").src = previewURL(before[camera] || before.wrist_cam);
+  $("after-image").src = previewURL(after[camera] || after.wrist_cam);
   $("before-caption").textContent = `BEFORE · Step ${attempt.start}`;
   $("after-caption").textContent = `AFTER · Step ${attempt.end} · ${attempt.executed_steps} 实际步`;
   const last = attempt.tracking.at(-1);
@@ -136,7 +163,7 @@ function renderSegment() {
   $("prediction-empty").hidden = Boolean(selectedSegment);
   $("prediction-content").hidden = !selectedSegment;
   if (!selectedSegment) return;
-  $("prediction-input").src = selectedSegment.input;
+  $("prediction-input").src = previewURL(selectedSegment.input);
   $("prediction-video").src = selectedSegment.prediction;
   const change = selectedSegment.condition_change;
   $("prompt").textContent = [
@@ -171,7 +198,7 @@ function render() {
   $("agent-provenance").textContent = `${inputMode} · Agent 模型版本：${episode.agent_model_version || "未记录精确版本"}`;
   $("agent-provenance").className = assisted ? "failure-note" : "muted";
   $("video-duration").textContent = `${fixed(1 / episode.dt, 0)} FPS · ${fixed(episode.duration, 2)} s`;
-  $("episode-video").src = episode.video;
+  setVideoQuality();
   $("step-slider").max = episode.steps;
   $("camera-select").replaceChildren(...Object.keys(episode.observations[0].frames).map((camera) => {
     const option = node("option", cameraNames[camera] || camera); option.value = camera; return option;
@@ -250,17 +277,25 @@ async function refresh() {
 $("refresh").addEventListener("click", refresh);
 $("episode-select").addEventListener("change", refresh);
 $("camera-select").addEventListener("change", updateCamera);
+$("video-quality").addEventListener("change", () => setVideoQuality(true));
 $("attempt-select").addEventListener("change", renderAttempt);
 $("segment-select").addEventListener("change", renderSegment);
 $("step-slider").addEventListener("input", (event) => setStep(Number(event.target.value), true));
 $("episode-video").addEventListener("timeupdate", () => {
   if (episode) setStep(Math.floor(($("episode-video").currentTime + 0.00001) / episode.dt));
 });
+for (const event of ["pause", "seeked"]) {
+  $("episode-video").addEventListener(event, () => {
+    if (!episode) return;
+    setStep(Math.floor(($("episode-video").currentTime + 0.00001) / episode.dt));
+    updateCamera();
+  });
+}
 $("segment-jump").addEventListener("click", () => {
   if (selectedSegment) { setStep(selectedSegment.start, true); $("playback").scrollIntoView(); }
 });
 for (const video of document.querySelectorAll("video")) {
-  video.addEventListener("error", () => message("视频无法加载。请检查媒体文件是否存在、浏览器是否支持该视频编码。", true));
+  video.addEventListener("error", () => message("视频无法加载；若流畅预览生成失败，可切换原始录像。请检查媒体文件与浏览器编码支持。", true));
 }
 for (const image of document.querySelectorAll("img")) {
   image.addEventListener("error", () => message("实际观测图像加载失败，请检查实验文件是否完整。", true));

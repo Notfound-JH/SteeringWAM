@@ -120,6 +120,25 @@ rewrite source recordings. Treat the resulting HTML as private experiment data.
 
 ### Online dashboard capabilities
 
+Playback defaults to a low-bitrate, maximum-640px-wide H.264 preview with MP4
+metadata at the front (`faststart`). Frame timing is preserved; the quality
+selector can switch to the untouched original at the same playback position.
+Original-video downloads and offline exports still use the original recording.
+New recordings also put their MP4 metadata at the front.
+
+Observation images use small JPEG previews. During playback, robot-state values
+continue updating but the adjacent image stays at its visibly labeled step;
+pause or seek to load the current image. The original image remains available
+through its link. Below-fold comparison images load lazily, and predicted videos
+do not preload and compete with the main video.
+
+Disposable previews are generated only for finalized recovery episodes and
+cached under each run's `.dashboard_cache/`, outside the recorded `recovery/`
+artifacts. Source path/size/mtime and the encoding profile identify cache entries.
+HTTP byte ranges and private browser caching are supported; failed conversions
+are explicit errors rather than silent success/fallback. Preview caches are not
+training data and are excluded from the existing Azure backup's hidden paths.
+
 The online page reads finalized episodes from `diagnostics/*/recovery/manifest.json`.
 It provides:
 
@@ -134,8 +153,8 @@ It provides:
   input mode or exact Agent model version was not recorded.
 - Allowlisted downloads of Manifest, JSONL, HDF5, verification and video.
 
-The new page does not send robot commands or execute displayed code. It does not
-encode new videos, rewrite episode data, or open the simulator. Corrupt event
+The page does not send robot commands or execute displayed code. It can generate
+disposable viewing previews, but never rewrites episode recordings or opens the simulator. Corrupt event
 logs and missing files are visible errors rather than success-shaped defaults.
 Existing rollout and sampling pages remain available; the old home page links
 to Recovery Lab. A specific episode can be bookmarked with

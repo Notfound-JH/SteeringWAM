@@ -75,7 +75,8 @@ def _encode_video(frames: list[Path], destination: Path, fps: float) -> dict[str
     subprocess.run(
         [
             executable, "-v", "error", "-n", "-framerate", str(fps),
-            "-i", str(frame_dir / "%06d.png"), "-pix_fmt", "yuv420p", str(destination),
+            "-i", str(frame_dir / "%06d.png"), "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart", str(destination),
         ],
         check=True,
     )
