@@ -1,5 +1,6 @@
 """Read-only privileged geometry measurement; never commands the simulator."""
 
+import argparse
 import json
 from pathlib import Path
 
@@ -8,7 +9,11 @@ from pxr import Usd, UsdGeom
 from scipy.spatial.transform import Rotation
 
 root = Path(__file__).resolve().parent
-context = json.loads((root / "judge_02_input_response.json").read_text())
+parser = argparse.ArgumentParser()
+parser.add_argument("--context", type=Path, default=root / "judge_02_input_response.json")
+parser.add_argument("--output", type=Path, default=root / "handle_geometry_step0112.json")
+args = parser.parse_args()
+context = json.loads(args.context.read_text())
 stage = Usd.Stage.Open(str(root.parents[1] / "RoboLab/assets/scenes/tools_picking.usda"))
 cache = UsdGeom.XformCache()
 measurements = {}
@@ -44,5 +49,5 @@ result = {
     "privileged_state_assisted": True,
     "objects": measurements,
 }
-(root / "handle_geometry_step0112.json").write_text(json.dumps(result, indent=2) + "\n")
+args.output.write_text(json.dumps(result, indent=2) + "\n")
 print(json.dumps(result, indent=2))

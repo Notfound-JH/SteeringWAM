@@ -61,6 +61,8 @@ else:
     (ROOT / f"{args.name}_submitted.json").write_text(json.dumps(decision, indent=2) + "\n")
     if args.operation == "recover":
         state, robot = context["state"], context["robot_state"]
+        if state["status"] != "ready_recovery":
+            raise RuntimeError(f"Cannot recover from {state['status']}")
         limits = SafetyLimits(**state["safety_limits"])
         proposal = validate_recovery_proposal(
             decision, state["request_id"], state["attempts"], robot["ee_pos"], limits,
