@@ -52,7 +52,7 @@ while True:
             "subgoal": "Acquire, extract and place all four hammers without resetting",
             "evidence": evidence,
             "task_progress": {
-                "target_object": "blue_hammer",
+                "target_object": "blue_hammer" if initial else "all_remaining_hammers",
                 "expected_stage": "hammer acquisition followed by extraction and table placement",
                 "observed_stage": "programmatically observed WAM response; semantic alignment unestablished",
                 "target_alignment": "uncertain", "stage_alignment": "uncertain",
