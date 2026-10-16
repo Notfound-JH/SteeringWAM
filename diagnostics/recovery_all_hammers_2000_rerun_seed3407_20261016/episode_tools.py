@@ -9,13 +9,14 @@ import sys
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT.parents[1]))
 from recovery_client import request
-from recovery_protocol import SafetyLimits, compile_program, validate_recovery_proposal
+from recovery_protocol import SafetyLimits, compile_program, validate_condition_change, validate_recovery_proposal
 
 parser = argparse.ArgumentParser()
 parser.add_argument("operation", choices=["context", "wam", "review_progress", "recover", "assess", "evaluate_condition", "finalize"])
 parser.add_argument("name")
 parser.add_argument("--decision", type=Path)
 parser.add_argument("--judge-id")
+parser.add_argument("--judge-execution-mode", choices=["sync", "background"], default="sync")
 parser.add_argument("--snapshot", type=Path)
 parser.add_argument("--serialize-evidence-lists", action="store_true")
 parser.add_argument("--root", type=Path, default=ROOT)
@@ -47,7 +48,7 @@ else:
                 adapted.append(label)
         decision["agent_id"] = args.judge_id
         (ROOT / f"{args.name}_provenance.json").write_text(json.dumps({
-            "agent_type": "general-purpose", "execution_mode": "sync",
+            "agent_type": "general-purpose", "execution_mode": args.judge_execution_mode,
             "context_id": args.judge_id,
             "input": args.snapshot.name,
             "input_sha256": hashlib.sha256(args.snapshot.read_bytes()).hexdigest(),
@@ -59,6 +60,15 @@ else:
         }, indent=2) + "\n")
     decision.update(protocol_version=context["state"]["protocol_version"], request_id=context["state"]["request_id"])
     (ROOT / f"{args.name}_submitted.json").write_text(json.dumps(decision, indent=2) + "\n")
+    if args.operation == "wam":
+        state = context["state"]
+        if state["status"] != "ready_wam":
+            raise RuntimeError(f"Cannot execute WAM from {state['status']}")
+        validate_condition_change(
+            state.get("condition"), decision["condition"],
+            kind=decision.get("condition_change_kind"),
+            reason=decision.get("condition_change_reason"),
+        )
     if args.operation == "recover":
         state, robot = context["state"], context["robot_state"]
         if state["status"] != "ready_recovery":
