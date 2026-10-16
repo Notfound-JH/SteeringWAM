@@ -752,6 +752,11 @@ writing a proposal. All operations below use the same socket/environment:
    up to three executed correction attempts across the episode.
 5. On local success, `wam ...`: resume WAM from the corrected state.
 6. `finalize --reason "..."`: export both successful and failed episodes.
+   An early stop may finalize the last `awaiting_progress_check` boundary without
+   inventing a progress review. Verification reports this as
+   `unreviewed_final_wam_chunks`; earlier nonterminal chunks still require their
+   actual reviews. Early stopping does not imply task success or reaching the
+   configured step budget.
 
 New sessions use `"protocol_version": "wam-recovery-v2"` and the current
 `"request_id"` returned by the previous tool. Failure JSON also contains

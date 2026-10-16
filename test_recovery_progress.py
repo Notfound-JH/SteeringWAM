@@ -136,6 +136,41 @@ def test_chunk_progress_review_cannot_be_skipped(worker):
     assert verify_contract(worker)["progress_reviews"] == 2
 
 
+def test_user_stop_can_finalize_a_pending_final_progress_review(worker):
+    worker.recover(proposal(worker))
+    assess(worker)
+    wam(worker)
+    with pytest.raises(ValueError, match="exactly one progress review"):
+        verify_contract(worker)
+    worker._event(
+        "session_finalized", reason="User requested early stop", final_state=copy.deepcopy(worker.state)
+    )
+    result = verify_contract(worker)
+    assert result["unreviewed_final_wam_chunks"] == 1
+    assert not worker._acceptance_success()
+    incomplete = [
+        e for e in events(worker)
+        if e["event_type"] != "task_progress_review"
+    ]
+    with pytest.raises(ValueError, match="exactly one progress review"):
+        verify_contract(worker, incomplete)
+
+
+@pytest.mark.parametrize("tamper", ["step", "status"])
+def test_pending_review_exception_requires_the_exact_finalized_boundary(worker, tamper):
+    worker.recover(proposal(worker))
+    assess(worker)
+    wam(worker)
+    worker._event(
+        "session_finalized", reason="User requested early stop", final_state=copy.deepcopy(worker.state)
+    )
+    es = copy.deepcopy(events(worker))
+    final = next(e for e in es if e["event_type"] == "session_finalized")
+    final["final_state"][tamper] = worker.step - 1 if tamper == "step" else "ready_wam"
+    with pytest.raises(ValueError, match="exactly one progress review"):
+        verify_contract(worker, es)
+
+
 @pytest.mark.parametrize("overrides,match", [
     ({"agent_id": "corrector"}, "different agent context"),
     ({"agent_role": "correction_agent"}, "agent_role"),

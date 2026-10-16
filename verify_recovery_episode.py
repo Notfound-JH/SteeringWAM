@@ -295,6 +295,8 @@ def verify_progress_contract(manifest: dict, events: list[dict], actual: list[di
     if len(proposals) != manifest["attempts"] or manifest["recovery_evaluation_steps"] is not None:
         raise ValueError("Invalid V3 attempt count or evaluation policy")
     reviews = [e for e in events if e["event_type"] == "task_progress_review"]
+    finalizations = [e for e in events if e["event_type"] == "session_finalized"]
+    unreviewed_final_chunks = 0
     reviewed = set()
     for prediction in (e for e in events if e["event_type"] == "wam_prediction"):
         if prediction["source"] == "recovery_evaluation":
@@ -305,7 +307,17 @@ def verify_progress_contract(manifest: dict, events: list[dict], actual: list[di
         next_action = next((e["event_index"] for e in actual if e["episode_step"] > endpoint), len(events))
         checks = [e for e in reviews if last["event_index"] < e["event_index"] < next_action]
         terminal = last["events"]["native_terminated"] or last["events"]["native_truncated"]
-        if len(checks) != (0 if terminal else 1):
+        stopped_pending_review = (
+            not checks and not terminal and endpoint == len(actual) == manifest["step"]
+            and any(
+                e["episode_step"] == endpoint and e["event_index"] > last["event_index"]
+                and e["final_state"]["status"] == "awaiting_progress_check"
+                and e["final_state"]["step"] == endpoint
+                for e in finalizations
+            )
+        )
+        unreviewed_final_chunks += stopped_pending_review
+        if len(checks) != (0 if terminal or stopped_pending_review else 1):
             raise ValueError("Each nonterminal WAM chunk requires exactly one progress review")
         for check in checks:
             if check["episode_step"] != endpoint:
@@ -439,6 +451,7 @@ def verify_progress_contract(manifest: dict, events: list[dict], actual: list[di
     return {
         "comparison_contract_verified": None, "progress_contract_verified": True,
         "progress_reviews": len(reviews), "recovery_stages": stage_count,
+        "unreviewed_final_wam_chunks": unreviewed_final_chunks, "recovery_stages": stage_count,
         "complete_recovery_stages": complete_count, "distinct_judge_contexts": len(judges),
     }
 
