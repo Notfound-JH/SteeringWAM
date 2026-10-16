@@ -19,6 +19,22 @@ CORRECTION_MODES = {"condition", "action", "joint"}
 ALLOWED_OPERATIONS = {"move_ee", "hold", "gripper"}
 
 
+def episode_duration_for_steps(steps: int, step_dt: float) -> float:
+    if type(steps) is not int or steps < 1:
+        raise ValueError("Episode steps must be a positive integer")
+    if not math.isfinite(step_dt) or step_dt <= 0:
+        raise ValueError("Control-step duration must be positive and finite")
+    seconds = steps * step_dt
+    if not math.isfinite(seconds):
+        raise ValueError("Episode duration must be finite")
+    # Isaac Lab uses ceil(seconds / step_dt); avoid an extra step from rounding.
+    if math.ceil(seconds / step_dt) > steps:
+        seconds = math.nextafter(seconds, 0.0)
+    if math.ceil(seconds / step_dt) != steps:
+        raise ValueError("Cannot represent the requested native control-step horizon")
+    return seconds
+
+
 @dataclass(frozen=True)
 class SafetyLimits:
     workspace_min: tuple[float, float, float] = (0.15, -0.65, 0.02)

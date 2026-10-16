@@ -27,6 +27,10 @@ episodes used that single-object task and cannot be presented as full-task
 comparisons. Preserve their original prompts, native checker, and recordings.
 The 600-step override in examples below remains an experiment budget; hitting
 that limit without all four placements is a timeout, not completion.
+Set `RECOVERY_MAX_STEPS=2000` for a2000-control-step experiment. Duration
+conversion accounts for Isaac Lab's ceiling rule so floating-point rounding
+cannot silently turn that budget into2001 steps; initialization verifies the
+native horizon exactly before any execution.
 
 ### Five observed-subgoal trials (2026-10-15)
 

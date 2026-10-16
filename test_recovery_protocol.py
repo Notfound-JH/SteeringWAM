@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import pytest
 
@@ -5,6 +7,7 @@ from recovery_protocol import (
     PROTOCOL_VERSION,
     SafetyLimits,
     compile_program,
+    episode_duration_for_steps,
     parse_control_code,
     validate_assessment,
     validate_failure_decision,
@@ -14,6 +17,22 @@ from recovery_protocol import (
 
 CURRENT_POSITION = [0.45, 0.0, 0.35]
 CURRENT_QUATERNION = [1.0, 0.0, 0.0, 0.0]
+
+
+@pytest.mark.parametrize("steps,step_dt", [
+    (1, 1 / 15), (16, 1 / 15), (600, 1 / 15),
+    (2000, 1 / 15), (2000, 1 / 30), (2000, 0.1),
+])
+def test_exact_native_control_step_horizon(steps, step_dt):
+    seconds = episode_duration_for_steps(steps, step_dt)
+    assert math.ceil(seconds / step_dt) == steps
+    assert math.isclose(seconds, steps * step_dt, rel_tol=1e-15)
+
+
+@pytest.mark.parametrize("steps,step_dt", [(0, 1 / 15), (True, 1 / 15), (2000, 0), (2000, float("inf"))])
+def test_reject_invalid_control_step_horizon(steps, step_dt):
+    with pytest.raises(ValueError):
+        episode_duration_for_steps(steps, step_dt)
 
 
 def proposal(**overrides):

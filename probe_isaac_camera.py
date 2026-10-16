@@ -240,11 +240,14 @@ try:
         scene_config = task_envs[0]
         if args.recovery_max_steps is not None:
             from robolab.core.environments.config import parse_env_cfg
+            from recovery_protocol import episode_duration_for_steps
 
             scene_config = parse_env_cfg(
                 scene_config, device="cpu", use_fabric=True, num_envs=1, seed=args.seed,
             )
-            scene_config.episode_length_s = args.recovery_max_steps * scene_config.sim.dt * scene_config.decimation
+            scene_config.episode_length_s = episode_duration_for_steps(
+                args.recovery_max_steps, scene_config.sim.dt * scene_config.decimation,
+            )
         env, env_cfg = create_env(
             scene_config, device="cpu", use_fabric=True, num_envs=1,
             seed=args.seed, rendering_mode=args.rendering_mode,
