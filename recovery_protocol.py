@@ -45,13 +45,26 @@ class SafetyLimits:
     max_operation_steps: int = 16
     max_total_steps: int = 48
     max_wam_execute_steps: int = 16
-    max_attempts: int = 3
+    max_attempts: int | None = 3
     max_rotation_per_segment_rad: float = math.pi / 4
     max_rotation_per_step_rad: float = 0.12
     max_joint_step_rad: float = 0.12
 
+    def __post_init__(self) -> None:
+        if self.max_attempts is not None:
+            _bounded_int(self.max_attempts, 1, 5, "max_attempts")
+
+    def allows_attempt(self, completed_attempts: int) -> bool:
+        return self.max_attempts is None or completed_attempts < self.max_attempts
+
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+def parse_recovery_attempt_limit(value: str) -> int | None:
+    if value == "unlimited":
+        return None
+    return _bounded_int(int(value), 1, 5, "recovery attempt limit")
 
 
 def _finite_vector(value: Any, size: int, name: str) -> np.ndarray:
@@ -216,7 +229,7 @@ def validate_recovery_proposal(
         raise ValueError(f"protocol_version must be {protocol_version!r}")
     if value.get("request_id") != request_id:
         raise ValueError("Stale or incorrect request_id")
-    if attempt >= limits.max_attempts:
+    if not limits.allows_attempt(attempt):
         raise ValueError("Recovery attempt limit exhausted")
     mode = value.get("correction_mode")
     if mode not in CORRECTION_MODES:

@@ -151,6 +151,25 @@ def verify_contract(w, es=None):
     return verify_comparison_contract(w.state, es, actual)
 
 
+def test_unlimited_legacy_recovery_keeps_failed_attempts_available(worker):
+    worker.limits = SafetyLimits(max_attempts=None)
+    worker.state["safety_limits"] = worker.limits.to_dict()
+    for number in range(1, 8):
+        worker.recover(proposal(worker, "action"))
+        worker.assess({
+            "protocol_version": PROTOCOL_VERSION, "request_id": worker.state["request_id"],
+            "local_recovery_success": False, "evidence": "Grasp remains unestablished.",
+            "continuation_reason": "Another actual correction is still required.",
+        })
+        assert worker.attempts == number
+        assert worker.state["status"] == "ready_recovery"
+        assert not worker.state["budget_fallback"]
+    es = events(worker)
+    actual = [e for e in es if e["event_type"] == "actual_execution_response"]
+    assert verify_contract(worker)["comparison_contract_verified"]
+    assert verify_runtime_policy(worker.state, es, actual)["runtime_policy_verified"]
+
+
 @pytest.mark.parametrize("mode", ["action", "condition", "joint"])
 def test_every_mode_runs_same_window_and_assesses_afterwards(worker, mode):
     before = worker.state["condition"]

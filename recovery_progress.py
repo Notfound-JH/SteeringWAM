@@ -62,7 +62,7 @@ class ProgressRecoverySession(RecoverySession):
         self.state["status"] = "ready_wam"
         if review["needs_recovery"]:
             self.state["task_progress_recovered"] = False
-            if self.attempts < self.limits.max_attempts:
+            if self.limits.allows_attempt(self.attempts):
                 return super().mark_failure(review)
             self.state["failure"] = review
             self._event("failure_detected", failure=review, budget_exhausted=True,
@@ -76,7 +76,7 @@ class ProgressRecoverySession(RecoverySession):
         return self.review_progress({**decision, "needs_recovery": True})
 
     def _after_failed_recovery(self, reason: str) -> None:
-        if self.attempts < self.limits.max_attempts:
+        if self.limits.allows_attempt(self.attempts):
             self.state["status"] = "ready_recovery"
         elif self.state["budget_exhaustion_policy"] == "continue_wam":
             self.state["status"] = "ready_wam"

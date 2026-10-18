@@ -9,6 +9,7 @@ from recovery_protocol import (
     compile_program,
     episode_duration_for_steps,
     parse_control_code,
+    parse_recovery_attempt_limit,
     validate_assessment,
     validate_failure_decision,
     validate_recovery_proposal,
@@ -17,6 +18,30 @@ from recovery_protocol import (
 
 CURRENT_POSITION = [0.45, 0.0, 0.35]
 CURRENT_QUATERNION = [1.0, 0.0, 0.0, 0.0]
+
+
+@pytest.mark.parametrize("value,expected", [("1", 1), ("5", 5), ("unlimited", None)])
+def test_parse_recovery_attempt_limit(value, expected):
+    assert parse_recovery_attempt_limit(value) == expected
+
+
+@pytest.mark.parametrize("value", ["0", "-1", "6", "none", ""])
+def test_invalid_recovery_attempt_limit(value):
+    with pytest.raises(ValueError):
+        parse_recovery_attempt_limit(value)
+
+
+def test_unlimited_attempts_keep_program_safety_limits():
+    limits = SafetyLimits(max_attempts=None)
+    assert limits.allows_attempt(10000)
+    assert limits.to_dict()["max_attempts"] is None
+    validated = validate_recovery_proposal(proposal(), "token", 10000, CURRENT_POSITION, limits)
+    assert validated["correction_mode"] == "joint"
+    with pytest.raises(ValueError):
+        validate_recovery_proposal(
+            proposal(program=[{"op": "hold", "steps": 49}]),
+            "token", 10000, CURRENT_POSITION, limits,
+        )
 
 
 @pytest.mark.parametrize("steps,step_dt", [

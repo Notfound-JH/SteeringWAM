@@ -18,8 +18,19 @@ There is no required blue-first order: choosing another unfinished hammer can
 advance the full task. Reviews should consider completed/remaining hammers and
 actual acquisition, extraction, and placement progress. Placing one hammer is
 partial progress; only all four passing the native predicate is task success.
-Do not reset the environment or replenish the episode's correction budget
-between hammers.
+Do not reset the environment or silently replenish a configured finite
+episode correction budget between hammers.
+
+Set `RECOVERY_MAX_ATTEMPTS=unlimited` to remove the episode-wide attempt cap.
+The manifest stores this as `max_attempts: null`; correction and progress
+review remain available across all objects until native termination, the
+configured control-step horizon, or explicit user stop. Each Action/Joint
+program still has the same workspace, motion, rotation, binary-gripper and
+48-step safety limits. Independent Action/Condition stage judgments remain
+mandatory. Unlimited attempts never activate the failed-budget WAM fallback
+and do not mean unlimited episode duration or unrestricted controller code.
+The external Coding Agent must continue inspecting WAM chunks and responding
+to failures; this option does not itself create an autonomous supervisor.
 
 `ToolsPickingHammerTask` is a **single-blue-hammer diagnostic**, not the full
 four-hammer task. In particular, the three `recovery_hammer_condition_*_seed3407_20261015`

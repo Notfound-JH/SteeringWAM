@@ -9,6 +9,8 @@ import subprocess
 import sys
 import traceback
 
+from recovery_protocol import parse_recovery_attempt_limit
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--output-dir", required=True, type=Path)
@@ -21,7 +23,8 @@ parser.add_argument("--agent-control", action="store_true", help="Run an explici
 parser.add_argument("--verify-blue-placement", action="store_true", help="Require a fully outside, released, stationary blue hammer for 15 steps in addition to the original native goal.")
 parser.add_argument("--recovery-genesis", type=Path, help="Initialize a recovery episode from a historical scene before any WAM action.")
 parser.add_argument("--recovery-genesis-sha256", help="Required SHA-256 of the historical recovery genesis.")
-parser.add_argument("--recovery-max-attempts", type=int, choices=range(1, 6), default=3)
+parser.add_argument("--recovery-max-attempts", type=parse_recovery_attempt_limit, default=3,
+                    help="1..5 attempts, or 'unlimited'; per-program safety limits still apply.")
 parser.add_argument("--recovery-max-steps", type=int, help="Override the native recovery episode horizon in control steps.")
 parser.add_argument("--continue-wam-after-budget", action="store_true", help="Return to WAM after the last failed correction without relabeling it successful.")
 parser.add_argument("--task-progress-recovery", action="store_true", help="Use V3 condition-priority recovery and separate stage judgments.")

@@ -269,6 +269,42 @@ def test_regression_after_successful_final_attempt_uses_budget_fallback(worker):
     )["runtime_policy_verified"]
 
 
+@pytest.mark.parametrize("mode", ["condition", "action", "joint"])
+def test_unlimited_recovery_remains_available_after_seven_failures(worker, mode):
+    worker.limits = SafetyLimits(max_attempts=None)
+    worker.state.update(safety_limits=worker.limits.to_dict(), budget_exhaustion_policy="continue_wam")
+    for number in range(1, 8):
+        overrides = {} if mode == "action" else {"condition": f"Acquire the block, attempt {number}"}
+        worker.recover(proposal(worker, mode, **overrides))
+        assess(worker, False)
+        assert worker.attempts == number
+        assert worker.state["status"] == "ready_recovery"
+        assert not worker.state["budget_fallback"]
+    es = events(worker)
+    actual = [e for e in es if e["event_type"] == "actual_execution_response"]
+    assert verify_contract(worker)["progress_contract_verified"]
+    assert verify_runtime_policy(worker.state, es, actual)["runtime_policy_verified"]
+    assert not any(e["event_type"] == "control_returned_to_wam_after_budget" for e in es)
+
+
+def test_unlimited_recovery_handles_new_failure_after_handoff(worker):
+    worker.limits = SafetyLimits(max_attempts=None)
+    worker.state.update(safety_limits=worker.limits.to_dict())
+    for _ in range(6):
+        worker.recover(proposal(worker))
+        assess(worker, False)
+    worker.recover(proposal(worker))
+    assess(worker)
+    wam(worker)
+    review(worker, True)
+    assert worker.state["status"] == "ready_recovery"
+    worker.recover(proposal(worker))
+    assess(worker, False)
+    assert worker.attempts == 8 and worker.state["status"] == "ready_recovery"
+    assert not worker.state["budget_fallback"]
+    assert verify_contract(worker)["progress_contract_verified"]
+
+
 @pytest.mark.parametrize("tamper", ["review", "judge", "step", "source"])
 def test_verifier_rejects_timing_and_identity_tampering(worker, tamper):
     worker.recover(proposal(worker))

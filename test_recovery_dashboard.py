@@ -298,6 +298,13 @@ def test_offline_attempt_images_and_failure_labels_preserve_source(episode, tmp_
     assert all(p.read_bytes() == raw for p, raw in before.items())
 
 
+def test_unlimited_attempt_limit_is_preserved(episode):
+    run, manifest = episode
+    manifest["safety_limits"]["max_attempts"] = None
+    (run / "recovery/manifest.json").write_text(json.dumps(manifest))
+    assert load_episode(run)["attempt_limit"] is None
+
+
 def test_failed_budget_handoff_is_distinct_from_successful_continuation(episode):
     run, manifest = episode
     path = run / "recovery/events.jsonl"

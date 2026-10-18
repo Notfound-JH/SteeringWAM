@@ -475,7 +475,13 @@ def verify_runtime_policy(manifest: dict, events: list[dict], actual: list[dict]
     ):
         raise ValueError("Configured horizon did not terminate the environment")
     limit = manifest["safety_limits"]["max_attempts"]
-    if not 1 <= limit <= 5 or not 0 <= manifest["attempts"] <= limit:
+    attempts = manifest["attempts"]
+    if (
+        type(attempts) is not int or attempts < 0
+        or (limit is not None and (
+            type(limit) is not int or not 1 <= limit <= 5 or attempts > limit
+        ))
+    ):
         raise ValueError("Invalid or exceeded recovery attempt budget")
     handoffs = [e for e in events if e["event_type"] == "control_returned_to_wam_after_budget"]
     assessments = [e for e in events if e["event_type"] == "recovery_assessment"]

@@ -13,7 +13,7 @@ CONTINUE_WAM_AFTER_BUDGET="${CONTINUE_WAM_AFTER_BUDGET:-0}"
 TASK_PROGRESS_RECOVERY="${TASK_PROGRESS_RECOVERY:-0}"
 [[ "$AGENT_CONTROL" == 0 || "$AGENT_CONTROL" == 1 ]] || { echo "AGENT_CONTROL must be 0 or 1." >&2; exit 2; }
 [[ "$VERIFY_BLUE_PLACEMENT" == 0 || "$VERIFY_BLUE_PLACEMENT" == 1 ]] || { echo "VERIFY_BLUE_PLACEMENT must be 0 or 1." >&2; exit 2; }
-[[ "$RECOVERY_MAX_ATTEMPTS" =~ ^[1-5]$ ]] || { echo "RECOVERY_MAX_ATTEMPTS must be in 1..5." >&2; exit 2; }
+[[ "$RECOVERY_MAX_ATTEMPTS" == unlimited || "$RECOVERY_MAX_ATTEMPTS" =~ ^[1-5]$ ]] || { echo "RECOVERY_MAX_ATTEMPTS must be in 1..5 or unlimited." >&2; exit 2; }
 [[ -z "$RECOVERY_MAX_STEPS" || "$RECOVERY_MAX_STEPS" =~ ^[1-9][0-9]*$ ]] || { echo "RECOVERY_MAX_STEPS must be positive." >&2; exit 2; }
 [[ "$CONTINUE_WAM_AFTER_BUDGET" == 0 || "$CONTINUE_WAM_AFTER_BUDGET" == 1 ]] || { echo "CONTINUE_WAM_AFTER_BUDGET must be 0 or 1." >&2; exit 2; }
 [[ "$TASK_PROGRESS_RECOVERY" == 0 || "$TASK_PROGRESS_RECOVERY" == 1 ]] || { echo "TASK_PROGRESS_RECOVERY must be 0 or 1." >&2; exit 2; }
@@ -69,6 +69,7 @@ fi
 import json
 from pathlib import Path
 import sys
+from recovery_protocol import parse_recovery_attempt_limit
 run, task, socket, genesis, genesis_sha256, agent_control, attempts, max_steps, fallback, progress = sys.argv[1:]
 (Path(run) / "experiment.json").write_text(json.dumps({
     "format": "wam-agent-recovery-v1", "task": task, "socket": socket,
@@ -77,7 +78,7 @@ run, task, socket, genesis, genesis_sha256, agent_control, attempts, max_steps, 
     "agent": "external visual Coding Agent via recovery_client",
     "mock_execution": False, "reset_during_recovery": False,
     "initial_genesis": genesis or None, "initial_genesis_sha256": genesis_sha256 or None,
-    "recovery_max_attempts": int(attempts),
+    "recovery_max_attempts": parse_recovery_attempt_limit(attempts),
     "requested_max_episode_steps": int(max_steps) if max_steps else None,
     "budget_exhaustion_policy": "continue_wam" if fallback == "1" else "stop",
     "protocol_version": "wam-recovery-v3" if progress == "1" else "wam-recovery-v2",

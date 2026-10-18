@@ -625,7 +625,7 @@ class RecoverySession:
             raise ValueError(f"Failure can only be marked from ready_wam, not {self.state['status']}")
         if not self.step:
             raise ValueError("Failure requires actual WAM execution first")
-        if self.attempts >= self.limits.max_attempts:
+        if not self.limits.allows_attempt(self.attempts):
             raise ValueError("Episode recovery attempt limit exhausted")
         validated = validate_failure_decision(
             decision, self.state["request_id"], protocol_version=self.state["protocol_version"]
@@ -761,7 +761,7 @@ class RecoverySession:
         if assessment["local_recovery_success"]:
             self.state["status"] = "ready_wam"
             self._event("control_handed_back_to_wam", observation=self.state["latest_observation"])
-        elif self.attempts < self.limits.max_attempts:
+        elif self.limits.allows_attempt(self.attempts):
             self.state["status"] = "ready_recovery"
         elif self.state.get("budget_exhaustion_policy") == "continue_wam":
             self.state.update(status="ready_wam", budget_fallback=True)
