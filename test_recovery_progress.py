@@ -230,18 +230,21 @@ def test_failed_condition_allows_open_only_reacquisition(worker, target, stage):
 
 
 @pytest.mark.parametrize("change", ["no-history", "stale", "target", "stage", "alignment", "close", "no-open", "joint"])
-def test_reacquisition_cannot_bypass_priority_or_gripper_safety(worker, change):
+@pytest.mark.parametrize("target,stage", [("wrong", "correct"), ("correct", "wrong")])
+def test_reacquisition_cannot_bypass_priority_or_gripper_safety(worker, change, target, stage):
     if change != "no-history":
-        failed_condition(worker)
-    p = reacquisition(worker)
+        failed_condition(worker, target, stage)
+    p = reacquisition(
+        worker, task_progress=progress(target_alignment=target, stage_alignment=stage),
+    )
     if change == "stale":
         p["target_reacquisition_after_attempt"] += 1
     elif change == "target":
         p["task_progress"]["target_object"] = "another-block"
     elif change == "stage":
-        p["task_progress"]["stage_alignment"] = "wrong"
+        p["task_progress"]["stage_alignment"] = "wrong" if stage == "correct" else "correct"
     elif change == "alignment":
-        p["task_progress"]["target_alignment"] = "correct"
+        p["task_progress"]["target_alignment"] = "wrong" if target == "correct" else "correct"
     elif change == "close":
         p["control_code"] += "\ncontroller.gripper(value=1, steps=1)"
     elif change == "no-open":
