@@ -373,7 +373,7 @@ function render() {
     `${episode.attempts.length} / ${episode.attempt_limit === null ? "不限次数" : episode.attempt_limit}`;
   $("budget-policy").textContent = agentOnly ? "Agent-only 控制程序，不计 Recovery 尝试。" :
     `${episode.attempt_limit === null ? "全程允许纠错；单次控制安全限制保留" :
-      `预算耗尽：${episode.budget_exhaustion_policy === "continue_wam" ? "返回 WAM，不标作恢复成功" : "停止纠错"}`} · 总上限 ${episode.max_episode_steps ?? "沿用原任务"} 步`;
+      `预算耗尽：${episode.budget_exhaustion_policy === "continue_wam" ? "返回 WAM，不标作恢复成功" : "停止纠错"}`} · ${episode.max_episode_steps === null ? "总步数不限" : `总上限 ${episode.max_episode_steps ?? "沿用原任务"} 步`}`;
   const tracking = episode.attempts.flatMap((attempt) => attempt.tracking);
   $("tracking-error").textContent = tracking.length ? `${fixed(tracking.at(-1).error_mm, 2)} mm` : "—";
   document.querySelectorAll(".metric").forEach((metric) => {

@@ -21,6 +21,23 @@ def events(worker):
     return [json.loads(line) for line in worker.events_path.read_text().splitlines()]
 
 
+def test_unlimited_horizon_runtime_and_no_hidden_timeout(worker):
+    worker.state["max_episode_steps"] = None
+    worker.step = 2001
+    worker.env = SimpleNamespace(episode_length_buf=[2001])
+    worker._before_step("wam_initial")
+    actual = [{"episode_step": 2001, "action_source": "wam_initial",
+               "events": {"native_truncated": False}}]
+    manifest = {**worker.state, "step": 1}
+    assert verify_runtime_policy(manifest, [], actual)["runtime_policy_verified"]
+    actual[0]["events"]["native_truncated"] = True
+    with pytest.raises(ValueError, match="Native timeout"):
+        verify_runtime_policy(manifest, [], actual)
+    worker.state["native_terminated"] = True
+    with pytest.raises(ValueError, match="terminated"):
+        worker._before_step("wam_initial")
+
+
 @pytest.fixture
 def worker(tmp_path):
     w = RecoverySession.__new__(RecoverySession)

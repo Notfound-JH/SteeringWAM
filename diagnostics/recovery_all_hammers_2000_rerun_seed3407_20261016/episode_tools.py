@@ -64,6 +64,12 @@ else:
         state = context["state"]
         if state["status"] != "ready_wam":
             raise RuntimeError(f"Cannot execute WAM from {state['status']}")
+        for field in ("condition", "subgoal"):
+            if not isinstance(decision.get(field), str) or not decision[field].strip():
+                raise ValueError(f"{field} must be nonempty")
+        steps = decision.get("execute_steps", state["safety_limits"]["max_wam_execute_steps"])
+        if type(steps) is not int or not 1 <= steps <= state["safety_limits"]["max_wam_execute_steps"]:
+            raise ValueError("execute_steps exceeds the bounded WAM chunk limit")
         validate_condition_change(
             state.get("condition"), decision["condition"],
             kind=decision.get("condition_change_kind"),

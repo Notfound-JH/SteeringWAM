@@ -26,6 +26,8 @@ parser.add_argument("--recovery-genesis-sha256", help="Required SHA-256 of the h
 parser.add_argument("--recovery-max-attempts", type=parse_recovery_attempt_limit, default=3,
                     help="1..5 attempts, or 'unlimited'; per-program safety limits still apply.")
 parser.add_argument("--recovery-max-steps", type=int, help="Override the native recovery episode horizon in control steps.")
+parser.add_argument("--recovery-unlimited-steps", action="store_true",
+                    help="Disable the native time_out term and recovery total-step cap; retain native success.")
 parser.add_argument("--continue-wam-after-budget", action="store_true", help="Return to WAM after the last failed correction without relabeling it successful.")
 parser.add_argument("--task-progress-recovery", action="store_true", help="Use V3 condition-priority recovery and separate stage judgments.")
 parser.add_argument("--task", help="Capture a registered RoboLab task instead of the small cube scene.")
@@ -42,7 +44,9 @@ parser.add_argument("--rendering-mode", choices=("performance", "balanced", "qua
 args = parser.parse_args()
 if args.recovery_max_steps is not None and args.recovery_max_steps < 1:
     parser.error("--recovery-max-steps must be positive")
-if (args.recovery_max_attempts != 3 or args.recovery_max_steps is not None or args.continue_wam_after_budget) and not args.recovery_worker_socket:
+if args.recovery_unlimited_steps and args.recovery_max_steps is not None:
+    parser.error("--recovery-unlimited-steps conflicts with --recovery-max-steps")
+if (args.recovery_max_attempts != 3 or args.recovery_max_steps is not None or args.recovery_unlimited_steps or args.continue_wam_after_budget) and not args.recovery_worker_socket:
     parser.error("Recovery budget and horizon options require --recovery-worker-socket")
 if args.continue_wam_after_budget and args.agent_control:
     parser.error("--continue-wam-after-budget is not an Agent-only option")
@@ -241,16 +245,14 @@ try:
         if len(task_envs) != 1:
             raise RuntimeError(f"Expected one registered task, got {task_envs}")
         scene_config = task_envs[0]
-        if args.recovery_max_steps is not None:
+        if args.recovery_max_steps is not None or args.recovery_unlimited_steps:
             from robolab.core.environments.config import parse_env_cfg
-            from recovery_protocol import episode_duration_for_steps
+            from recovery_protocol import configure_recovery_horizon
 
             scene_config = parse_env_cfg(
                 scene_config, device="cpu", use_fabric=True, num_envs=1, seed=args.seed,
             )
-            scene_config.episode_length_s = episode_duration_for_steps(
-                args.recovery_max_steps, scene_config.sim.dt * scene_config.decimation,
-            )
+            configure_recovery_horizon(scene_config, args.recovery_max_steps, args.recovery_unlimited_steps)
         env, env_cfg = create_env(
             scene_config, device="cpu", use_fabric=True, num_envs=1,
             seed=args.seed, rendering_mode=args.rendering_mode,
@@ -261,6 +263,8 @@ try:
             env.cfg.reset_early_termination = False
             if args.recovery_max_steps is not None and env.max_episode_length != args.recovery_max_steps:
                 raise RuntimeError("Native episode horizon does not match the requested control-step limit")
+            if args.recovery_unlimited_steps and env.termination_manager.active_terms.count("time_out"):
+                raise RuntimeError("Native timeout remains enabled in unlimited recovery")
         if args.verify_blue_placement:
             from isaaclab.managers import TerminationTermCfg
             from blue_placement_verification import strict_blue_placement_success

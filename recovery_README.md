@@ -29,6 +29,12 @@ program still has the same workspace, motion, rotation, binary-gripper and
 48-step safety limits. Independent Action/Condition stage judgments remain
 mandatory. Unlimited attempts never activate the failed-budget WAM fallback
 and do not mean unlimited episode duration or unrestricted controller code.
+Set `RECOVERY_MAX_STEPS=unlimited` as well to remove the total-step horizon.
+This disables the native `time_out` termination term (not native success or other
+terminations) before initialization and records `max_episode_steps: null`.
+It does not substitute a large finite cap. Per-program/chunk safety limits remain.
+Restarts must create distinct episode directories, preserve unsuccessful attempts,
+and record why the preceding episode ended; never reset within a recovery episode.
 The external Coding Agent must continue inspecting WAM chunks and responding
 to failures; this option does not itself create an autonomous supervisor.
 

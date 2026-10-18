@@ -463,12 +463,16 @@ def verify_runtime_policy(manifest: dict, events: list[dict], actual: list[dict]
     if policy not in {"stop", "continue_wam"}:
         raise ValueError("Invalid budget exhaustion policy")
     horizon = manifest["max_episode_steps"]
-    if type(horizon) is not int or horizon < 1 or not 0 < len(actual) <= horizon:
+    if not actual or (horizon is not None and (
+        type(horizon) is not int or horizon < 1 or len(actual) > horizon
+    )):
         raise ValueError("Execution exceeds the configured native horizon")
     if manifest["step"] != len(actual):
         raise ValueError("Manifest step differs from actual execution")
     for event in actual:
-        if event["events"]["native_truncated"] and event["episode_step"] != horizon:
+        if event["events"]["native_truncated"] and (
+            horizon is None or event["episode_step"] != horizon
+        ):
             raise ValueError("Native timeout differs from the configured horizon")
     if len(actual) == horizon and not (
         actual[-1]["events"]["native_terminated"] or actual[-1]["events"]["native_truncated"]

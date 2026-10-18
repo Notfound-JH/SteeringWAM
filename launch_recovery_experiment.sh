@@ -14,7 +14,7 @@ TASK_PROGRESS_RECOVERY="${TASK_PROGRESS_RECOVERY:-0}"
 [[ "$AGENT_CONTROL" == 0 || "$AGENT_CONTROL" == 1 ]] || { echo "AGENT_CONTROL must be 0 or 1." >&2; exit 2; }
 [[ "$VERIFY_BLUE_PLACEMENT" == 0 || "$VERIFY_BLUE_PLACEMENT" == 1 ]] || { echo "VERIFY_BLUE_PLACEMENT must be 0 or 1." >&2; exit 2; }
 [[ "$RECOVERY_MAX_ATTEMPTS" == unlimited || "$RECOVERY_MAX_ATTEMPTS" =~ ^[1-5]$ ]] || { echo "RECOVERY_MAX_ATTEMPTS must be in 1..5 or unlimited." >&2; exit 2; }
-[[ -z "$RECOVERY_MAX_STEPS" || "$RECOVERY_MAX_STEPS" =~ ^[1-9][0-9]*$ ]] || { echo "RECOVERY_MAX_STEPS must be positive." >&2; exit 2; }
+[[ -z "$RECOVERY_MAX_STEPS" || "$RECOVERY_MAX_STEPS" == unlimited || "$RECOVERY_MAX_STEPS" =~ ^[1-9][0-9]*$ ]] || { echo "RECOVERY_MAX_STEPS must be positive or unlimited." >&2; exit 2; }
 [[ "$CONTINUE_WAM_AFTER_BUDGET" == 0 || "$CONTINUE_WAM_AFTER_BUDGET" == 1 ]] || { echo "CONTINUE_WAM_AFTER_BUDGET must be 0 or 1." >&2; exit 2; }
 [[ "$TASK_PROGRESS_RECOVERY" == 0 || "$TASK_PROGRESS_RECOVERY" == 1 ]] || { echo "TASK_PROGRESS_RECOVERY must be 0 or 1." >&2; exit 2; }
 if [[ "$TASK_PROGRESS_RECOVERY" == 1 && "$AGENT_CONTROL" == 1 ]]; then
@@ -79,7 +79,8 @@ run, task, socket, genesis, genesis_sha256, agent_control, attempts, max_steps, 
     "mock_execution": False, "reset_during_recovery": False,
     "initial_genesis": genesis or None, "initial_genesis_sha256": genesis_sha256 or None,
     "recovery_max_attempts": parse_recovery_attempt_limit(attempts),
-    "requested_max_episode_steps": int(max_steps) if max_steps else None,
+    "requested_max_episode_steps": int(max_steps) if max_steps and max_steps != "unlimited" else None,
+    "unlimited_episode_steps": max_steps == "unlimited",
     "budget_exhaustion_policy": "continue_wam" if fallback == "1" else "stop",
     "protocol_version": "wam-recovery-v3" if progress == "1" else "wam-recovery-v2",
     "evaluation_policy": "task_progress" if progress == "1" else "fixed_wam_window",
@@ -99,7 +100,9 @@ GENESIS_ARGS=(--recovery-max-attempts "$RECOVERY_MAX_ATTEMPTS")
 if [[ "$TASK_PROGRESS_RECOVERY" == 1 ]]; then
     GENESIS_ARGS+=(--task-progress-recovery)
 fi
-if [[ -n "$RECOVERY_MAX_STEPS" ]]; then
+if [[ "$RECOVERY_MAX_STEPS" == unlimited ]]; then
+    GENESIS_ARGS+=(--recovery-unlimited-steps)
+elif [[ -n "$RECOVERY_MAX_STEPS" ]]; then
     GENESIS_ARGS+=(--recovery-max-steps "$RECOVERY_MAX_STEPS")
 fi
 if [[ "$CONTINUE_WAM_AFTER_BUDGET" == 1 ]]; then

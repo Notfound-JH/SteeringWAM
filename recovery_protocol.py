@@ -35,6 +35,19 @@ def episode_duration_for_steps(steps: int, step_dt: float) -> float:
     return seconds
 
 
+def configure_recovery_horizon(config: Any, steps: int | None, unlimited: bool) -> None:
+    if unlimited and steps is not None:
+        raise ValueError("Unlimited recovery cannot also specify a finite horizon")
+    if unlimited:
+        if not hasattr(config.terminations, "time_out"):
+            raise ValueError("Cannot disable an unknown native timeout configuration")
+        config.terminations.time_out = None
+    elif steps is not None:
+        config.episode_length_s = episode_duration_for_steps(
+            steps, config.sim.dt * config.decimation,
+        )
+
+
 @dataclass(frozen=True)
 class SafetyLimits:
     workspace_min: tuple[float, float, float] = (0.15, -0.65, 0.02)

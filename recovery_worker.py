@@ -146,7 +146,7 @@ class RecoverySession:
             "budget_exhaustion_policy": "continue_wam" if args.continue_wam_after_budget else "stop",
             "budget_fallback": False,
             "wam_after_budget_steps": 0,
-            "max_episode_steps": int(env.max_episode_length),
+            "max_episode_steps": None if args.recovery_unlimited_steps else int(env.max_episode_length),
             "native_success": False,
             "native_terminated": False,
             "native_truncated": False,
@@ -578,7 +578,8 @@ class RecoverySession:
     def _before_step(self, source: str, **intent: Any) -> None:
         if self.state["native_terminated"] or self.state["native_truncated"]:
             raise ValueError("Cannot step a terminated environment")
-        if self.step >= self.state.get("max_episode_steps", float("inf")):
+        horizon = self.state.get("max_episode_steps")
+        if horizon is not None and self.step >= horizon:
             raise ValueError("Configured episode step limit exhausted")
         self._check_step()
         self._event("action_authorized", action_source=source, **intent)

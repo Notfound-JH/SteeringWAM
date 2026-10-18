@@ -1,4 +1,5 @@
 import math
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -7,6 +8,7 @@ from recovery_protocol import (
     PROTOCOL_VERSION,
     SafetyLimits,
     compile_program,
+    configure_recovery_horizon,
     episode_duration_for_steps,
     parse_control_code,
     parse_recovery_attempt_limit,
@@ -18,6 +20,24 @@ from recovery_protocol import (
 
 CURRENT_POSITION = [0.45, 0.0, 0.35]
 CURRENT_QUATERNION = [1.0, 0.0, 0.0, 0.0]
+
+
+def test_unlimited_horizon_disables_only_timeout():
+    success = object()
+    config = SimpleNamespace(
+        terminations=SimpleNamespace(time_out=object(), success=success),
+        episode_length_s=40, sim=SimpleNamespace(dt=1 / 60), decimation=4,
+    )
+    configure_recovery_horizon(config, None, True)
+    assert config.terminations.time_out is None
+    assert config.terminations.success is success
+    assert config.episode_length_s == 40
+    with pytest.raises(ValueError, match="finite horizon"):
+        configure_recovery_horizon(config, 2000, True)
+    configure_recovery_horizon(config, 2000, False)
+    assert math.ceil(config.episode_length_s / (1 / 15)) == 2000
+    with pytest.raises(ValueError, match="unknown native timeout"):
+        configure_recovery_horizon(SimpleNamespace(terminations=SimpleNamespace()), None, True)
 
 
 @pytest.mark.parametrize("value,expected", [("1", 1), ("5", 5), ("unlimited", None)])
