@@ -24,7 +24,7 @@ class ProgressRecoverySession(RecoverySession):
     def context(self) -> dict[str, Any]:
         context = super().context()
         context["task_progress_contract"] = {
-            "priority": "Condition first for target/stage deviation; open-only target reacquisition after an immediately preceding failed Condition judgment",
+            "priority": "Condition first for target/stage deviation; open-only withdrawal/reacquisition after an immediately preceding failed Condition judgment, preserving its target/stage alignment labels",
             "objective": self.state["native_goal"],
             "action_judgment": "Immediately after the controller, before further WAM actions",
             "condition_judgment": "After one WAM chunk using the revised condition",

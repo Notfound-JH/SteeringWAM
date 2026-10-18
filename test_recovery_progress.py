@@ -196,30 +196,40 @@ def test_condition_priority_rejects_action_for_wrong_target(worker, mode):
     assert worker.step == 1 and worker.attempts == 0
 
 
-def failed_condition(worker):
-    worker.recover(proposal(worker, "condition", task_progress=progress(target_alignment="wrong")))
-    assess(worker, False, task_progress=progress(target_alignment="wrong"))
+def failed_condition(worker, target="wrong", stage="correct"):
+    task_progress = progress(target_alignment=target, stage_alignment=stage)
+    worker.recover(proposal(worker, "condition", task_progress=task_progress))
+    assess(worker, False, task_progress=task_progress)
 
 
 def reacquisition(worker, **overrides):
-    return proposal(
-        worker, target_reacquisition_after_attempt=worker.attempts,
-        task_progress=progress(target_alignment="wrong"),
-        control_code="controller.gripper(value=0, steps=1)\ncontroller.hold(steps=1)",
+    fields = {
+        "target_reacquisition_after_attempt": worker.attempts,
+        "task_progress": progress(target_alignment="wrong"),
+        "control_code": "controller.gripper(value=0, steps=1)\ncontroller.hold(steps=1)",
         **overrides,
-    )
+    }
+    return proposal(worker, **fields)
 
 
-def test_failed_condition_allows_open_only_reacquisition(worker):
-    failed_condition(worker)
+@pytest.mark.parametrize("target,stage", [
+    ("wrong", "correct"), ("uncertain", "correct"),
+    ("correct", "wrong"), ("correct", "uncertain"),
+    ("wrong", "wrong"), ("uncertain", "wrong"),
+    ("wrong", "uncertain"), ("uncertain", "uncertain"),
+])
+def test_failed_condition_allows_open_only_reacquisition(worker, target, stage):
+    failed_condition(worker, target, stage)
     assert worker.state["failed_condition_reacquisition"]["attempt"] == 1
-    worker.recover(reacquisition(worker))
+    worker.recover(reacquisition(
+        worker, task_progress=progress(target_alignment=target, stage_alignment=stage),
+    ))
     assert worker.state["failed_condition_reacquisition"] is None
     assess(worker)
     assert verify_contract(worker)["progress_contract_verified"]
 
 
-@pytest.mark.parametrize("change", ["no-history", "stale", "target", "stage", "close", "no-open", "joint"])
+@pytest.mark.parametrize("change", ["no-history", "stale", "target", "stage", "alignment", "close", "no-open", "joint"])
 def test_reacquisition_cannot_bypass_priority_or_gripper_safety(worker, change):
     if change != "no-history":
         failed_condition(worker)
@@ -230,6 +240,8 @@ def test_reacquisition_cannot_bypass_priority_or_gripper_safety(worker, change):
         p["task_progress"]["target_object"] = "another-block"
     elif change == "stage":
         p["task_progress"]["stage_alignment"] = "wrong"
+    elif change == "alignment":
+        p["task_progress"]["target_alignment"] = "correct"
     elif change == "close":
         p["control_code"] += "\ncontroller.gripper(value=1, steps=1)"
     elif change == "no-open":
@@ -243,11 +255,14 @@ def test_reacquisition_cannot_bypass_priority_or_gripper_safety(worker, change):
     assert worker.step == start
 
 
-@pytest.mark.parametrize("effect,stage", [("uncertain", "correct"), ("failed", "wrong")])
-def test_reacquisition_needs_definite_failed_condition_and_correct_stage(worker, effect, stage):
+@pytest.mark.parametrize("effect,target,stage", [
+    ("uncertain", "wrong", "correct"), ("partial", "correct", "wrong"),
+    ("failed", "correct", "correct"),
+])
+def test_reacquisition_needs_definite_failed_condition_and_deviation(worker, effect, target, stage):
     worker.recover(proposal(worker, "condition"))
     assess(worker, False, correction_effect=effect,
-           task_progress=progress(target_alignment="wrong", stage_alignment=stage))
+           task_progress=progress(target_alignment=target, stage_alignment=stage))
     assert worker.state["failed_condition_reacquisition"] is None
     with pytest.raises(ValueError):
         worker.recover(reacquisition(worker))

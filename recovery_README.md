@@ -97,15 +97,19 @@ requirement to waste a Condition trial on every clearly physical failure.
 After an independently judged **failed Condition** at the unchanged endpoint,
 V3 also permits an explicit, Action-only target-reacquisition proposal with
 `target_reacquisition_after_attempt: N`. `N` must identify the immediately
-preceding attempt for the same target, whose judged stage was correct but target
-alignment was wrong or uncertain. The worker supplies eligibility from its own
-completed evaluation and Judge verdict, never from the proposal's assertion.
+preceding attempt for the same target, whose judged target or stage alignment
+was wrong or uncertain. This includes open withdrawal/re-approach after a failed
+Condition leaves the correct target in the wrong execution stage. The proposal
+must preserve both alignment labels from that verdict, not relabel the failure
+as correct. The worker supplies eligibility from its own completed evaluation
+and Judge verdict, never from the proposal's assertion.
 This exception must first open the gripper, keep every movement explicitly open,
 and cannot close, grasp or transport a hammer. Existing workspace, pose, motion
 and step safety limits remain unchanged. The independent Action Judge still
-checks actual region reacquisition before WAM resumes. Stage/order deviations,
-unjudged or merely uncertain Condition effects, stale attempts and target changes
-remain ineligible. The episode verifier reconstructs eligibility from history.
+checks actual withdrawal/approach readiness before WAM resumes. This does not
+authorize grasping or transporting during a stage/order deviation. Unjudged or
+merely uncertain Condition effects, stale attempts and target changes remain
+ineligible. The episode verifier reconstructs eligibility from history.
 
 ### Separate correction and recovery-judgment roles
 

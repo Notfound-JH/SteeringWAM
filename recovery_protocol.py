@@ -236,11 +236,17 @@ def condition_reacquisition_evidence(
         and assessment["stage"] == "condition_progress"
         and assessment["correction_effect"] == "failed"
         and not assessment["recovery_success"]
-        and progress["target_alignment"] in {"wrong", "uncertain"}
-        and progress["stage_alignment"] == "correct"
+        and (
+            progress["target_alignment"] != "correct"
+            or progress["stage_alignment"] != "correct"
+        )
         and progress["target_object"] == proposal["task_progress"]["target_object"]
     ):
-        return {"attempt": attempt, "end_step": step, "target_object": progress["target_object"]}
+        return {
+            "attempt": attempt, "end_step": step, "target_object": progress["target_object"],
+            "target_alignment": progress["target_alignment"],
+            "stage_alignment": progress["stage_alignment"],
+        }
     return None
 
 
@@ -294,7 +300,8 @@ def validate_recovery_proposal(
                 mode != "action" or failed_condition is None
                 or reacquire != attempt or failed_condition["attempt"] != attempt
                 or failed_condition["target_object"] != progress["target_object"]
-                or progress["stage_alignment"] != "correct"
+                or failed_condition["target_alignment"] != progress["target_alignment"]
+                or failed_condition["stage_alignment"] != progress["stage_alignment"]
             ):
                 raise ValueError("Target reacquisition requires the immediately preceding failed Condition for the same target")
             proposal["target_reacquisition_after_attempt"] = reacquire
