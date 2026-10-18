@@ -12,7 +12,8 @@ from instruction_sampling import write_json
 from instruction_sampling_worker import artifact
 from recovery_protocol import (
     PROGRESS_PROTOCOL_VERSION, RECOVERY_EVALUATION_STEPS, compile_program,
-    validate_assessment, validate_progress_review, validate_recovery_proposal,
+    condition_reacquisition_evidence, validate_assessment, validate_progress_review,
+    validate_recovery_proposal,
 )
 from recovery_worker import RecoverySession
 
@@ -23,7 +24,7 @@ class ProgressRecoverySession(RecoverySession):
     def context(self) -> dict[str, Any]:
         context = super().context()
         context["task_progress_contract"] = {
-            "priority": "Condition for target/stage deviation; Action for aligned physical blockage",
+            "priority": "Condition first for target/stage deviation; open-only target reacquisition after an immediately preceding failed Condition judgment",
             "objective": self.state["native_goal"],
             "action_judgment": "Immediately after the controller, before further WAM actions",
             "condition_judgment": "After one WAM chunk using the revised condition",
@@ -97,6 +98,7 @@ class ProgressRecoverySession(RecoverySession):
         proposal = validate_recovery_proposal(
             decision, self.state["request_id"], self.attempts, robot["ee_pos"], self.limits,
             protocol_version=self.protocol_version, recovery_condition=self.state["condition"],
+            failed_condition=self.state.get("failed_condition_reacquisition"),
         )
         compiled = None
         if proposal["correction_mode"] != "condition":
@@ -115,6 +117,7 @@ class ProgressRecoverySession(RecoverySession):
             status="recovering", recovery_evaluation=None, recovery_stages=[],
             active_recovery_proposal=artifact(directory / "proposal.json"),
             task_progress_recovered=False,
+            failed_condition_reacquisition=None,
         )
         self._event(
             "recovery_proposal", attempt=self.attempts,
@@ -210,6 +213,9 @@ class ProgressRecoverySession(RecoverySession):
             local_recovery_success=assessment["local_recovery_success"],
             task_progress_recovered=assessment["recovery_success"],
             task_progress=assessment["task_progress"],
+            failed_condition_reacquisition=condition_reacquisition_evidence(
+                proposal, evaluation, assessment, self.attempts, self.step,
+            ),
         )
         write_json(
             self.directory / "recovery_attempts" / f"{self.attempts:02d}"

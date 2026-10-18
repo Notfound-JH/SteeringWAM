@@ -12,7 +12,8 @@ import numpy as np
 
 from recovery_protocol import (
     LEGACY_PROTOCOL_VERSION, PROTOCOL_VERSION, PROGRESS_PROTOCOL_VERSION, RECOVERY_EVALUATION_STEPS,
-    SafetyLimits, compile_program, validate_assessment, validate_condition_change,
+    SafetyLimits, compile_program, condition_reacquisition_evidence,
+    validate_assessment, validate_condition_change,
     validate_recovery_proposal, validate_progress_review,
 )
 from blue_placement_verification import STABLE_STEPS, placement_sample_passes
@@ -338,9 +339,26 @@ def verify_progress_contract(manifest: dict, events: list[dict], actual: list[di
         submitted = {k: v for k, v in proposal.items() if k != "program"} if "control_code" in proposal else proposal
         robot = actual[event["episode_step"] - 1]["robot_state"]
         before = conditions[event["event_index"]]
+        failed_condition = None
+        if "target_reacquisition_after_attempt" in proposal and number > 1:
+            previous_ends = [
+                e for e in events if e["event_type"] == "recovery_evaluation_completed"
+                and e["attempt"] == number - 1 and e["event_index"] < event["event_index"]
+            ]
+            previous_assessments = [
+                e for e in events if e["event_type"] == "recovery_assessment"
+                and e["attempt"] == number - 1 and e["event_index"] < event["event_index"]
+            ]
+            if previous_ends and previous_assessments:
+                previous_proposal = json.loads(Path(proposals[number - 2]["proposal"]["path"]).read_text())
+                failed_condition = condition_reacquisition_evidence(
+                    previous_proposal, previous_ends[-1]["evaluation"],
+                    previous_assessments[-1]["assessment"], number - 1, event["episode_step"],
+                )
         validated = validate_recovery_proposal(
             submitted, proposal["request_id"], number - 1, robot["ee_pos"], limits,
             protocol_version=PROGRESS_PROTOCOL_VERSION, recovery_condition=before,
+            failed_condition=failed_condition,
         )
         if proposal != validated or event["condition_before"] != before:
             raise ValueError("V3 proposal or pre-correction condition mismatch")

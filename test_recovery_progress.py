@@ -45,12 +45,13 @@ def worker(legacy_worker):
 
 
 def proposal(w, mode="action", **overrides):
-    return legacy_proposal(
-        w, mode, protocol_version=PROGRESS_PROTOCOL_VERSION,
-        agent_role="correction_agent", agent_id="corrector", task_progress=progress(),
-        condition_reason="Target and stage are correct; physical alignment is missing.",
+    fields = {
+        "protocol_version": PROGRESS_PROTOCOL_VERSION,
+        "agent_role": "correction_agent", "agent_id": "corrector", "task_progress": progress(),
+        "condition_reason": "Target and stage are correct; physical alignment is missing.",
         **overrides,
-    )
+    }
+    return legacy_proposal(w, mode, **fields)
 
 
 def wam(w, **overrides):
@@ -193,6 +194,88 @@ def test_condition_priority_rejects_action_for_wrong_target(worker, mode):
     with pytest.raises(ValueError, match="Condition takes priority"):
         worker.recover(p)
     assert worker.step == 1 and worker.attempts == 0
+
+
+def failed_condition(worker):
+    worker.recover(proposal(worker, "condition", task_progress=progress(target_alignment="wrong")))
+    assess(worker, False, task_progress=progress(target_alignment="wrong"))
+
+
+def reacquisition(worker, **overrides):
+    return proposal(
+        worker, target_reacquisition_after_attempt=worker.attempts,
+        task_progress=progress(target_alignment="wrong"),
+        control_code="controller.gripper(value=0, steps=1)\ncontroller.hold(steps=1)",
+        **overrides,
+    )
+
+
+def test_failed_condition_allows_open_only_reacquisition(worker):
+    failed_condition(worker)
+    assert worker.state["failed_condition_reacquisition"]["attempt"] == 1
+    worker.recover(reacquisition(worker))
+    assert worker.state["failed_condition_reacquisition"] is None
+    assess(worker)
+    assert verify_contract(worker)["progress_contract_verified"]
+
+
+@pytest.mark.parametrize("change", ["no-history", "stale", "target", "stage", "close", "no-open", "joint"])
+def test_reacquisition_cannot_bypass_priority_or_gripper_safety(worker, change):
+    if change != "no-history":
+        failed_condition(worker)
+    p = reacquisition(worker)
+    if change == "stale":
+        p["target_reacquisition_after_attempt"] += 1
+    elif change == "target":
+        p["task_progress"]["target_object"] = "another-block"
+    elif change == "stage":
+        p["task_progress"]["stage_alignment"] = "wrong"
+    elif change == "close":
+        p["control_code"] += "\ncontroller.gripper(value=1, steps=1)"
+    elif change == "no-open":
+        p["control_code"] = "controller.hold(steps=1)"
+    elif change == "joint":
+        p["correction_mode"] = "joint"
+        p["condition"] = "Another condition"
+    start = worker.step
+    with pytest.raises(ValueError):
+        worker.recover(p)
+    assert worker.step == start
+
+
+@pytest.mark.parametrize("effect,stage", [("uncertain", "correct"), ("failed", "wrong")])
+def test_reacquisition_needs_definite_failed_condition_and_correct_stage(worker, effect, stage):
+    worker.recover(proposal(worker, "condition"))
+    assess(worker, False, correction_effect=effect,
+           task_progress=progress(target_alignment="wrong", stage_alignment=stage))
+    assert worker.state["failed_condition_reacquisition"] is None
+    with pytest.raises(ValueError):
+        worker.recover(reacquisition(worker))
+
+
+@pytest.mark.parametrize("gripper", ["", ", gripper=1"])
+def test_reacquisition_move_must_be_explicitly_open(worker, gripper):
+    failed_condition(worker)
+    p = reacquisition(worker)
+    p["control_code"] += (
+        "\ncontroller.move_ee(position=[0.45,0.0,0.35], steps=1" + gripper + ")"
+    )
+    with pytest.raises(ValueError, match="remain open"):
+        worker.recover(p)
+
+
+def test_verifier_reconstructs_reacquisition_eligibility(worker):
+    failed_condition(worker)
+    worker.recover(reacquisition(worker))
+    assess(worker)
+    es = copy.deepcopy(events(worker))
+    first_judge = next(e for e in es if e["event_type"] == "recovery_assessment")
+    first_judge["assessment"]["task_progress"]["stage_alignment"] = "wrong"
+    (worker.directory / "recovery_attempts/01/condition_progress/assessment.json").write_text(
+        json.dumps(first_judge["assessment"])
+    )
+    with pytest.raises(ValueError, match="preceding failed Condition"):
+        verify_contract(worker, es)
 
 
 def test_native_success_in_condition_chunk_needs_judge_but_not_extra_wam(worker):

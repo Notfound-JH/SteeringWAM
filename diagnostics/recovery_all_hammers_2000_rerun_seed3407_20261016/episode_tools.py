@@ -83,6 +83,7 @@ else:
         proposal = validate_recovery_proposal(
             decision, state["request_id"], state["attempts"], robot["ee_pos"], limits,
             recovery_condition=state["condition"], protocol_version=state["protocol_version"],
+            failed_condition=state.get("failed_condition_reacquisition"),
         )
         if "program" in proposal:
             compile_program(proposal["program"], robot["ee_pos"], robot["ee_quat"], robot["gripper_pos"], limits)

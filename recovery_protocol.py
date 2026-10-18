@@ -224,6 +224,26 @@ def validate_assessment(
     }
 
 
+def condition_reacquisition_evidence(
+    proposal: dict[str, Any], evaluation: dict[str, Any],
+    assessment: dict[str, Any], attempt: int, step: int,
+) -> dict[str, Any] | None:
+    progress = assessment["task_progress"]
+    if (
+        proposal["correction_mode"] == "condition"
+        and evaluation["stage"] == "condition_progress"
+        and evaluation["complete"] and evaluation["end_step"] == step
+        and assessment["stage"] == "condition_progress"
+        and assessment["correction_effect"] == "failed"
+        and not assessment["recovery_success"]
+        and progress["target_alignment"] in {"wrong", "uncertain"}
+        and progress["stage_alignment"] == "correct"
+        and progress["target_object"] == proposal["task_progress"]["target_object"]
+    ):
+        return {"attempt": attempt, "end_step": step, "target_object": progress["target_object"]}
+    return None
+
+
 def validate_recovery_proposal(
     value: Any,
     request_id: str,
@@ -233,6 +253,7 @@ def validate_recovery_proposal(
     *,
     protocol_version: str = PROTOCOL_VERSION,
     recovery_condition: str | None = None,
+    failed_condition: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError("Recovery proposal must be an object")
@@ -247,6 +268,12 @@ def validate_recovery_proposal(
     mode = value.get("correction_mode")
     if mode not in CORRECTION_MODES:
         raise ValueError(f"correction_mode must be one of {sorted(CORRECTION_MODES)}")
+    reacquire = value.get("target_reacquisition_after_attempt")
+    if "target_reacquisition_after_attempt" in value and (
+        protocol_version != PROGRESS_PROTOCOL_VERSION
+        or type(reacquire) is not int or reacquire < 1
+    ):
+        raise ValueError("Target reacquisition requires a V3 failed Condition attempt number")
     proposal: dict[str, Any] = {
         "protocol_version": protocol_version,
         "request_id": request_id,
@@ -262,7 +289,16 @@ def validate_recovery_proposal(
             **_actor(value, "correction_agent"), task_progress=progress,
             condition_reason=_nonempty(value.get("condition_reason"), "condition_reason"),
         )
-        if mode in {"action", "joint"} and (
+        if reacquire is not None:
+            if (
+                mode != "action" or failed_condition is None
+                or reacquire != attempt or failed_condition["attempt"] != attempt
+                or failed_condition["target_object"] != progress["target_object"]
+                or progress["stage_alignment"] != "correct"
+            ):
+                raise ValueError("Target reacquisition requires the immediately preceding failed Condition for the same target")
+            proposal["target_reacquisition_after_attempt"] = reacquire
+        if mode in {"action", "joint"} and reacquire is None and (
             progress["target_alignment"] != "correct" or progress["stage_alignment"] != "correct"
         ):
             raise ValueError("Condition takes priority when target or task stage is wrong/uncertain")
@@ -288,6 +324,16 @@ def validate_recovery_proposal(
         if not isinstance(program, list) or not program:
             raise ValueError("Action and joint corrections require a nonempty program")
         proposal["program"] = validate_program(program, current_position, limits)
+        if reacquire is not None:
+            operations = proposal["program"]
+            if operations[0]["op"] != "gripper" or operations[0]["value"] != 0:
+                raise ValueError("Target reacquisition must first open the gripper")
+            if any(
+                operation["op"] == "gripper" and operation["value"] != 0
+                or operation["op"] == "move_ee" and operation.get("gripper") != 0
+                for operation in operations
+            ):
+                raise ValueError("Target reacquisition must remain open; no grasp or transport")
     elif "program" in value or "control_code" in value:
         raise ValueError("Condition-only correction cannot include an action program")
     if recovery_condition is not None:
