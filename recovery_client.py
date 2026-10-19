@@ -122,6 +122,8 @@ def main() -> None:
         result = {"chunks": results, "state": results[-1]["state"]}
     elif args.operation == "evaluate_condition":
         state = request(args.socket, "status")
+        if state["status"] != "ready_condition_evaluation":
+            raise RuntimeError("Joint Condition evaluation requires a positive Action judgment first")
         result = request(args.socket, "evaluate_condition", {
             "protocol_version": state["protocol_version"], "request_id": state["request_id"],
         })

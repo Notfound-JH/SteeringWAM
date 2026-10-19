@@ -133,6 +133,12 @@ effect: otherwise a later WAM release can be confused with failed controller
 execution. Predictions and command compliance are supporting signals, not proof
 of the actual effect.
 
+For V3, `recover` with Condition mode executes its WAM evaluation immediately;
+submit its independent judgment next. `evaluate_condition` is only for a Joint
+proposal whose Action judgment has advanced to `ready_condition_evaluation`.
+The CLI checks this state before sending the mutating command. Do not repeat
+Condition execution after it has already returned `awaiting_assessment`.
+
 ### Evaluate task progress, not only local motion
 
 Keep these outcomes separate: correction execution/effect, task-progress

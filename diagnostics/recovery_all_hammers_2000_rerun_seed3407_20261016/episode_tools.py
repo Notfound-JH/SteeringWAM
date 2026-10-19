@@ -29,6 +29,8 @@ if args.operation == "context":
     response = context
 else:
     decision = json.loads(args.decision.read_text()) if args.decision else {}
+    if args.operation == "evaluate_condition" and context["state"]["status"] != "ready_condition_evaluation":
+        raise RuntimeError("Joint Condition evaluation requires a positive Action judgment first")
     if args.operation == "assess":
         if not args.judge_id or not args.snapshot or not args.decision:
             raise ValueError("Assess requires raw judgment, actual Judge context ID and evaluated snapshot")
