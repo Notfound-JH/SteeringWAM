@@ -19,6 +19,23 @@ from recovery_protocol import (
 from blue_placement_verification import STABLE_STEPS, placement_sample_passes
 
 
+def proposal_matches_validation(proposal: dict, validated: dict) -> bool:
+    comparable = dict(proposal)
+    if "program" in proposal and "program" in validated:
+        if len(proposal["program"]) != len(validated["program"]):
+            return False
+        comparable["program"] = []
+        for saved, checked in zip(proposal["program"], validated["program"]):
+            operation = dict(saved)
+            if "quaternion" in saved and "quaternion" in checked:
+                # Repeated float64 normalization can change the last few bits.
+                if not np.allclose(saved["quaternion"], checked["quaternion"], rtol=0, atol=1e-14):
+                    return False
+                operation["quaternion"] = checked["quaternion"]
+            comparable["program"].append(operation)
+    return comparable == validated
+
+
 def verify_placement_gripper(sample: dict, robot_state: dict) -> None:
     index = robot_state["joint_names"].index("finger_joint")
     raw_closure = robot_state["measured_joint_pos"][index] / (np.pi / 4)
@@ -164,7 +181,7 @@ def verify_comparison_contract(manifest: dict, events: list[dict], actual: list[
             actual[event["episode_step"] - 1]["robot_state"]["ee_pos"],
             SafetyLimits(**manifest["safety_limits"]), recovery_condition=before,
         )
-        if proposal != validated or event["mode_reason"] != proposal["mode_reason"]:
+        if not proposal_matches_validation(proposal, validated) or event["mode_reason"] != proposal["mode_reason"]:
             raise ValueError("Recovery decision or mode rationale disagrees with proposal")
         if event["correction_mode"] != proposal["correction_mode"]:
             raise ValueError("Recovery mode disagrees with proposal")
@@ -369,7 +386,7 @@ def verify_progress_contract(manifest: dict, events: list[dict], actual: list[di
             failed_condition=failed_condition,
             partial_condition=partial_condition,
         )
-        if proposal != validated or event["condition_before"] != before:
+        if not proposal_matches_validation(proposal, validated) or event["condition_before"] != before:
             raise ValueError("V3 proposal or pre-correction condition mismatch")
         for key in ("correction_mode", "agent_role", "agent_id", "task_progress", "condition_reason", "mode_reason"):
             if event[key] != proposal[key]:

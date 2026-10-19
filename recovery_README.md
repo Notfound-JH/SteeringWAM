@@ -221,6 +221,9 @@ full chain after its positive independent judgment; no redundant WAM actions are
 executed after a native terminal goal. Controller-only completion and successful
 WAM fallback after failed recovery are not labeled accepted recovery chains.
 Use `verify_recovery_episode.py RUN/recovery` to verify the versioned contract.
+Proposal revalidation tolerates only float64 quaternion-renormalization roundoff
+(absolute component tolerance `1e-14`); other proposal fields remain exact.
+Recorded checksums and compiled/executed action comparisons are unchanged.
 
 ## Pure-WAM instruction comparisons
 
