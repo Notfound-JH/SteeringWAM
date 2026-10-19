@@ -26,20 +26,30 @@ function message(text, error = false) {
   $("message").hidden = !text;
 }
 async function getJSON(url) {
-  const response = await fetch(url, { cache: "no-store" });
-  if (!response.ok) {
-    const body = await response.json().catch(() => null);
-    throw new Error(`${response.status}: ${body?.detail || response.statusText}`);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  try {
+    const response = await fetch(url, { cache: "no-store", signal: controller.signal });
+    if (!response.ok) {
+      const body = await response.json().catch(() => null);
+      throw new Error(`${response.status}: ${body?.detail || response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    if (error.name === "AbortError") throw new Error("请求超过 30 秒，请点击刷新重试。");
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
-  return response.json();
 }
 function previewURL(url) {
+  if (episode?.live) return url;
   const preview = new URL(url, window.location.href);
   preview.searchParams.set("preview", "true");
   return preview.pathname + preview.search;
 }
 function setVideoQuality(preservePosition = false) {
-  if (!episode) return;
+  if (!episode?.video) return;
   const video = $("episode-video");
   const time = preservePosition ? video.currentTime : Math.max(0, activeStep) * episode.dt;
   const resume = preservePosition && !video.paused;
@@ -364,6 +374,11 @@ function render() {
   if (strictPlacement) $("outcome").textContent = episode.stable_blue_placement_verified ? "单锤稳定放置验证通过" : "稳定放置尚未验证通过";
   $("outcome-detail").textContent = `${strictPlacement ? "原生条件 + 加严放置检查" : "原生任务"}：${episode.native_success === true ? "成功" : episode.native_success === false ? "失败" : "未知"} · ${episode.verification ? "已保存独立校验结果" : "缺少独立校验结果"}`;
   if (agentOnly && episode.task === "ToolsPickingHammerTask" && !strictPlacement) $("outcome-detail").textContent += " · 未验证稳定放置";
+  if (episode.live) {
+    const statuses = { awaiting_assessment: "等待独立评估", ready_recovery: "等待下一次纠错", ready_wam: "等待 WAM", awaiting_progress_check: "等待进程检查", execution_unknown: "执行状态异常" };
+    $("outcome").textContent = `未归档 · ${statuses[episode.status] || episode.status || "状态未记录"}`;
+    $("outcome-detail").textContent = `实际快照截至 ${episode.steps} 步 · ${episode.native_success ? "原生成功已触发，尚未归档验证" : "尚未达到原生成功"} · 点击刷新读取最新记录`;
+  }
   const agentSteps = episode.observations.filter((item) => ["agent_correction", "agent_control"].includes(item.source)).length;
   const continuation = episode.observations.filter((item) => item.source === "wam_continuation").length;
   const afterBudget = episode.observations.filter((item) => item.source === "wam_after_budget").length;
@@ -381,6 +396,7 @@ function render() {
     metric.setAttribute("aria-description", metric.title);
   });
   $("execution-kind").textContent = episode.mock_execution === false ? "真实仿真 · 记录回放" : "MOCK / 未确认执行类型";
+  if (episode.live) $("execution-kind").textContent += " · 未归档快照，非最终校验";
   if (agentOnly) $("execution-kind").textContent += " · Agent-only 基线，非 WAM Recovery";
   $("execution-kind").className = `badge ${episode.mock_execution === false ? "" : "amber"}`;
   const assisted = episode.agent_input_mode === "debug_ground_truth_assisted";
@@ -388,6 +404,9 @@ function render() {
   $("agent-provenance").textContent = `${inputMode} · Agent 模型版本：${episode.agent_model_version || "未记录精确版本"}`;
   $("agent-provenance").className = assisted ? "failure-note" : "muted";
   $("video-duration").textContent = `${fixed(1 / episode.dt, 0)} FPS · ${fixed(episode.duration, 2)} s`;
+  $("episode-video").hidden = !episode.video;
+  $("video-quality").disabled = !episode.video;
+  $("video-quality-note").textContent = episode.video ? "" : "实验尚未归档，完整视频将在结束后生成；当前可用右侧滑块逐步查看真实相机帧。";
   $("step-slider").max = episode.steps;
   $("camera-select").replaceChildren(...Object.keys(episode.observations[0].frames).map((camera) => {
     const option = node("option", cameraNames[camera] || camera); option.value = camera; return option;
@@ -406,13 +425,13 @@ function render() {
   $("segment-select").replaceChildren(...episode.segments.map((segment, index) => {
     const option = node("option", `${String(index + 1).padStart(2, "0")} · Step ${segment.start} · ${sourceNames[segment.source] || segment.source}`); option.value = index; return option;
   }));
-  const labels = { manifest: "Manifest", events: "事件 JSONL", trajectory: "轨迹 HDF5", verification: "独立校验 JSON", video: "完整视频" };
+  const labels = { manifest: "Manifest", events: episode.live ? "当前事件 JSONL（未归档）" : "事件 JSONL", trajectory: "轨迹 HDF5", verification: "独立校验 JSON", video: "完整视频" };
   $("download-links").replaceChildren(...Object.entries(episode.downloads).map(([kind, url]) => {
     const link = node("a", `↓ ${labels[kind] || kind}`); link.href = url; link.download = ""; return link;
   }));
   renderAxis();
   activeStep = -1;
-  setStep(0);
+  setStep(episode.live ? episode.steps : 0);
   $("content").hidden = false;
   requestAnimationFrame(drawFailureConnections);
 }
@@ -422,7 +441,7 @@ async function load(id) {
   episode = await getJSON(`/api/recovery/${encodeURIComponent(id)}`);
   render();
   history.replaceState(null, "", `/recovery?episode=${encodeURIComponent(id)}`);
-  message("");
+  message(episode.pending_event_bytes ? `当前有 ${episode.pending_event_bytes} 字节事件尚在写入；只展示截至第 ${episode.steps} 步的完整快照，点击刷新更新。` : "");
 }
 async function refresh() {
   if (loading) return;
@@ -433,14 +452,21 @@ async function refresh() {
     const previous = episode ? $("episode-select").value : new URLSearchParams(location.search).get("episode");
     const { episodes } = await getJSON("/api/recovery");
     $("episode-select").replaceChildren(...episodes.map((item) => {
-      const option = node("option", `${item.task || "读取异常"} · ${item.id}`); option.value = item.id; return option;
+      const option = node("option", `${item.live ? "[未归档] " : ""}${item.task || "读取异常"} · ${item.id}`); option.value = item.id; return option;
     }));
-    if (!episodes.length) {
+    if (!episodes.length && !previous) {
       $("content").hidden = true;
       message("还没有归档的 Recovery Episode。完成实验并 finalize 后，在这里刷新查看。");
       return;
     }
-    if (episodes.some((item) => item.id === previous)) $("episode-select").value = previous;
+    if (previous) {
+      if (!episodes.some((item) => item.id === previous)) {
+        const option = node("option", `${previous} · 未列出，尝试直接读取`);
+        option.value = previous;
+        $("episode-select").append(option);
+      }
+      $("episode-select").value = previous;
+    }
     await load($("episode-select").value);
   } catch (error) {
     $("content").hidden = true;

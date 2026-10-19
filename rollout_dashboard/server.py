@@ -336,20 +336,25 @@ def create_app(diagnostics_dir: Path | None = None) -> FastAPI:
     @app.get("/api/recovery")
     def recovery_runs():
         episodes = []
-        for marker in sorted(diagnostics.glob("*/recovery/manifest.json"), reverse=True):
+        directories = {
+            marker.parent.parent
+            for filename in ("manifest.json", "session.json")
+            for marker in diagnostics.glob(f"*/recovery/{filename}")
+        }
+        for directory in sorted(directories, reverse=True):
             try:
-                directory = resolve_run(marker.parent.parent.name)
+                directory = resolve_run(directory.name)
                 episodes.append(summary(directory))
             except (OSError, ValueError, KeyError, HTTPException):
-                logging.exception("Cannot read recovery episode %s", marker.parent.parent.name)
-                episodes.append({"id": marker.parent.parent.name, "error": "Episode metadata is unreadable"})
+                logging.exception("Cannot read recovery episode %s", directory.name)
+                episodes.append({"id": directory.name, "error": "Episode metadata is unreadable"})
         return {"episodes": episodes}
 
     @app.get("/api/recovery/{run_id}")
     def recovery_episode(run_id: str):
         directory = resolve_run(run_id)
-        if not (directory / "recovery/manifest.json").is_file():
-            raise HTTPException(404, "Finalized recovery episode not found")
+        if not any((directory / "recovery" / name).is_file() for name in ("manifest.json", "session.json")):
+            raise HTTPException(404, "Recovery episode not found")
         try:
             return load_episode(directory)
         except (OSError, ValueError, KeyError, TypeError, StopIteration) as error:

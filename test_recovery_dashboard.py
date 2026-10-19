@@ -66,6 +66,93 @@ def test_corrupted_events_are_an_explicit_error(episode):
         assert client.get(f"/api/recovery/{run.name}").status_code == 500
 
 
+@pytest.fixture
+def live_episode(episode):
+    run, manifest = episode
+    state = {key: value for key, value in manifest.items() if key not in {"events", "episode_video"}}
+    state.update(status="awaiting_assessment", acceptance_success=True, mock_execution=False)
+    (run / "recovery/session.json").write_text(json.dumps(state))
+    (run / "recovery/manifest.json").unlink()
+    path = run / "recovery/events.jsonl"
+    path.write_bytes(path.read_bytes() + b"\n")
+    return run, state
+
+
+def test_live_episode_is_listed_without_fabricating_final_verification(live_episode):
+    run, _ = live_episode
+    (run / "recovery/verification.json").write_text(json.dumps({
+        "recording_verified": True, "acceptance_success": True,
+    }))
+    with TestClient(create_app(run.parent)) as client:
+        listed = client.get("/api/recovery").json()["episodes"][0]
+        assert listed["id"] == run.name and listed["live"] is True
+        response = client.get(f"/api/recovery/{run.name}")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["live"] is True and data["status"] == "awaiting_assessment"
+        assert data["steps"] == 1
+        assert data["verified"] is False and data["agent_control_verified"] is False
+        assert data["acceptance_success"] is False and data["verification"] is None
+        assert data["video"] is None and set(data["downloads"]) == {"events"}
+        assert not (run / "recovery/manifest.json").exists()
+
+
+def test_live_projection_uses_saved_step_watermark_and_reports_partial_append(live_episode):
+    run, _ = live_episode
+    path = run / "recovery/events.jsonl"
+    lines = path.read_bytes().splitlines()
+    future = json.loads(lines[-1])
+    future["episode_step"] = 2
+    pending = b'{"event_type":'
+    path.write_bytes(path.read_bytes() + json.dumps(future).encode() + b"\n" + pending)
+    data = load_episode(run)
+    assert data["steps"] == 1
+    assert [item["step"] for item in data["observations"]] == [0, 1]
+    assert data["pending_event_bytes"] == len(pending)
+
+
+def test_live_projection_does_not_hide_corrupt_complete_events(live_episode):
+    run, _ = live_episode
+    path = run / "recovery/events.jsonl"
+    path.write_bytes(path.read_bytes() + b"not-json\n")
+    with TestClient(create_app(run.parent)) as client:
+        assert client.get(f"/api/recovery/{run.name}").status_code == 500
+
+
+def test_live_initial_snapshot_and_uncommitted_segment(live_episode):
+    run, state = live_episode
+    state["step"] = 0
+    (run / "recovery/session.json").write_text(json.dumps(state))
+    segment = run / "recovery/segments/000_wam"
+    segment.mkdir(parents=True)
+    (segment / "request.json").write_text(json.dumps({"start_step": 0}))
+    (segment / "result.json").write_text(json.dumps({"executed_steps": 1}))
+    data = load_episode(run)
+    assert data["steps"] == 0 and len(data["observations"]) == 1
+    assert data["segments"] == []
+
+
+def test_finalized_episode_takes_precedence_and_is_not_duplicated(episode):
+    run, manifest = episode
+    (run / "recovery/session.json").write_text(json.dumps({**manifest, "step": 99}))
+    with TestClient(create_app(run.parent)) as client:
+        episodes = client.get("/api/recovery").json()["episodes"]
+        assert len(episodes) == 1
+        assert episodes[0]["live"] is False and episodes[0]["steps"] == 1
+        assert client.get(f"/api/recovery/{run.name}").json()["live"] is False
+
+
+def test_live_session_symlink_escape_is_rejected(live_episode, tmp_path):
+    run, _ = live_episode
+    outside = tmp_path / "outside-session.json"
+    session = run / "recovery/session.json"
+    outside.write_bytes(session.read_bytes())
+    session.unlink()
+    session.symlink_to(outside)
+    with TestClient(create_app(run.parent)) as client:
+        assert client.get(f"/api/recovery/{run.name}").status_code == 500
+
+
 def test_download_rejects_symlink_escape(episode, tmp_path):
     run, _ = episode
     secret = tmp_path / "not-episode.json"

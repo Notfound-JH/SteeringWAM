@@ -32,16 +32,24 @@ def read_json(path: Path) -> dict:
     return value
 
 
-def summary(directory: Path) -> dict:
-    manifest = read_json(episode_file(directory, "manifest.json"))
+def episode_state(directory: Path) -> tuple[dict, bool]:
+    live = not (directory / "recovery/manifest.json").is_file()
+    manifest = read_json(episode_file(directory, "session.json" if live else "manifest.json"))
     if manifest.get("format") != "wam-agent-recovery-v1":
         raise ValueError("Unsupported recovery episode format")
+    return manifest, live
+
+
+def episode_summary(directory: Path, manifest: dict, live: bool) -> dict:
     return {
         "id": directory.name,
+        "live": live,
+        "status": manifest.get("status"),
         "task": manifest["task"],
         "steps": manifest["step"],
         "native_success": manifest.get("native_success"),
-        "acceptance_success": manifest.get("acceptance_success"),
+        "acceptance_success": False if live else manifest.get("acceptance_success"),
+        "hammer_task_progress": manifest.get("hammer_task_progress"),
         "experiment_mode": manifest.get("experiment_mode", "wam_recovery"),
         "success_criterion": manifest.get("success_criterion", "native"),
         "agent_control_success": manifest.get("agent_control_success", False),
@@ -50,19 +58,30 @@ def summary(directory: Path) -> dict:
     }
 
 
+def summary(directory: Path) -> dict:
+    return episode_summary(directory, *episode_state(directory))
+
+
 def load_episode(directory: Path) -> dict:
     directory = directory.resolve()
-    manifest = read_json(episode_file(directory, "manifest.json"))
-    result = summary(directory)
+    manifest, live = episode_state(directory)
+    result = episode_summary(directory, manifest, live)
     dt = float(manifest["control_dt"])
     if not math.isfinite(dt) or dt <= 0:
         raise ValueError("Invalid control timestep")
     raw_events = episode_file(directory, "events.jsonl").read_bytes()
-    if hashlib.sha256(raw_events).hexdigest() != manifest["events"]["sha256"]:
+    if not live and hashlib.sha256(raw_events).hexdigest() != manifest["events"]["sha256"]:
         raise ValueError("Event log differs from its finalized manifest")
+    pending_event_bytes = 0
+    if live and raw_events and not raw_events.endswith(b"\n"):
+        complete, separator, pending = raw_events.rpartition(b"\n")
+        pending_event_bytes = len(pending)
+        raw_events = complete + separator
     events = [json.loads(line) for line in raw_events.splitlines() if line.strip()]
+    if live:
+        events = [event for event in events if event.get("episode_step", 0) <= manifest["step"]]
     verification_path = directory / "recovery/verification.json"
-    verification = read_json(episode_file(directory, "verification.json")) if verification_path.exists() else None
+    verification = read_json(episode_file(directory, "verification.json")) if not live and verification_path.exists() else None
     experiment_path = directory / "experiment.json"
     experiment = read_json(episode_file(directory, "../experiment.json")) if experiment_path.exists() else {}
 
@@ -191,6 +210,8 @@ def load_episode(directory: Path) -> dict:
         segment = read_json(episode_file(directory, path.relative_to(directory / "recovery").as_posix()))
         request_path = episode_file(directory, (path.parent / "request.json").relative_to(directory / "recovery").as_posix())
         request = read_json(request_path)
+        if live and request["start_step"] + segment["executed_steps"] > manifest["step"]:
+            continue
         segments.append({
             "id": path.parent.name, "source": segment["source"],
             "start": request["start_step"], "executed_steps": segment["executed_steps"],
@@ -206,7 +227,7 @@ def load_episode(directory: Path) -> dict:
     downloads = {
         kind: f"/api/recovery/{quote(directory.name, safe='')}/download/{kind}"
         for kind, filename in DOWNLOADS.items()
-        if (directory / "recovery" / filename).is_file()
+        if (directory / "recovery" / filename).is_file() and (not live or kind == "events")
     }
     return {
         **result, "goal": manifest["native_goal"], "dt": dt,
@@ -235,7 +256,9 @@ def load_episode(directory: Path) -> dict:
             and manifest.get("agent_control_success") is True
             and manifest.get("mock_execution") is False
         ),
-        "verification": verification, "mock_execution": manifest.get("mock_execution"),
+        "verification": verification,
+        "mock_execution": manifest.get("mock_execution", experiment.get("mock_execution")),
+        "pending_event_bytes": pending_event_bytes,
         "comparison_contract_verified": verification.get("comparison_contract_verified") if verification else None,
         "condition_changes": [
             {key: event[key] for key in ("episode_step", "source", "attempt", "before", "after", "kind", "reason")}
@@ -248,7 +271,7 @@ def load_episode(directory: Path) -> dict:
         "budget_fallback": manifest.get("budget_fallback", False),
         "max_episode_steps": manifest.get("max_episode_steps"),
         "failure": manifest.get("failure"),
-        "video": media(manifest["episode_video"]),
+        "video": None if live else media(manifest["episode_video"]),
         "observations": observations, "phases": phases, "timeline": timeline,
         "attempts": attempts, "segments": segments, "downloads": downloads,
         "errors": [

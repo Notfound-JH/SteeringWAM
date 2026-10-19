@@ -392,7 +392,23 @@ HTTP byte ranges and private browser caching are supported; failed conversions
 are explicit errors rather than silent success/fallback. Preview caches are not
 training data and are excluded from the existing Azure backup's hidden paths.
 
-The online page reads finalized episodes from `diagnostics/*/recovery/manifest.json`.
+The online page reads finalized episodes from `diagnostics/*/recovery/manifest.json`
+and unfinalized snapshots from `diagnostics/*/recovery/session.json`. A finalized
+manifest takes precedence. Unfinalized records are explicitly labeled, never
+receive verified acceptance, and show only the complete event prefix up to the
+saved session step. An incomplete trailing event is reported as still being
+written; malformed complete events remain errors. Click **Refresh** for a newer
+snapshot; this does not control, reset or finalize the simulator.
+
+Unfinalized snapshots provide the timeline, attempts, available predictions and
+actual per-step camera/state inspection, starting at the latest saved step.
+They do not advertise a full episode video, HDF5 or final verification download:
+the full video is generated on finalization. Live camera images and available
+prediction media use originals, since disposable previews require a finalized
+episode. A requested episode is never silently replaced by another archive;
+missing data and requests exceeding 30 seconds produce explicit error messages.
+Finalized event-log checksum checks and media verification are unchanged.
+
 It provides:
 
 - Full actual video and a step-aligned execution timeline with separate WAM,
