@@ -82,6 +82,7 @@ def main() -> None:
             decision, state["request_id"], state["attempts"], robot["ee_pos"], limits,
             recovery_condition=state["condition"], protocol_version=state["protocol_version"],
             failed_condition=state.get("failed_condition_reacquisition"),
+            partial_condition=state.get("partial_condition_continuation"),
         )
         if "program" in proposal:
             compile_program(

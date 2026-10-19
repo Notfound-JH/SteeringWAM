@@ -12,7 +12,8 @@ from instruction_sampling import write_json
 from instruction_sampling_worker import artifact
 from recovery_protocol import (
     PROGRESS_PROTOCOL_VERSION, RECOVERY_EVALUATION_STEPS, compile_program,
-    condition_reacquisition_evidence, validate_assessment, validate_progress_review,
+    condition_continuation_evidence, condition_reacquisition_evidence,
+    validate_assessment, validate_progress_review,
     validate_recovery_proposal,
 )
 from recovery_worker import RecoverySession
@@ -27,7 +28,8 @@ class ProgressRecoverySession(RecoverySession):
             "priority": "Condition first for target/stage deviation; open-only withdrawal/reacquisition after an immediately preceding failed Condition judgment, preserving its target/stage alignment labels",
             "objective": self.state["native_goal"],
             "action_judgment": "Immediately after the controller, before further WAM actions",
-            "condition_judgment": "After one WAM chunk using the revised condition",
+            "condition_judgment": "After one WAM chunk using the revised condition or explicitly history-gated identical condition",
+            "condition_continuation": "Same condition only after an immediately preceding independently partial, advancing, stage-correct Condition; preserve target/alignment and independently judge each new 16-step window",
         }
         if self.state.get("active_recovery_proposal"):
             context["proposal"] = self._proposal()
@@ -99,6 +101,7 @@ class ProgressRecoverySession(RecoverySession):
             decision, self.state["request_id"], self.attempts, robot["ee_pos"], self.limits,
             protocol_version=self.protocol_version, recovery_condition=self.state["condition"],
             failed_condition=self.state.get("failed_condition_reacquisition"),
+            partial_condition=self.state.get("partial_condition_continuation"),
         )
         compiled = None
         if proposal["correction_mode"] != "condition":
@@ -118,6 +121,7 @@ class ProgressRecoverySession(RecoverySession):
             active_recovery_proposal=artifact(directory / "proposal.json"),
             task_progress_recovered=False,
             failed_condition_reacquisition=None,
+            partial_condition_continuation=None,
         )
         self._event(
             "recovery_proposal", attempt=self.attempts,
@@ -168,7 +172,8 @@ class ProgressRecoverySession(RecoverySession):
         else:
             result = self._query_wam(
                 condition, self.state["failure"]["subgoal"], requested, "recovery_evaluation",
-                change_kind="recovery_rewrite", change_reason=proposal["condition_reason"],
+                change_kind="recovery_rewrite" if condition != condition_before else None,
+                change_reason=proposal["condition_reason"] if condition != condition_before else None,
             )
         write_json(directory / "result.json", result)
         self.state["latest_observation"] = self._snapshot(f"recovery_{self.attempts}_{stage}")
@@ -214,6 +219,9 @@ class ProgressRecoverySession(RecoverySession):
             task_progress_recovered=assessment["recovery_success"],
             task_progress=assessment["task_progress"],
             failed_condition_reacquisition=condition_reacquisition_evidence(
+                proposal, evaluation, assessment, self.attempts, self.step,
+            ),
+            partial_condition_continuation=condition_continuation_evidence(
                 proposal, evaluation, assessment, self.attempts, self.step,
             ),
         )

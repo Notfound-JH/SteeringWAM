@@ -296,6 +296,172 @@ def test_verifier_reconstructs_reacquisition_eligibility(worker):
         verify_contract(worker, es)
 
 
+def partial_condition(worker, **overrides):
+    worker.recover(proposal(worker, "condition"))
+    assess(worker, False, **{
+        "correction_effect": "partial",
+        "task_progress": progress(target_alignment="uncertain", progress="advancing"),
+        **overrides,
+    })
+
+
+def condition_continuation(worker, **overrides):
+    return proposal(
+        worker, "condition", **{
+            "condition": worker.state["condition"],
+            "continue_condition_after_attempt": worker.attempts,
+            "task_progress": progress(target_alignment="uncertain", progress="advancing"),
+            **overrides,
+        },
+    )
+
+
+def test_partial_advancing_condition_continues_same_prompt_with_separate_judgment(worker):
+    partial_condition(worker)
+    condition = worker.state["condition"]
+    for _ in range(2):
+        start, attempt = worker.step, worker.attempts
+        assert worker.state["partial_condition_continuation"]["attempt"] == attempt
+        worker.recover(condition_continuation(worker))
+        assert worker.step == start + 16
+        assert worker.state["condition"] == condition
+        assert worker.state["status"] == "awaiting_assessment"
+        assert worker.state["partial_condition_continuation"] is None
+        with pytest.raises(ValueError, match="not allowed"):
+            wam(worker)
+        assess(worker, False, correction_effect="partial",
+               task_progress=progress(target_alignment="uncertain", progress="advancing"))
+    es = events(worker)
+    assert len([e for e in es if e["event_type"] == "recovery_assessment"]) == 3
+    predictions = [e for e in es if e["event_type"] == "wam_prediction"]
+    assert [e["condition_change"]["kind"] for e in predictions[-2:]] == ["unchanged"] * 2
+    assert all(e["condition_change"]["reason"] is None for e in predictions[-2:])
+    assert not worker.state["task_progress_recovered"]
+    assert verify_contract(worker)["progress_contract_verified"]
+
+
+@pytest.mark.parametrize("change", [
+    "no-history", "stale", "target", "target-alignment", "stage-alignment",
+    "progress", "condition", "no-marker", "action", "joint", "program",
+    "steps", "both-markers", "boolean-marker", "legacy",
+])
+def test_condition_continuation_cannot_bypass_history_or_mode(worker, change):
+    if change != "no-history":
+        partial_condition(worker)
+    p = condition_continuation(worker)
+    if change == "no-history":
+        p["continue_condition_after_attempt"] = 1
+        p["partial_condition_continuation"] = {"attempt": 1}
+    elif change == "stale":
+        p["continue_condition_after_attempt"] += 1
+    elif change == "target":
+        p["task_progress"]["target_object"] = "another-block"
+    elif change == "target-alignment":
+        p["task_progress"]["target_alignment"] = "correct"
+    elif change == "stage-alignment":
+        p["task_progress"]["stage_alignment"] = "uncertain"
+    elif change == "progress":
+        p["task_progress"]["progress"] = "stalled"
+    elif change == "condition":
+        p["condition"] = "A different condition"
+    elif change == "no-marker":
+        del p["continue_condition_after_attempt"]
+    elif change in {"action", "joint"}:
+        p["correction_mode"] = change
+        p["control_code"] = "controller.hold(steps=1)"
+    elif change == "program":
+        p["control_code"] = "controller.gripper(value=1, steps=1)"
+    elif change == "steps":
+        p["wam_execute_steps"] = 8
+    elif change == "both-markers":
+        p["target_reacquisition_after_attempt"] = worker.attempts
+    elif change == "boolean-marker":
+        p["continue_condition_after_attempt"] = True
+    elif change == "legacy":
+        p["protocol_version"] = "wam-recovery-v2"
+    start, attempts = worker.step, worker.attempts
+    with pytest.raises(ValueError):
+        worker.recover(p)
+    assert worker.step == start and worker.attempts == attempts
+
+
+@pytest.mark.parametrize("effect,target,stage,outcome", [
+    ("failed", "uncertain", "correct", "advancing"),
+    ("uncertain", "uncertain", "correct", "advancing"),
+    ("partial", "wrong", "correct", "advancing"),
+    ("partial", "uncertain", "wrong", "advancing"),
+    ("partial", "uncertain", "uncertain", "advancing"),
+    ("partial", "uncertain", "correct", "stalled"),
+    ("partial", "uncertain", "correct", "regressing"),
+    ("partial", "uncertain", "correct", "uncertain"),
+])
+def test_condition_continuation_requires_partial_advancing_correct_stage(
+    worker, effect, target, stage, outcome,
+):
+    worker.recover(proposal(worker, "condition"))
+    assess(worker, False, correction_effect=effect, task_progress=progress(
+        target_alignment=target, stage_alignment=stage, progress=outcome,
+    ))
+    assert worker.state["partial_condition_continuation"] is None
+    with pytest.raises(ValueError, match="preceding partial advancing Condition"):
+        worker.recover(condition_continuation(worker))
+
+
+def test_condition_continuation_supports_correct_target_and_unlimited_attempts(worker):
+    worker.limits = SafetyLimits(max_attempts=None)
+    worker.state["safety_limits"] = worker.limits.to_dict()
+    advancing = progress(progress="advancing")
+    partial_condition(worker, task_progress=advancing)
+    for _ in range(6):
+        worker.recover(condition_continuation(worker, task_progress=advancing))
+        assess(worker, False, correction_effect="partial", task_progress=advancing)
+    assert worker.attempts == 7
+    assert not worker.state["task_progress_recovered"]
+    assert verify_contract(worker)["progress_contract_verified"]
+
+
+def test_partial_continuation_does_not_authorize_action_and_new_rewrite_clears_it(worker):
+    partial_condition(worker)
+    with pytest.raises(ValueError, match="Condition takes priority"):
+        worker.recover(proposal(worker, task_progress=progress(target_alignment="uncertain")))
+    worker.recover(proposal(worker, "condition", condition="A genuinely different instruction"))
+    assert worker.state["partial_condition_continuation"] is None
+    with pytest.raises(ValueError, match="not allowed"):
+        worker.recover(condition_continuation(worker))
+    assess(worker, False)
+    assert worker.state["partial_condition_continuation"] is None
+    with pytest.raises(ValueError, match="preceding partial advancing Condition"):
+        worker.recover(condition_continuation(worker))
+
+
+def test_condition_continuation_does_not_follow_action_or_joint(worker):
+    worker.recover(proposal(worker, "joint"))
+    assess(worker)
+    worker.evaluate_condition({
+        "protocol_version": PROGRESS_PROTOCOL_VERSION, "request_id": worker.state["request_id"],
+    })
+    assess(worker, False, correction_effect="partial",
+           task_progress=progress(target_alignment="uncertain", progress="advancing"))
+    assert worker.state["partial_condition_continuation"] is None
+    with pytest.raises(ValueError, match="preceding partial advancing Condition"):
+        worker.recover(condition_continuation(worker))
+
+
+def test_verifier_reconstructs_condition_continuation_from_actual_history(worker):
+    partial_condition(worker)
+    worker.recover(condition_continuation(worker))
+    assess(worker)
+    assert verify_contract(worker)["progress_contract_verified"]
+    es = copy.deepcopy(events(worker))
+    first = next(e for e in es if e["event_type"] == "recovery_assessment")
+    first["assessment"]["task_progress"]["progress"] = "stalled"
+    (worker.directory / "recovery_attempts/01/condition_progress/assessment.json").write_text(
+        json.dumps(first["assessment"])
+    )
+    with pytest.raises(ValueError, match="preceding partial advancing Condition"):
+        verify_contract(worker, es)
+
+
 def test_native_success_in_condition_chunk_needs_judge_but_not_extra_wam(worker):
     worker.stop_at, worker.stop_success = 4, True
     worker.recover(proposal(worker, "condition"))

@@ -250,6 +250,34 @@ def condition_reacquisition_evidence(
     return None
 
 
+def condition_continuation_evidence(
+    proposal: dict[str, Any], evaluation: dict[str, Any],
+    assessment: dict[str, Any], attempt: int, step: int,
+) -> dict[str, Any] | None:
+    progress = assessment["task_progress"]
+    if (
+        proposal["correction_mode"] == "condition"
+        and evaluation["stage"] == "condition_progress"
+        and evaluation["complete"] and evaluation["end_step"] == step
+        and evaluation["executed_steps"] == RECOVERY_EVALUATION_STEPS
+        and evaluation["condition"] == proposal["condition"]
+        and assessment["stage"] == "condition_progress"
+        and assessment["correction_effect"] == "partial"
+        and not assessment["recovery_success"]
+        and progress["stage_alignment"] == "correct"
+        and progress["target_alignment"] in {"correct", "uncertain"}
+        and progress["progress"] == "advancing"
+        and progress["target_object"] == proposal["task_progress"]["target_object"]
+    ):
+        return {
+            "attempt": attempt, "end_step": step, "condition": proposal["condition"],
+            "target_object": progress["target_object"],
+            "target_alignment": progress["target_alignment"],
+            "stage_alignment": progress["stage_alignment"],
+        }
+    return None
+
+
 def validate_recovery_proposal(
     value: Any,
     request_id: str,
@@ -260,6 +288,7 @@ def validate_recovery_proposal(
     protocol_version: str = PROTOCOL_VERSION,
     recovery_condition: str | None = None,
     failed_condition: dict[str, Any] | None = None,
+    partial_condition: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError("Recovery proposal must be an object")
@@ -280,6 +309,12 @@ def validate_recovery_proposal(
         or type(reacquire) is not int or reacquire < 1
     ):
         raise ValueError("Target reacquisition requires a V3 failed Condition attempt number")
+    continuation = value.get("continue_condition_after_attempt")
+    if "continue_condition_after_attempt" in value and (
+        protocol_version != PROGRESS_PROTOCOL_VERSION
+        or type(continuation) is not int or continuation < 1
+    ):
+        raise ValueError("Condition continuation requires a V3 partial Condition attempt number")
     proposal: dict[str, Any] = {
         "protocol_version": protocol_version,
         "request_id": request_id,
@@ -295,6 +330,19 @@ def validate_recovery_proposal(
             **_actor(value, "correction_agent"), task_progress=progress,
             condition_reason=_nonempty(value.get("condition_reason"), "condition_reason"),
         )
+        if continuation is not None:
+            if (
+                mode != "condition" or reacquire is not None or partial_condition is None
+                or continuation != attempt or partial_condition["attempt"] != attempt
+                or partial_condition["target_object"] != progress["target_object"]
+                or partial_condition["target_alignment"] != progress["target_alignment"]
+                or partial_condition["stage_alignment"] != progress["stage_alignment"]
+                or progress["progress"] != "advancing"
+                or value.get("condition") != partial_condition["condition"]
+                or recovery_condition != partial_condition["condition"]
+            ):
+                raise ValueError("Condition continuation requires the immediately preceding partial advancing Condition for the same target and condition")
+            proposal["continue_condition_after_attempt"] = continuation
         if reacquire is not None:
             if (
                 mode != "action" or failed_condition is None
@@ -345,7 +393,7 @@ def validate_recovery_proposal(
         raise ValueError("Condition-only correction cannot include an action program")
     if recovery_condition is not None:
         if mode in {"condition", "joint"}:
-            if proposal["condition"] == recovery_condition:
+            if proposal["condition"] == recovery_condition and continuation is None:
                 raise ValueError("Condition correction must change the current condition")
             if proposal["wam_execute_steps"] != RECOVERY_EVALUATION_STEPS:
                 raise ValueError(f"Recovery evaluation requires exactly {RECOVERY_EVALUATION_STEPS} WAM steps")

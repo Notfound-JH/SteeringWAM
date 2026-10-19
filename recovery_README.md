@@ -111,6 +111,20 @@ authorize grasping or transporting during a stage/order deviation. Unjudged or
 merely uncertain Condition effects, stale attempts and target changes remain
 ineligible. The episode verifier reconstructs eligibility from history.
 
+After an independently **partial, advancing** Condition evaluation, V3 permits
+`continue_condition_after_attempt: N` on a new Condition-only proposal. The
+previous complete 16-step evaluation must end at the unchanged live endpoint;
+its stage must be correct and its target correct or uncertain, never wrong.
+Keep the exact same condition, target and both alignment labels. The worker
+derives eligibility from that evaluation and Judge verdict, not proposal claims.
+Each continuation is a separate recorded attempt with a fresh actual 16-step
+WAM window and independent judgment; it does not mark recovery successful or
+authorize Action/Joint control. Its condition-change metadata is `unchanged`,
+not a fabricated rewrite. Stalled, regressing, uncertain-effect, wrong-stage,
+wrong-target, stale or unjudged results do not qualify. This avoids unnecessary
+synonym changes while real approach is advancing. Existing attempt/horizon and
+action safety limits still apply; configured unlimited totals remain unlimited.
+
 ### Separate correction and recovery-judgment roles
 
 - The **correction Agent** diagnoses the WAM failure against the task goal,
@@ -124,7 +138,7 @@ ineligible. The episode verifier reconstructs eligibility from history.
 
 | Mode | Judgment boundary | Required question |
 |---|---|---|
-| Condition | After the next executed WAM chunk under the revised condition | Did actual WAM behavior return to the correct target and task progression? |
+| Condition | After the next executed WAM chunk under the revised or history-gated identical condition | Did actual WAM behavior return to the correct target and task progression? |
 | Action | Immediately after the bounded controller program, before any further WAM action | What physical effect actually occurred, and does it enable the intended next task stage? |
 | Joint | Preserve both applicable boundaries; explicitly record the stage order | What was the Action effect, and what was the subsequent/preceding Condition-driven WAM effect? |
 
@@ -823,7 +837,8 @@ Only literal keyword calls to `controller.move_ee`, `controller.gripper`, and
 calls and attribute traversal are rejected; code is never evaluated. JSON
 `program` operations are an equivalent alternative to `control_code`, not an
 additional program. Condition mode requires `condition`; Joint combines it with a bounded action
-program. Both must actually change the current condition. If supplied,
+program. Both must actually change the current condition, except for the
+history-gated V3 Condition-only continuation described above. If supplied,
 `wam_execute_steps` must be 16. Mode choice is still the Agent's, not an
 automatic failure classifier.
 
