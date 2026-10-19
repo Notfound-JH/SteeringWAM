@@ -795,7 +795,23 @@ $PY recovery_client.py --socket "$SOCKET" --output /tmp/wam.json wam \
 ```
 
 Read the real camera PNGs referenced by `latest_observation`, robot state, and
-recent history. For a visual-only experiment, `scene.npz` is archival simulator
+recent history. The external correction Agent and independent Recovery Judge
+must actually inspect **`wrist_cam` and `head_camera`**. Head replaces left
+shoulder in the mandatory pair; `over_shoulder_left_camera` and
+`over_shoulder_right_camera` are optional supplementary views. Returning image
+paths in `context` does not count as reading their pixels. Before each new
+correction/progress decision, inspect the current required views; the Judge
+must inspect the baseline and executed-window sequence in both required views,
+using readable actual-image montages and full-resolution frames as needed.
+Record which cameras/frames were actually inspected. Missing or unreadable
+required views are a blocker, not permission to silently substitute a shoulder
+view or predicted image.
+
+This is an external-Agent review policy, not a change to the frozen WAM's
+existing wrist/left-shoulder/right-shoulder input collage. Record the effective
+step of a mid-episode policy change and preserve all earlier inputs/verdicts;
+do not retroactively claim required head-camera coverage for older attempts.
+For a visual-only experiment, `scene.npz` is archival simulator
 ground truth, **not** an Agent perception input. If a debugging run consults its
 object poses for diagnosis, controller targets or assessment, record
 `"agent_input_mode": "debug_ground_truth_assisted"` in `experiment.json`.
