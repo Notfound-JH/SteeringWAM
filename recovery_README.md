@@ -407,6 +407,9 @@ the full video is generated on finalization. Live camera images and available
 prediction media use originals, since disposable previews require a finalized
 episode. A requested episode is never silently replaced by another archive;
 missing data and requests exceeding 30 seconds produce explicit error messages.
+Links forwarded with the query separator encoded as `?episode%3D...` are
+recognized and normalized after loading, rather than selecting an unrelated
+archive.
 Finalized event-log checksum checks and media verification are unchanged.
 
 It provides:

@@ -443,13 +443,21 @@ async function load(id) {
   history.replaceState(null, "", `/recovery?episode=${encodeURIComponent(id)}`);
   message(episode.pending_event_bytes ? `当前有 ${episode.pending_event_bytes} 字节事件尚在写入；只展示截至第 ${episode.steps} 步的完整快照，点击刷新更新。` : "");
 }
+function requestedEpisode() {
+  const parameters = new URLSearchParams(location.search);
+  if (parameters.has("episode")) return parameters.get("episode");
+  for (const [key, value] of parameters) {
+    if (!value && key.startsWith("episode=")) return new URLSearchParams(key).get("episode");
+  }
+  return null;
+}
 async function refresh() {
   if (loading) return;
   loading = true;
   $("refresh").disabled = true;
   $("episode-select").disabled = true;
   try {
-    const previous = episode ? $("episode-select").value : new URLSearchParams(location.search).get("episode");
+    const previous = episode ? $("episode-select").value : requestedEpisode();
     const { episodes } = await getJSON("/api/recovery");
     $("episode-select").replaceChildren(...episodes.map((item) => {
       const option = node("option", `${item.live ? "[未归档] " : ""}${item.task || "读取异常"} · ${item.id}`); option.value = item.id; return option;
